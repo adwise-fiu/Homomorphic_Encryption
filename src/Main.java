@@ -2,10 +2,17 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 
 import security.DGK.DGKKeyPairGenerator;
 import security.DGK.DGKOperations;
@@ -56,7 +63,8 @@ public class Main
 	private static final int KEY_SIZE = 1024;
 	private static final int BILLION = BigInteger.TEN.pow(9).intValue();
 	
-	public static void main(String [] args) 
+	public static void main(String [] args)
+			throws InvalidKeyException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException 
 	{
 		Security.addProvider(new DGKProvider());
 		Security.addProvider(new PaillierProvider());
@@ -114,13 +122,44 @@ public class Main
 				pk = (PaillierPublicKey) pe.getPublic();
 				sk = (PaillierPrivateKey) pe.getPrivate();
 				
+				// Test basic
+				/*
+				for(int i = 0; i < 1000;i++)
+				{
+					System.out.println(PaillierCipher.decrypt(PaillierCipher.encrypt(i, pk), sk));
+				}
+				*/
+				System.out.println("TEST BYTES!");
+				// Test ENCRYPTING NUMBERS with bytes
+				
+				for(int i = 0; i < 1000;i++)
+				{
+					BigInteger data = BigInteger.valueOf(i);
+					byte [] input = data.toByteArray();
+					
+					// Encrypt
+					PaillierCipher paillier = new PaillierCipher();
+					paillier.init(Cipher.ENCRYPT_MODE, pk);
+					byte [] cipher_b = paillier.doFinal(input);
+					
+					paillier.init(Cipher.DECRYPT_MODE, sk);
+					byte [] test = paillier.doFinal(cipher_b);
+					// Decrypt
+					System.out.println(new BigInteger(test));
+				}
+				
+				System.exit(0);
+				
+				// Test 
+				
 				// Build ElGamal Keys
+				/*
 				ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator();
 				pg.initialize(KEY_SIZE, null);
 				KeyPair el_gamal = pg.generateKeyPair();
 				e_pk = (ElGamalPublicKey) el_gamal.getPublic();
 				e_sk = (ElGamalPrivateKey) el_gamal.getPrivate();
-				
+				*/
 				// Let Bob (Big Computer hold its beer and do initial stress test)
 				//System.out.println("Running operations 100,000 times each");
 				//Paillier_Test();
@@ -128,12 +167,16 @@ public class Main
 				//ElGamal_Test();
 				
 				// TODO: ElGamal Protocol 4 debugging
-				
 				bob_socket = new ServerSocket(9254);
 				System.out.println("Bob is ready...");
 				bob_client = bob_socket.accept();
-				andrew = new bob(bob_client, pe, DGK, el_gamal, true);
+				andrew = new bob(bob_client, pe, DGK, true);
 				
+		
+				// Test Bytes encrypt!
+				
+				// Test Signature!
+				/*
 				bob_ElGamal();
 				bob_demo();
 				
@@ -150,6 +193,7 @@ public class Main
 				bob_Veugen();
 				andrew.setDGKMode(true);
 				bob_Veugen();
+				*/
 			}
 		}
 		catch (IOException | ClassNotFoundException x)
@@ -161,13 +205,6 @@ public class Main
 			System.out.println("LIBRARY THREW ERROR ON RUNTIME!");
 			o.printStackTrace();
 		}
-		/*
-		catch (InvalidKeyException | InvalidAlgorithmParameterException 
-				| IllegalBlockSizeException | BadPaddingException e) 
-		{
-			e.printStackTrace();
-		}
-		*/
 		finally
 		{
 			if(!isAlice)

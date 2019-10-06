@@ -14,12 +14,12 @@ Feel free to use this code as you like.
 */
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class NTL
 {
-    private static Random rnd = new Random();
+    private static SecureRandom rnd = new SecureRandom();
     
     public static boolean AKSTest(BigInteger p)
     {

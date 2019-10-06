@@ -11,30 +11,24 @@ import javax.crypto.ShortBufferException;
 
 import security.DGK.DGKPrivateKey;
 import security.DGK.DGKPublicKey;
-import security.generic.ConstructKey;
+
 import security.generic.NTL;
-import security.generic.PHE_Core;
-import security.generic.RSAPadding;
+import security.paillier.PaillierKey;
+import security.paillier.PaillierPrivateKey;
+import security.paillier.PaillierPublicKey;
 
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Provider;
+
 import java.security.SecureRandom;
-import java.security.Security;
+
 import java.security.spec.AlgorithmParameterSpec;
 
-import java.security.spec.InvalidParameterSpecException;
-import java.security.spec.MGF1ParameterSpec;
-
-import javax.crypto.spec.OAEPParameterSpec;
-import javax.crypto.spec.PSource;
 
 import java.util.ArrayList;
-import java.util.Locale;
 
 /*
  * Credits to Andrew Quijano for code conversion and 
@@ -51,486 +45,349 @@ public final class DGKOperations extends CipherSpi
 {
 	protected final static BigInteger TWO = new BigInteger("2");
 	
-	// constant for an empty byte array
-	private final static byte[] B0 = new byte[0];
-
-	// mode constant for public key encryption
-	private final static int MODE_ENCRYPT = 1;
-
-	// mode constant for private key decryption
-	private final static int MODE_DECRYPT = 2;
-
-	// mode constant for private key encryption (signing)
-	private final static int MODE_SIGN    = 3;
-
-	// mode constant for public key decryption (verifying)
-	private final static int MODE_VERIFY  = 4;
-
-	// constant for raw RSA
-	private final static String PAD_NONE  = "NoPadding";
-
-	// constant for PKCS#1 v1.5 RSA
-	private final static String PAD_PKCS1 = "PKCS1Padding";
-
-	// constant for PKCS#2 v2.0 OAEP with MGF1
-	private final static String PAD_OAEP_MGF1  = "OAEP";
-
-	// current mode, one of MODE_* above. Set when init() is called
-	private int mode;
-
-	// active padding type, one of PAD_* above. Set by setPadding()
-	private String paddingType;
-
-	// padding object
-	private RSAPadding padding;
-
-	// cipher parameter for OAEP padding
-	private OAEPParameterSpec spec = null;
-
-	// buffer for the data
-	private byte[] buffer;
-
-	// offset into the buffer (number of bytes buffered)
-	private int bufOfs;
-
-	// size of the output
-	private int outputSize;
-
-	// the public key, if we were initialized using a public key
-	private DGKPublicKey publicKey;
-
-	// the private key, if we were initialized using a private key
-	private DGKPrivateKey privateKey;
-
-	// hash algorithm for OAEP
-	private String oaepHashAlgorithm = "SHA-1";
-
-	public DGKOperations()
+	protected int stateMode;
+	protected Key keyDGK;
+	protected SecureRandom SECURE_RANDOM;
+	protected int plaintextSize;
+	protected int ciphertextSize;
+	
+	/**
+	 * This class support no modes, so engineSetMode() throw exception when
+	 * called.
+	 */
+	protected final void engineSetMode(String mode)
+			throws NoSuchAlgorithmException 
 	{
-		paddingType = PAD_PKCS1;
+		throw new NoSuchAlgorithmException("Paillier supports no modes.");
 	}
 
-	// internal doFinal() method. Here we perform the actual RSA operation
-	private byte[] doFinal() 
-			throws BadPaddingException, IllegalBlockSizeException 
+	/**
+	 * This class support no padding, so engineSetPadding() throw exception when
+	 * called.
+	 */
+	protected final void engineSetPadding(String padding)
+			throws NoSuchPaddingException 
 	{
-		if (bufOfs > buffer.length) 
+		throw new NoSuchPaddingException("Paillier supports no padding.");
+	}
+
+	/**
+	 * Perform actual encryption ,creates single array and updates the result
+	 * after the encryption.
+	 * 
+	 * @param input
+	 *            - the input in bytes
+	 * @param inputOffset
+	 *            - the offset in input where the input starts always zero
+	 * @param inputLenth
+	 *            - the input length
+	 * @param output
+	 *            - the buffer for the result
+	 * @param outputOffset
+	 *            - the offset in output where the result is stored
+	 * @return the number of bytes stored in output
+	 * @throws Exception
+	 *             throws if Plaintext m is not in Z_n , m should be less then n
+	 */
+	protected final int encrypt(byte[] input, int inputOffset, int inputLenth,
+			byte[] output, int outputOffset) throws Exception
+	{
+		byte[] messageBytes = new byte[plaintextSize];
+		int inLenth = Math.min(plaintextSize, inputLenth);
+		System.arraycopy(input, inputOffset, messageBytes, 0, inLenth);
+		BigInteger m = new BigInteger(input);
+
+		// get the public key in order to encrypt
+		byte [] cBytes = encrypt((DGKPublicKey) keyDGK, m).toByteArray();
+		System.arraycopy(cBytes, 0, output, ciphertextSize - cBytes.length, cBytes.length);
+		return ciphertextSize;
+	}
+
+	/**
+	 * Perform actual decryption ,creates single array for the output and updates
+	 * the result after the decryption.
+	 * 
+	 * @param input
+	 *            - the input in bytes
+	 * @param inputOffset
+	 *            - the offset in input where the input starts always zero
+	 * @param inputLenth
+	 *            - the input length
+	 * @param output
+	 *            - the buffer for the result
+	 * @param outputOffset
+	 *            - the offset in output where the result is stored
+	 * @return the number of bytes stored in output
+	 */
+	protected final int decrypt(byte[] input, int inputOffset, int inputLenth,
+			byte[] output, int outputOffset)
+	{
+		// extract c
+		byte[] cBytes = new byte[input.length];
+		System.arraycopy(input, inputOffset, cBytes, 0, input.length);
+		
+		// calculate the message
+		byte[] messageBytes = decrypt(new BigInteger(cBytes), (DGKPrivateKey) keyDGK).toByteArray();
+		int gatedLength = Math.min(messageBytes.length, plaintextSize);
+		System.arraycopy(messageBytes, 0, output, plaintextSize - gatedLength, gatedLength);
+		return plaintextSize;
+	}
+
+	/**
+	 * PaillierHomomorphicCipher doesn't recognise any algorithm - specific initialisations
+	 * so the algorithm specific engineInit() just calls the previous overloaded
+	 * version of engineInit()
+	 * 
+	 * @param opmode
+	 *            -cipher mode
+	 * @param key
+	 *            - Key
+	 * @param params
+	 *            - AlgorithmParameterSpec
+	 * @see javax.crypto.CipherSpi#engineInit(int, java.security.Key,
+	 *      java.security.spec.AlgorithmParameterSpec,
+	 *      java.security.SecureRandom)
+	 */
+
+	protected final void engineInit(int opmode, Key key,
+			AlgorithmParameterSpec params, SecureRandom random)
+			throws InvalidKeyException, InvalidAlgorithmParameterException
+	{
+		engineInit(opmode, key, random);
+	}
+
+	protected final void engineInit(int opmode, Key key, AlgorithmParameters params,
+			SecureRandom random) throws InvalidKeyException, InvalidAlgorithmParameterException 
+	{
+		engineInit(opmode, key, random);
+	}
+
+	/**
+	 * Calls the second overloaded version of the same method.
+	 * 
+	 * @return the result from encryption or decryption
+	 */
+	protected final byte[] engineUpdate(byte[] input, int inputOffset, int inputLen) 
+	{
+		byte[] out = new byte[engineGetOutputSize(inputLen)];
+		try 
 		{
-			throw new IllegalBlockSizeException("Data must not be longer "
-					+ "than " + buffer.length + " bytes");
+			 engineUpdate(input, inputOffset, inputLen, out, 0);
+		} 
+		catch (ShortBufferException sbe) 
+		{
+
 		}
-		try
+		return out;
+	}
+
+	/**
+	 * Creates a single input array from the buffered data and supplied input
+	 * data. Calculates the location and the length of the last fractional block
+	 * in the input data. Transforms all full blocks in the input data. Save the
+	 * last fractional block in the internal buffer.
+	 * 
+	 * @param input
+	 *            - the input in bytes
+	 * @param inputOffset
+	 *            - the offset in input where the input starts always zero
+	 * @param inputLen
+	 *            - the input length
+	 * @param output
+	 *            - the buffer for the result
+	 * @param outputOffset
+	 *            - the offset in output where the result is stored
+	 * @return the number of bytes stored in output
+	 */
+	protected final int engineUpdate(byte[] input, int inputOffset, int inputLen,
+			byte[] output, int outputOffset) throws ShortBufferException 
+	{
+		if (stateMode == Cipher.ENCRYPT_MODE)
 		{
-			byte[] data;
-			switch (mode) 
+			try 
 			{
-
-			/*
-            DGK and Paillier can't do this...I think
-            case MODE_SIGN:
-                data = padding.pad(buffer, 0, bufOfs);
-                return RSACore.rsa(data, privateKey);
-            case MODE_VERIFY:
-                byte[] verifyBuffer = RSACore.convert(buffer, 0, bufOfs);
-                data = RSACore.rsa(verifyBuffer, publicKey);
-                return padding.unpad(data);
-			 */
-			case MODE_ENCRYPT:
-				data = padding.pad(buffer, 0, bufOfs);
-				return PHE_Core.DGK_encrypt(data, publicKey);
-			case MODE_DECRYPT:
-				byte[] decryptBuffer = PHE_Core.convert(buffer, 0, bufOfs);
-				data = PHE_Core.DGK_decrypt(decryptBuffer, privateKey);
-				return padding.unpad(data);
-			default:
-				throw new AssertionError("Internal error");
+				return encrypt(input, inputOffset, inputLen, output, outputOffset);
+			} 
+			catch (Exception e) 
+			{
+				e.printStackTrace();
 			}
-		} 
-		finally 
-		{
-			bufOfs = 0;
 		}
-	}
-
-	// see JCE spec
-	protected byte[] engineDoFinal(byte[] in, int inOfs, int inLen)
-			throws BadPaddingException, IllegalBlockSizeException 
-	{
-		update(in, inOfs, inLen);
-		return doFinal();
-	}
-
-	protected int engineDoFinal(byte[] in, int inOfs, int inLen, byte[] out, int outOfs)
-			throws ShortBufferException, IllegalBlockSizeException, BadPaddingException 
-	{  
-		if (outputSize > out.length - outOfs) 
+		else if (stateMode == Cipher.DECRYPT_MODE)
 		{
-			throw new ShortBufferException("Need " + outputSize + " bytes for output");	
+			return decrypt(input, inputOffset, inputLen, output, outputOffset);
 		}
-		update(in, inOfs, inLen);
-		byte[] result = doFinal();
-		int n = result.length;
-		System.arraycopy(result, 0, out, outOfs, n);
-		return n;
-	}
-
-	// see JCE spec
-	protected byte[] engineWrap(Key key) 
-			throws InvalidKeyException, IllegalBlockSizeException 
-	{
-		byte [] encoded = key.getEncoded();
-		if ((encoded == null) || (encoded.length == 0)) 
-		{
-			throw new InvalidKeyException("Could not obtain encoded key");
-		}
-		if (encoded.length > buffer.length) 
-		{
-			throw new InvalidKeyException("Key is too long for wrapping");
-		}
-		update(encoded, 0, encoded.length);
-		try 
-		{
-			return doFinal();
-		}
-		catch (BadPaddingException e) 
-		{
-			// should not occur
-			throw new InvalidKeyException("Wrapping failed", e);
-		}
-	}
-
-	// see JCE spec
-	protected Key engineUnwrap(byte[] wrappedKey, String algorithm, int type) 
-			throws InvalidKeyException, NoSuchAlgorithmException 
-	{
-		if (wrappedKey.length > buffer.length) 
-		{
-			throw new InvalidKeyException("Key is too long for unwrapping");
-		}
-		update(wrappedKey, 0, wrappedKey.length);
-		try 
-		{
-			byte[] encoded = doFinal();
-			return ConstructKey.constructKey(encoded, algorithm, type);
-		}
-		catch (BadPaddingException e) 
-		{
-			// should not occur
-			throw new InvalidKeyException("Unwrapping failed", e);
-		} 
-		catch (IllegalBlockSizeException e) 
-		{
-			// should not occur, handled with length check above
-			throw new InvalidKeyException("Unwrapping failed", e);
-		}
-	}
-
-
-	// return 0 as block size, we are not a block cipher
-	// see JCE spec
-	protected int engineGetBlockSize() 
-	{
 		return 0;
 	}
 
-	// no iv, return null
-	// see JCE spec
-	protected byte[] engineGetIV() 
+	/**
+	 * Calls the second overloaded version of the same method,
+	 * to perform the required operation based on the state of the cipher.
+	 * 
+	 * @return returns the result from encryption or decryption
+	 */
+	protected final byte[] engineDoFinal(byte[] input, int inputOffset, int inputLen)
+			throws IllegalBlockSizeException, BadPaddingException
+	{
+
+		byte [] out = new byte[engineGetOutputSize(inputLen)];
+		try 
+		{
+			engineDoFinal(input, inputOffset, inputLen, out, 0);
+		} 
+		catch (ShortBufferException sbe)
+		{
+			
+		}
+		return out;
+	}
+
+	/**
+	 * Calls encrypt or decrypt based on the state of the cipher. Creates a
+	 * single input array from the supplied input data. And returns number of
+	 * bytes stored in output.
+	 * 
+	 * @param input
+	 *            - the input buffer
+	 * @param inputOffset
+	 *            - the offset in input where the input starts always zero
+	 * @param inputLen
+	 *            - the input length
+	 * @param output
+	 *            - the buffer for the result
+	 * @param outputOffset
+	 *            - the offset in output where the result is stored
+	 * @return the number of bytes stored in output
+	 */
+	protected final int engineDoFinal(byte[] input, int inputOffset, int inputLen,
+			byte[] output, int outputOffset)
+					throws ShortBufferException, IllegalBlockSizeException, BadPaddingException
+	{
+		// Create a single array of input data
+		byte[] totalInput = new byte[inputLen];
+		if (inputLen > 0)
+		{
+			System.arraycopy(input, inputOffset, totalInput, 0, inputLen);
+		}
+		if (stateMode == Cipher.ENCRYPT_MODE)
+		{
+			try 
+			{
+				return encrypt(input, inputOffset, inputLen, output, outputOffset);	
+			} 
+			catch (Exception e) 
+			{
+				e.printStackTrace();
+			}
+		}
+		else if (stateMode == Cipher.DECRYPT_MODE)
+		{
+			return decrypt(input, inputOffset, inputLen, output, outputOffset);
+		}
+		return 0;
+	}
+
+	/**
+	 * This method returns the appropriate block size , based on cipher.
+	 * 
+	 * @return BlockSize - the block size(in bytes).
+	 */
+	protected final int engineGetBlockSize() 
+	{
+		if (stateMode == Cipher.DECRYPT_MODE)
+		{
+			return ciphertextSize ;
+		}
+		else
+		{
+			return plaintextSize ;
+		}
+	}
+
+	/**
+	 * This method returns null.
+	 */
+	protected final byte[] engineGetIV()
 	{
 		return null;
 	}
 
-	protected int engineGetOutputSize(int arg0) 
+	/**
+	 * Return  the size based on the state of the cipher. This is one 
+	 * shot encryption or decryption, no need to calculate internal buffer.
+	 * @param inputLen
+	 *            the input length (in bytes)
+	 * @return outLength - the required output size (in bytes)
+	 */
+	protected final int engineGetOutputSize(int inputLen)
 	{
-		return outputSize;
-	}
-
-	protected AlgorithmParameters engineGetParameters() 
-	{
-		if (spec != null) 
+		if (stateMode == Cipher.ENCRYPT_MODE) 
 		{
-			try 
-			{
-				AlgorithmParameters params =
-						AlgorithmParameters.getInstance("OAEP", "SunJCE");
-				params.init(spec);
-				return params;
-			} 
-			catch (NoSuchAlgorithmException nsae) 
-			{
-				// should never happen
-				throw new RuntimeException("Cannot find OAEP " +
-						" AlgorithmParameters implementation in SunJCE provider");
-			} 
-			catch (NoSuchProviderException nspe) 
-			{
-				// should never happen
-				throw new RuntimeException("Cannot find SunJCE provider");
-			} 
-			catch (InvalidParameterSpecException ipse) 
-			{
-				// should never happen
-				throw new RuntimeException("OAEPParameterSpec not supported");
-			}
+			return  ciphertextSize;
 		} 
 		else 
 		{
-			return null;
+			return plaintextSize;
 		}
+
 	}
 
-	// see JCE spec
-	protected void engineInit(int opmode, Key key, SecureRandom random)
+	protected final AlgorithmParameters engineGetParameters() 
+	{
+		return null;
+	}
+
+	/**
+	 * Initialises this cipher with key and a source of randomness
+	 */
+	protected final void engineInit(int mode, Key key, SecureRandom random)
 			throws InvalidKeyException 
 	{
-		try 
+		if (mode == Cipher.ENCRYPT_MODE)
 		{
-			init(opmode, key, random, null);
-		} 
-		catch (InvalidAlgorithmParameterException iape) 
-		{
-			// never thrown when null parameters are used;
-			// but re-throw it just in case
-			InvalidKeyException ike =
-					new InvalidKeyException("Wrong parameters");
-			ike.initCause(iape);
-			throw ike;
-		}
-	}
-
-	// see JCE spec
-	protected void engineInit(int opmode, Key key,
-			AlgorithmParameterSpec params, SecureRandom random)
-					throws InvalidKeyException, InvalidAlgorithmParameterException 
-	{
-		init(opmode, key, random, params);
-	}
-
-	// see JCE spec
-	protected void engineInit(int opmode, Key key,
-			AlgorithmParameters params, SecureRandom random)
-					throws InvalidKeyException, InvalidAlgorithmParameterException 
-	{
-		if (params == null)
-		{
-			init(opmode, key, random, null);
-		} 
-		else 
-		{
-			try 
+			if (!(key instanceof PaillierPublicKey))
 			{
-				OAEPParameterSpec spec =
-						params.getParameterSpec(OAEPParameterSpec.class);
-				init(opmode, key, random, spec);
-			} 
-			catch (InvalidParameterSpecException ipse) 
-			{
-				InvalidAlgorithmParameterException iape =
-						new InvalidAlgorithmParameterException("Wrong parameter");
-				iape.initCause(ipse);
-				throw iape;
+				throw new InvalidKeyException("I didn't get a DGKPublicKey!");
 			}
 		}
-	}
-
-	// initialize this cipher
-	private void init(int opmode, Key key, SecureRandom random, AlgorithmParameterSpec params)
-			throws InvalidKeyException, InvalidAlgorithmParameterException 
-	{
-		boolean encrypt;
-		switch (opmode) 
+		else if (mode == Cipher.DECRYPT_MODE)
 		{
-		case Cipher.ENCRYPT_MODE:
-		case Cipher.WRAP_MODE:
-			encrypt = true;
-			break;
-
-		case Cipher.DECRYPT_MODE:
-		case Cipher.UNWRAP_MODE:
-			encrypt = false;
-			break;
-
-		default:
-			throw new InvalidKeyException("Unknown mode: " + opmode);
-
+			if (!(key instanceof PaillierPrivateKey))
+			{
+				throw new InvalidKeyException("I didn't get a DGKPrivateKey!");
+			}
+		}		
+		else
+		{
+			throw new IllegalArgumentException("Bad mode: " + mode);
 		}
-		DGK_Key dgkKey = DGKKeyFactory.toDGKKey(key);
-
-		if (key instanceof DGKPublicKey) 
-		{
-			mode = encrypt ? MODE_ENCRYPT : MODE_VERIFY;
-			publicKey = (DGKPublicKey) key;
-			privateKey = null;
-		} 
-		else 
-		{ 
-			// must be RSAPrivateKey per check in toRSAKey
-			mode = encrypt ? MODE_SIGN : MODE_DECRYPT;
-			privateKey = (DGKPrivateKey) key;
-			publicKey = null;
-		}
-		int n = PHE_Core.getByteLength(dgkKey.getN());
-		outputSize = n;
-		bufOfs = 0;
-
-		if (paddingType == PAD_NONE) 
-		{
-			if (params != null) 
-			{
-				throw new InvalidAlgorithmParameterException
-				("Parameters not supported");
-			}
-			padding = RSAPadding.getInstance(RSAPadding.PAD_NONE, n, random);
-			buffer = new byte[n];
-		} 
-		else if (paddingType == PAD_PKCS1) 
-		{
-			if (params != null) 
-			{
-				throw new InvalidAlgorithmParameterException
-				("Parameters not supported");
-			}
-			int blockType = (mode <= MODE_DECRYPT) ? RSAPadding.PAD_BLOCKTYPE_2
-					: RSAPadding.PAD_BLOCKTYPE_1;
-			padding = RSAPadding.getInstance(blockType, n, random);
-
-			if (encrypt) 
-			{
-				int k = padding.getMaxDataSize();
-				buffer = new byte[k];
-			} 
-			else 
-			{
-				buffer = new byte[n];
-			}
-		} 
-		else 
-		{ 
-			// PAD_OAEP_MGF1
-			if ((mode == MODE_SIGN) || (mode == MODE_VERIFY)) 
-			{
-				throw new InvalidKeyException("OAEP cannot be used to sign or verify signatures");
-			}
-			OAEPParameterSpec myParams;
-			if (params != null)
-			{
-				if (!(params instanceof OAEPParameterSpec)) 
-				{
-					throw new InvalidAlgorithmParameterException
-					("Wrong Parameters for OAEP Padding");
-				}
-				myParams = (OAEPParameterSpec) params;
-			} 
-			else 
-			{
-				myParams = new OAEPParameterSpec(oaepHashAlgorithm, "MGF1",
-						MGF1ParameterSpec.SHA1, PSource.PSpecified.DEFAULT);
-			}
-			padding = RSAPadding.getInstance(RSAPadding.PAD_OAEP_MGF1, n, random, myParams);
-			if (encrypt) 
-			{
-				int k = padding.getMaxDataSize();
-				buffer = new byte[k];
-			} 
-			else 
-			{
-				buffer = new byte[n];
-			}
-		}
+		this.stateMode = mode;
+		this.keyDGK = key;
+		this.SECURE_RANDOM = random;
+		int modulusLength = ((PaillierKey) key).getN().bitLength();
+		calculateBlockSizes(modulusLength);
 	}
 
-	protected void engineSetMode(String mode) 
-			throws NoSuchAlgorithmException 
+	/**
+	 * Calculates the size of the plaintext block and a ciphertext block, based
+	 * on the size of the key used to initialise the cipher. The ciphertext is
+	 * twice the length of the n modulus , and plaintext should be slightly
+	 * shorter than the modulus. Ciphertext is little more than twice the length
+	 * of the plaintext. Plaintext - we adding 8 bits(1 byte) before to divide by 8 to
+	 * ensure the bigger possible plaintex will fit into created array.
+	 * EngineUpdate and engineDoFinal methods check if the size of the array is
+	 * to big and reduced to the right size. Similar for the ciphertext. Where
+	 * the initial size is set to the size of the n^2 plus one byte . 
+	 * 
+	 * @param modulusLength
+	 *            - n = p*q
+	 */
+	protected final void calculateBlockSizes(int modulusLength)
 	{
-		if (mode.equalsIgnoreCase("ECB") == false) 
-		{
-			throw new NoSuchAlgorithmException("Unsupported mode " + mode);
-		}
+		plaintextSize = ((modulusLength + 8) / 8);
+		ciphertextSize = (((modulusLength + 12) / 8) * 2)-1;
 	}
-
-	protected void engineSetPadding(String paddingName) 
-			throws NoSuchPaddingException
-	{
-		if (paddingName.equalsIgnoreCase(PAD_NONE))
-		{
-			paddingType = PAD_NONE;
-		} 
-		else if (paddingName.equalsIgnoreCase(PAD_PKCS1)) 
-		{
-			paddingType = PAD_PKCS1;
-		} 
-		else 
-		{
-			String lowerPadding = paddingName.toLowerCase(Locale.ENGLISH);
-			if (lowerPadding.equals("oaeppadding")) 
-			{
-				paddingType = PAD_OAEP_MGF1;
-			}
-			else if (lowerPadding.startsWith("oaepwith") &&
-					lowerPadding.endsWith("andmgf1padding")) 
-			{
-				paddingType = PAD_OAEP_MGF1;
-				// "oaepwith".length() == 8
-				// "andmgf1padding".length() == 14
-				oaepHashAlgorithm = paddingName.substring(8, paddingName.length() - 14);
-				// check if MessageDigest appears to be available
-				// avoid getInstance() call here
-			    Provider [] providerList = Security.getProviders();
-			    for (Provider provider : providerList)
-			    {
-			    	if (provider.getService("MessageDigest", oaepHashAlgorithm) == null) 
-					{
-						throw new NoSuchPaddingException("MessageDigest not available for " + paddingName);
-					}
-				}
-			}
-			else 
-			{
-				throw new NoSuchPaddingException ("Padding " + paddingName + " not supported");
-			}
-		}
-	}
-
-
-	// see JCE spec
-	protected byte[] engineUpdate(byte[] in, int inOfs, int inLen) 
-	{
-		update(in, inOfs, inLen);
-		return B0;
-	}
-
-	// see JCE spec
-	protected int engineUpdate(byte[] in, int inOfs, int inLen, byte[] out,
-			int outOfs) 
-	{
-		update(in, inOfs, inLen);
-		return 0;
-	}
-
-	// internal update method
-	private void update(byte[] in, int inOfs, int inLen) 
-	{
-		if ((inLen == 0) || (in == null)) 
-		{
-			return;
-		}
-
-		if (bufOfs + inLen > buffer.length) 
-		{
-			bufOfs = buffer.length + 1;
-			return;
-		}
-		System.arraycopy(in, inOfs, buffer, bufOfs, inLen);
-		bufOfs += inLen;
-	}
-
-	// see JCE spec
-	protected int engineGetKeySize(Key key) throws InvalidKeyException
-	{
-		DGK_Key rsaKey = DGKKeyFactory.toDGKKey(key);
-		return rsaKey.getN().bitLength();
-	}
-
+	
 	//--------------------------------Old DGK Operations----------------------------------
 	public static BigInteger encrypt(DGKPublicKey pubKey, BigInteger plaintext)
 	{
@@ -827,5 +684,24 @@ public final class DGKOperations extends CipherSpi
 		{
 			return false;
 		}
+	}
+	
+	// PUBLIC FACING METHODS
+	public void init(int encryptMode, PaillierPublicKey pk) 
+			throws InvalidKeyException, InvalidAlgorithmParameterException
+	{
+		engineInit(encryptMode, pk, new SecureRandom());
+	}
+
+	public void init(int decryptMode, PaillierPrivateKey sk)
+			throws InvalidKeyException, InvalidAlgorithmParameterException 
+	{
+		engineInit(decryptMode, sk, new SecureRandom());
+	}
+	
+	public byte[] doFinal(byte[] bytes) 
+			throws BadPaddingException, IllegalBlockSizeException 
+	{
+		return engineDoFinal(bytes, 0, bytes.length);	
 	}
 }//END OF CLASS
