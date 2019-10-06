@@ -589,49 +589,6 @@ public class ElGamalCipher extends CipherSpi
 		}
 		return ElGamalCipher.sum(product_vector, pk, product_vector.length);
 	}
-	
-	public ElGamal_Ciphertext sign(BigInteger M, ElGamalPrivateKey sk)
-	{
-		BigInteger p1 = sk.p.subtract(BigInteger.ONE);
-		BigInteger K = null;
-		while(true)
-		{
-			K = NTL.RandomBnd(p1);
-			if(K.gcd(p1).equals(BigInteger.ONE))
-			{
-				break;
-			}
-		}
-
-		BigInteger a = sk.g.modPow(K, sk.p);
-	    BigInteger t = M.subtract(sk.x.multiply(a)).mod(p1);
-	    BigInteger b = null;
-	    while(t.signum() == -1)
-	    {
-        	t = t.add(p1);
-        	b = t.multiply(K.modInverse(p1)).mod(p1);
-	    }
-	    return new ElGamal_Ciphertext(a, b);
-	}
-	
-    public boolean verify(BigInteger M, ElGamal_Ciphertext sig, ElGamalPublicKey pk)
-    {
-    	BigInteger a = sig.getA();
-    	BigInteger b = sig.getB();
-    	
-        if (a.compareTo(BigInteger.ZERO) <= 0 || a.compareTo(pk.p.subtract(BigInteger.ONE)) == 1)
-        {
-        	return false;
-        }
-        BigInteger v1 = pk.h.modPow(a, pk.p);
-        v1 = (v1.multiply(a.modPow(b, pk.p))).mod(pk.p);
-        BigInteger v2 = pk.g.modPow(M, pk.p);
-        if (v1.compareTo(v2) == 0)
-        {
-        	return true;
-        }
-        return false;
-    }
     
 	// PUBLIC FACING METHODS
 	public void init(int encryptMode, PaillierPublicKey pk) 

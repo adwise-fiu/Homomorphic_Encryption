@@ -657,34 +657,6 @@ public final class DGKOperations extends CipherSpi
 		}
 		return sum(pubKey, product_vector);
 	}
-
-	public static BigInteger sign(BigInteger message, DGKPrivateKey privKey)
-		throws IllegalArgumentException
-	{
-		// To avoid attacks, You need (message, v) = 1
-		if(!message.gcd(privKey.v).equals(BigInteger.ONE))
-		{
-			throw new IllegalArgumentException("ARE YOU TRYING TO LEAK YOUR PRIVATE KEY?");
-		}
-		// g^{v}h^{m} (mod n) 
-		BigInteger signature = privKey.g.modPow(privKey.v, privKey.n);
-		signature = signature.multiply(privKey.h.modPow(message, privKey.n)).mod(privKey.n);
-		return signature;
-	}
-
-	public static boolean verify(BigInteger message, BigInteger certificate, DGKPublicKey pubKey)
-	{
-		BigInteger challenge = certificate.modPow(pubKey.bigU, pubKey.n);
-		// g^{v}h^{m} (mod n) --> g^{v * u} h^{m * u} (mod n) --> h^{m * u} (mod n)
-		if (pubKey.h.modPow(message.multiply(pubKey.bigU), pubKey.n).compareTo(challenge) == 0)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
 	
 	// PUBLIC FACING METHODS
 	public void init(int encryptMode, PaillierPublicKey pk) 

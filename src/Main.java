@@ -153,8 +153,7 @@ public class Main
 				sig.initSign(sk);
 				sig.update(new BigInteger("500").toByteArray());
 				byte [] cert = sig.sign();
-				System.out.println("CERT LENGTH: " + cert.length);//512-bytes?
-				
+
 				for(int i = 0; i < 1000;i++)
 				{
 					sig.initVerify(pk);
