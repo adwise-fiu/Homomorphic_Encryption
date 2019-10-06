@@ -311,7 +311,6 @@ public final class PaillierCipher extends CipherSpi
 		{
 			return plaintextSize;
 		}
-
 	}
 
 	protected final AlgorithmParameters engineGetParameters() 
@@ -367,7 +366,26 @@ public final class PaillierCipher extends CipherSpi
 	protected final void calculateBlockSizes(int modulusLength)
 	{
 		plaintextSize = ((modulusLength + 8) / 8);
-		ciphertextSize = (((modulusLength + 12) / 8) * 2)-1;
+		ciphertextSize = (((modulusLength + 12) / 8) * 2) - 1;
+	}
+	
+	// PUBLIC FACING METHODS
+	public void init(int encryptMode, PaillierPublicKey pk) 
+			throws InvalidKeyException, InvalidAlgorithmParameterException
+	{
+		engineInit(encryptMode, pk, new SecureRandom());
+	}
+
+	public void init(int decryptMode, PaillierPrivateKey sk)
+			throws InvalidKeyException, InvalidAlgorithmParameterException 
+	{
+		engineInit(decryptMode, sk, new SecureRandom());
+	}
+		
+	public byte[] doFinal(byte[] bytes) 
+			throws BadPaddingException, IllegalBlockSizeException 
+	{
+		return engineDoFinal(bytes, 0, bytes.length);	
 	}
 
 	//-----------------------Old Paillier----------------------------------------------
@@ -566,58 +584,4 @@ public final class PaillierCipher extends CipherSpi
 		return multiply(ciphertext, divisor.modInverse(pk.modulus), pk);
 	}
 	
-	// Return <sigma_1, sigma_2>
-	public static List<BigInteger> sign(BigInteger message, PaillierPrivateKey sk)
-	{
-		List<BigInteger> tuple = new ArrayList<BigInteger>();
-		// Hash(m) then do modPow!
-		BigInteger sigma_one = L(message.modPow(sk.lambda, sk.modulus), sk.n);
-		sigma_one = sigma_one.multiply(sk.rho);
-		
-		BigInteger sigma_two = message.multiply(sk.g.modPow(sigma_one, sk.n).modInverse(sk.n));
-		sigma_two = sigma_two.modPow(sk.n.modInverse(sk.lambda), sk.n);
-		
-		tuple.add(sigma_one);
-		tuple.add(sigma_two);
-		return tuple;
-	}
-	
-	public static boolean verify(BigInteger message, List<BigInteger> sigma, PaillierPublicKey pk)
-	{
-		return verify(message, sigma.get(0), sigma.get(1), pk);
-	}
-	
-	public static boolean verify(BigInteger message, BigInteger sigma_one, BigInteger sigma_two, PaillierPublicKey pk)
-	{
-		BigInteger first_part = pk.g.modPow(sigma_one, pk.modulus);
-		BigInteger second_part = sigma_two.modPow(pk.n, pk.modulus);
-		// Compare with Hash!
-		if (message.compareTo(first_part.multiply(second_part).mod(pk.modulus)) == 0)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	// PUBLIC FACING METHODS
-	public void init(int encryptMode, PaillierPublicKey pk) 
-			throws InvalidKeyException, InvalidAlgorithmParameterException
-	{
-		engineInit(encryptMode, pk, new SecureRandom());
-	}
-
-	public void init(int decryptMode, PaillierPrivateKey sk)
-			throws InvalidKeyException, InvalidAlgorithmParameterException 
-	{
-		engineInit(decryptMode, sk, new SecureRandom());
-	}
-	
-	public byte[] doFinal(byte[] bytes) 
-			throws BadPaddingException, IllegalBlockSizeException 
-	{
-		return engineDoFinal(bytes, 0, bytes.length);	
-	}
 }

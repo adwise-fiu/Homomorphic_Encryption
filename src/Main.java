@@ -7,6 +7,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import security.paillier.PaillierCipher;
 import security.paillier.PaillierKeyPairGenerator;
 import security.paillier.PaillierPrivateKey;
 import security.paillier.PaillierPublicKey;
+import security.paillier.PaillierSignature;
 import security.paillier.PaillierProvider;
 import security.socialistmillionaire.alice;
 import security.socialistmillionaire.bob;
@@ -64,7 +66,6 @@ public class Main
 	private static final int BILLION = BigInteger.TEN.pow(9).intValue();
 	
 	public static void main(String [] args)
-			throws InvalidKeyException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException 
 	{
 		Security.addProvider(new DGKProvider());
 		Security.addProvider(new PaillierProvider());
@@ -131,7 +132,7 @@ public class Main
 				*/
 				System.out.println("TEST BYTES!");
 				// Test ENCRYPTING NUMBERS with bytes
-				
+				/*
 				for(int i = 0; i < 1000;i++)
 				{
 					BigInteger data = BigInteger.valueOf(i);
@@ -146,6 +147,22 @@ public class Main
 					byte [] test = paillier.doFinal(cipher_b);
 					// Decrypt
 					System.out.println(new BigInteger(test));
+				}
+				*/
+				PaillierSignature sig = new PaillierSignature();
+				sig.initSign(sk);
+				sig.update(new BigInteger("500").toByteArray());
+				byte [] cert = sig.sign();
+				System.out.println("CERT LENGTH: " + cert.length);//512-bytes?
+				
+				for(int i = 0; i < 1000;i++)
+				{
+					sig.initVerify(pk);
+					sig.update(BigInteger.valueOf(i).toByteArray());
+					if(sig.verify(cert))
+					{
+						System.out.println("VALID AT: " + i);
+					}
 				}
 				
 				System.exit(0);
@@ -204,6 +221,10 @@ public class Main
 		{
 			System.out.println("LIBRARY THREW ERROR ON RUNTIME!");
 			o.printStackTrace();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 		finally
 		{
