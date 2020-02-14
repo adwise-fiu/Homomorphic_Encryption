@@ -2,24 +2,19 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 
 import security.DGK.DGKKeyPairGenerator;
 import security.DGK.DGKOperations;
 import security.DGK.DGKPrivateKey;
 import security.DGK.DGKProvider;
 import security.DGK.DGKPublicKey;
+import security.DGK.DGKSignature;
 import security.elgamal.ElGamalKeyPairGenerator;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalProvider;
@@ -93,29 +88,29 @@ public class Main
 				pk = Niu.getPaiilierPublicKey();
 				pubKey = Niu.getDGKPublicKey();
 				e_pk = Niu.getElGamalPublicKey();
-
-				alice_ElGamal();
+				
+				// Test Protocol 1 - 4 Functionality
 				alice_demo();
-				k_min();
-
-				alice_ElGamal_Veugen();
+				alice_ElGamal();
+			
+				// Stress Test Protocol 1 - 4 Functionality
+				Niu.setDGKMode(false);
 				alice_Paillier_Veugen();
-				alice_DGK_Veugen();		
+				Niu.setDGKMode(true);
+				alice_DGK_Veugen();
+				alice_ElGamal_Veugen();
+				
+				k_min();
 			}
 			else
 			{
 				// Build DGK Keys
-				// use t = 256 to use SHA-512
 				DGKKeyPairGenerator gen = new DGKKeyPairGenerator(16, 160, 1024);
 				gen.initialize(KEY_SIZE, null);
 				KeyPair DGK = gen.generateKeyPair();
 				pubKey = (DGKPublicKey) DGK.getPublic();
 				privKey = (DGKPrivateKey) DGK.getPrivate();
 				
-				// SUPPORT DGK SIZE IN EL GAMAL
-				BigInteger r = (pubKey.getU().add(pubKey.getU())).pow(2);
-				System.out.println("MAXIMUM BITS NEEDED FOR MULTIPLICATION: " + r.bitLength() + " r: " + r);
-
 				// Build Paillier Keys
 				PaillierKeyPairGenerator p = new PaillierKeyPairGenerator();
 				p.initialize(KEY_SIZE, null);
@@ -123,93 +118,41 @@ public class Main
 				pk = (PaillierPublicKey) pe.getPublic();
 				sk = (PaillierPrivateKey) pe.getPrivate();
 				
-				// Test basic
-				/*
-				for(int i = 0; i < 1000;i++)
-				{
-					System.out.println(PaillierCipher.decrypt(PaillierCipher.encrypt(i, pk), sk));
-				}
-				*/
-				System.out.println("TEST BYTES!");
-				// Test ENCRYPTING NUMBERS with bytes
-				/*
-				for(int i = 0; i < 1000;i++)
-				{
-					BigInteger data = BigInteger.valueOf(i);
-					byte [] input = data.toByteArray();
-					
-					// Encrypt
-					PaillierCipher paillier = new PaillierCipher();
-					paillier.init(Cipher.ENCRYPT_MODE, pk);
-					byte [] cipher_b = paillier.doFinal(input);
-					
-					paillier.init(Cipher.DECRYPT_MODE, sk);
-					byte [] test = paillier.doFinal(cipher_b);
-					// Decrypt
-					System.out.println(new BigInteger(test));
-				}
-				*/
-				PaillierSignature sig = new PaillierSignature();
-				sig.initSign(sk);
-				sig.update(new BigInteger("500").toByteArray());
-				byte [] cert = sig.sign();
-
-				for(int i = 0; i < 1000;i++)
-				{
-					sig.initVerify(pk);
-					sig.update(BigInteger.valueOf(i).toByteArray());
-					if(sig.verify(cert))
-					{
-						System.out.println("VALID AT: " + i);
-					}
-				}
-				
-				System.exit(0);
-				
-				// Test 
-				
 				// Build ElGamal Keys
-				/*
 				ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator();
 				pg.initialize(KEY_SIZE, null);
 				KeyPair el_gamal = pg.generateKeyPair();
 				e_pk = (ElGamalPublicKey) el_gamal.getPublic();
 				e_sk = (ElGamalPrivateKey) el_gamal.getPrivate();
-				*/
-				// Let Bob (Big Computer hold its beer and do initial stress test)
-				//System.out.println("Running operations 100,000 times each");
-				//Paillier_Test();
-				//DGK_Test();
-				//ElGamal_Test();
 				
-				// TODO: ElGamal Protocol 4 debugging
+				test_signature();
+				
+				// Stress Test
+				// System.out.println("Running operations 100,000 times each");
+				// Paillier_Test();
+				// DGK_Test();
+				// ElGamal_Test();
+				
 				bob_socket = new ServerSocket(9254);
 				System.out.println("Bob is ready...");
 				bob_client = bob_socket.accept();
 				andrew = new bob(bob_client, pe, DGK, true);
 				
-		
-				// Test Bytes encrypt!
-				
-				// Test Signature!
-				/*
-				bob_ElGamal();
+				// Test Protocol 1 - 4 functionality
 				bob_demo();
+				bob_ElGamal();
 				
-				// Test K-Min
-				andrew.setDGKMode(false);
-				andrew.run();
-				andrew.setDGKMode(true);
-				andrew.run();
-				andrew.repeat_ElGamal_Protocol4();
-				// End K-Min
-				
+				// Stress Test the Protocols (get time to compute)
+				bob_Veugen(); //Paillier
+				bob_Veugen(); //DGK
 				bob_ElGamal_Veugen();
+				
+				// Test K-Min using Protocol 4
 				andrew.setDGKMode(false);
-				bob_Veugen();
+				andrew.run();// Sort Paillier
 				andrew.setDGKMode(true);
-				bob_Veugen();
-				*/
+				andrew.run();// Sort DGK
+				andrew.repeat_ElGamal_Protocol4();
 			}
 		}
 		catch (IOException | ClassNotFoundException x)
@@ -241,6 +184,106 @@ public class Main
 			}
 		}
 	}
+	
+	public static void k_min() 
+			throws ClassNotFoundException, IllegalArgumentException, IOException
+	{
+		List<ElGamal_Ciphertext> t = new ArrayList<ElGamal_Ciphertext>();
+		BigInteger [] toSort = new BigInteger[low.length];
+		
+		// Test Paillier Sorting
+		Niu.setDGKMode(false);
+		for(int i = 0; i < low.length;i++)
+		{
+			toSort[i] = NTL.generateXBitRandom(9);
+			toSort[i] = PaillierCipher.encrypt(toSort[i], pk);
+		}
+		Niu.getKMin(toSort, 3);
+		
+		// Test DGK Sorting	
+		Niu.setDGKMode(true);
+		for(int i = 0; i < low.length;i++)
+		{
+			toSort[i] = NTL.generateXBitRandom(9);
+			toSort[i] = DGKOperations.encrypt(pubKey, toSort[i]);
+		}
+		Niu.getKMin(toSort, 3);
+		
+		// Test ElGamal Sorting
+		low = generate_low();
+		for(int i = 0; i < low.length;i++)
+		{
+			toSort[i] = NTL.generateXBitRandom(9);
+			t.add(ElGamalCipher.encrypt(e_pk, toSort[i]));
+		}
+		Niu.getKMin_ElGamal(t, 3);
+	}
+	
+	public static void test_signature() throws InvalidKeyException, SignatureException
+	{
+		// Future Reference in saving keys...
+		// https://stackoverflow.com/questions/1615871/creating-an-x509-certificate-in-java-without-bouncycastle/2037663#2037663
+		// https://bfo.com/blog/2011/03/08/odds_and_ends_creating_a_new_x_509_certificate/
+		
+		System.out.println("The answer is always 42! Should only verify at 42!");
+		
+		// Initialize 
+		PaillierSignature p_sig = null;
+		DGKSignature d_sig = null;
+		//ElGamalSignature g_sig = null;
+		byte [] cert = null;
+		
+		// Test Paillier
+		p_sig = new PaillierSignature();
+		p_sig.initSign(sk);
+		p_sig.update(new BigInteger("42").toByteArray());
+		cert = p_sig.sign();
+
+		for(int i = 0; i < 1000;i++)
+		{
+			p_sig.initVerify(pk);
+			p_sig.update(BigInteger.valueOf(i).toByteArray());
+			if(p_sig.verify(cert))
+			{
+				System.out.println("VALID AT: " + i);
+			}
+		}
+		
+		// Test DGK
+		d_sig = new DGKSignature();
+		d_sig.initSign(privKey);
+		d_sig.update(new BigInteger("42").toByteArray());
+		cert = d_sig.sign();
+
+		for(int i = 0; i < 1000;i++)
+		{
+			d_sig.initVerify(pubKey);
+			d_sig.update(BigInteger.valueOf(i).toByteArray());
+			if(d_sig.verify(cert))
+			{
+				System.out.println("VALID AT: " + i);
+			}
+		}
+		
+		// Test ElGamal
+		/*
+		g_sig = new ElGamalSignature();
+		g_sig.initSign(sk);
+		g_sig.update(new BigInteger("42").toByteArray());
+		cert = g_sig.sign();
+
+		for(int i = 0; i < 1000;i++)
+		{
+			g_sig.initVerify(pk);
+			g_sig.update(BigInteger.valueOf(i).toByteArray());
+			if(g_sig.verify(cert))
+			{
+				System.out.println("VALID AT: " + i);
+			}
+		}
+		*/
+	}
+	// ------------------------------------ Stress Test Protocol 1 - 4 DGK and Paillier-----------------------------------
 	
 	public static void alice_Paillier_Veugen() 
 			throws ClassNotFoundException, IOException, IllegalArgumentException
@@ -315,40 +358,6 @@ public class Main
 			Niu.Protocol4(x, y);
 		}
 		System.out.println("Protocol 4, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
-	}
-	
-	public static void k_min() 
-			throws ClassNotFoundException, IllegalArgumentException, IOException
-	{
-		List<ElGamal_Ciphertext> t = new ArrayList<ElGamal_Ciphertext>();
-		BigInteger [] toSort = new BigInteger[low.length];
-		
-		// Test Paillier Sorting
-		Niu.setDGKMode(false);
-		for(int i = 0; i < low.length;i++)
-		{
-			toSort[i] = NTL.generateXBitRandom(9);
-			toSort[i] = PaillierCipher.encrypt(toSort[i], pk);
-		}
-		Niu.getKMin(toSort, 3);
-		
-		// Test DGK Sorting	
-		Niu.setDGKMode(true);
-		for(int i = 0; i < low.length;i++)
-		{
-			toSort[i] = NTL.generateXBitRandom(9);
-			toSort[i] = DGKOperations.encrypt(pubKey, toSort[i]);
-		}
-		Niu.getKMin(toSort, 3);
-		
-		// Test ElGamal Sorting
-		low = generate_low();
-		for(int i = 0; i < low.length;i++)
-		{
-			toSort[i] = NTL.generateXBitRandom(9);
-			t.add(ElGamalCipher.encrypt(e_pk, toSort[i]));
-		}
-		Niu.getKMin_ElGamal(t, 3);
 	}
 	
 	public static void alice_DGK_Veugen()
@@ -470,6 +479,7 @@ public class Main
 		}
 	}
 	
+	// ------------------------------------ Stress Test Protocol 1 - 4 ElGamal-----------------------------------
 	public static void alice_ElGamal_Veugen() 
 			throws ClassNotFoundException, IOException, IllegalArgumentException
 	{
@@ -572,7 +582,9 @@ public class Main
 			andrew.ElGamal_Protocol4();	
 		}
 	}
-		
+	
+	//--------------------------show basic functionality of Protocol 1 - 4 but with ElGamal------------------------------------------
+	
 	public static void alice_ElGamal() throws ClassNotFoundException, IOException
 	{
 		// Check the multiplication, ElGamal
@@ -624,6 +636,7 @@ public class Main
 		}
 	}
 	
+	//---------------------Generate numbers-----------------------------------
 	// Original low
 	public static BigInteger [] generate_low()
 	{
@@ -715,6 +728,7 @@ public class Main
 		return test_set;
 	}
 	
+	//--------------------------show basic functionality of Protocol 1 - 4------------------------------------------
 	public static void alice_demo() throws ClassNotFoundException, IOException
 	{	
 		// Check the multiplication, DGK
@@ -943,6 +957,8 @@ public class Main
 		andrew.division(25);
 	}
 	
+	// ----------------------------All Stress Test methods for Crypto-------------------------------------------------
+	// Paillier Test
 	public static void Paillier_Test()
 	{
 		System.out.println("PAILLIER TEST");

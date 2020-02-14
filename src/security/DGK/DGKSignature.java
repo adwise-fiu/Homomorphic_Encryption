@@ -10,9 +10,6 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
 
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
-
 public class DGKSignature extends SignatureSpi
 {
 	private DGKPrivateKey sk;
@@ -100,12 +97,12 @@ public class DGKSignature extends SignatureSpi
 	}
 	
 	// PUBLIC FACING FUNCTIONS
-	public void initSign(PaillierPrivateKey sk) throws InvalidKeyException
+	public void initSign(DGKPrivateKey sk) throws InvalidKeyException
 	{
 		engineInitSign(sk);
 	}
-		
-	public void initVerify(PaillierPublicKey pk) throws InvalidKeyException
+	
+	public void initVerify(DGKPublicKey pk) throws InvalidKeyException
 	{
 		engineInitVerify(pk);
 	}
