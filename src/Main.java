@@ -65,8 +65,7 @@ public class Main
 		Security.addProvider(new DGKProvider());
 		Security.addProvider(new PaillierProvider());
 		Security.addProvider(new ElGamalProvider());
-		
-		// TODO: Figure out how to sign JAR files to access providers
+
 		if (args.length != 0)
 		{
 			System.out.println("Alice mode activated...");
@@ -75,15 +74,12 @@ public class Main
 		
 		try
 		{
-			// Future Reference in saving keys...
-			// https://stackoverflow.com/questions/1615871/creating-an-x509-certificate-in-java-without-bouncycastle/2037663#2037663
-			// https://bfo.com/blog/2011/03/08/odds_and_ends_creating_a_new_x_509_certificate/
-			
 			// DO NOT USE ASSERT WHEN CONDUCTING THE TESTS!!!!
 			if (isAlice)
 			{
 				// I need to ensure that Alice has same Keys as Bob! and initialize as well
 				Niu = new alice(new Socket("192.168.1.208", 9254), true);
+				
 				// TO BE CONSISTENT I NEED TO USE KEYS FROM BOB!
 				pk = Niu.getPaiilierPublicKey();
 				pubKey = Niu.getDGKPublicKey();
@@ -607,11 +603,11 @@ public class Main
 		for (int i = 0; i < low.length;i++)
 		{
 			System.out.println(Niu.Protocol4(ElGamalCipher.encrypt(e_pk, low[i]), 
-					ElGamalCipher.encrypt(e_pk, mid[i])) == 0);
+					ElGamalCipher.encrypt(e_pk, mid[i])) == false);
 			System.out.println(Niu.Protocol4(ElGamalCipher.encrypt(e_pk, mid[i]), 
-					ElGamalCipher.encrypt(e_pk, mid[i])) == 1);
+					ElGamalCipher.encrypt(e_pk, mid[i])) == true);
 			System.out.println(Niu.Protocol4(ElGamalCipher.encrypt(e_pk, high[i]), 
-					ElGamalCipher.encrypt(e_pk, mid[i])) == 1);
+					ElGamalCipher.encrypt(e_pk, mid[i])) == true);
 		}
 	}
 	
@@ -753,53 +749,53 @@ public class Main
 		System.out.println("Protocol 3 Tests...");
 		for(BigInteger l: low)
 		{
-			System.out.println(Niu.Protocol3(l) == 1);
+			System.out.println(Niu.Protocol3(l) == true);
 		}
 		for(BigInteger l: mid)
 		{
-			System.out.println(Niu.Protocol3(l) == 1);
+			System.out.println(Niu.Protocol3(l) == true);
 		}
 		for(BigInteger l: high)
 		{
-			System.out.println(Niu.Protocol3(l) == 0);
+			System.out.println(Niu.Protocol3(l) == false);
 		}
 		for(BigInteger l: high)
 		{
-			System.out.println(Niu.Protocol3(l) == 0);
+			System.out.println(Niu.Protocol3(l) == false);
 		}
 		for(BigInteger l: mid)
 		{
-			System.out.println(Niu.Protocol3(l) == 0);
+			System.out.println(Niu.Protocol3(l) == false);
 		}
 		
 		// Test Protocol 1
 		System.out.println("Protocol 1 Tests...");
 		for(BigInteger l: low)
 		{
-			System.out.println(Niu.Protocol1(l) == 1);
+			System.out.println(Niu.Protocol1(l) == true);
 		}
 		for(BigInteger l: mid)
 		{
-			System.out.println(Niu.Protocol1(l) == 1);
+			System.out.println(Niu.Protocol1(l) == true);
 		}
 		for(BigInteger l: high)
 		{
-			System.out.println(Niu.Protocol1(l) == 0);
+			System.out.println(Niu.Protocol1(l) == false);
 		}
 		
 		// Test Modified Protocol 3, mode doesn't matter as DGK is always used!
 		System.out.println("Modified Protocol 3 Tests...");
 		for(BigInteger l: low)
 		{
-			System.out.println(Niu.Modified_Protocol3(l) == 1);
+			System.out.println(Niu.Modified_Protocol3(l) == true);
 		}
 		for(BigInteger l: mid)
 		{
-			System.out.println(Niu.Modified_Protocol3(l) == 1);
+			System.out.println(Niu.Modified_Protocol3(l) == true);
 		}
 		for(BigInteger l: high)
 		{
-			System.out.println(Niu.Modified_Protocol3(l) == 0);
+			System.out.println(Niu.Modified_Protocol3(l) == false);
 		}
 		
 		// Test Protocol 2 (Builds on Protocol 3). REMEMEBER [X >= Y]
@@ -809,11 +805,11 @@ public class Main
 		for (int i = 0; i < low.length;i++)
 		{
 			System.out.println(Niu.Protocol2(PaillierCipher.encrypt(low[i], pk), 
-					PaillierCipher.encrypt(mid[i], pk)) == 0);
+					PaillierCipher.encrypt(mid[i], pk)) == false);
 			System.out.println(Niu.Protocol2(PaillierCipher.encrypt(mid[i], pk), 
-					PaillierCipher.encrypt(mid[i], pk)) == 1);
+					PaillierCipher.encrypt(mid[i], pk)) == true);
 			System.out.println(Niu.Protocol2(PaillierCipher.encrypt(high[i], pk), 
-					PaillierCipher.encrypt(mid[i], pk)) == 1);
+					PaillierCipher.encrypt(mid[i], pk)) == true);
 		}
 		
 		// DGK
@@ -829,11 +825,11 @@ public class Main
 		for (int i = 0; i < low.length;i++)
 		{
 			System.out.println(Niu.Protocol4(PaillierCipher.encrypt(low[i], pk), 
-					PaillierCipher.encrypt(mid[i], pk)) == 0);
+					PaillierCipher.encrypt(mid[i], pk)) == false);
 			System.out.println(Niu.Protocol4(PaillierCipher.encrypt(mid[i], pk), 
-					PaillierCipher.encrypt(mid[i], pk)) == 1);
+					PaillierCipher.encrypt(mid[i], pk)) == true);
 			System.out.println(Niu.Protocol4(PaillierCipher.encrypt(high[i], pk), 
-					PaillierCipher.encrypt(mid[i], pk)) == 1);
+					PaillierCipher.encrypt(mid[i], pk)) == true);
 		}
 		
 		// DGK
@@ -843,11 +839,11 @@ public class Main
 		for (int i = 0; i < low.length;i++)
 		{
 			System.out.println(Niu.Protocol4(DGKOperations.encrypt(pubKey, low[i]), 
-					DGKOperations.encrypt(pubKey, mid[i])) == 0);
+					DGKOperations.encrypt(pubKey, mid[i])) == false);
 			System.out.println(Niu.Protocol4(DGKOperations.encrypt(pubKey, mid[i]), 
-					DGKOperations.encrypt(pubKey, mid[i])) == 0);
+					DGKOperations.encrypt(pubKey, mid[i])) == false);
 			System.out.println(Niu.Protocol4(DGKOperations.encrypt(pubKey, high[i]), 
-					DGKOperations.encrypt(pubKey, mid[i])) == 1);
+					DGKOperations.encrypt(pubKey, mid[i])) == true);
 		}
 		
 		// Division Test, Paillier

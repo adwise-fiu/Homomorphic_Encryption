@@ -213,7 +213,7 @@ public final class alice implements socialist_millionaires, Runnable
 		return e_pk;
 	}
 
-	public int Protocol1(BigInteger x) 
+	public boolean Protocol1(BigInteger x) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		// Constraint...
@@ -246,13 +246,13 @@ public final class alice implements socialist_millionaires, Runnable
 		{
 			toBob.writeObject(BigInteger.ONE);
 			toBob.flush();
-			return 1;
+			return true;
 		}
 		else if(x.bitLength() > Encrypted_Y.length)
 		{
 			toBob.writeObject(BigInteger.ZERO);
 			toBob.flush();
-			return 0;
+			return false;
 		}
 
 		// Otherwise, if bit size is equal, proceed!
@@ -325,10 +325,10 @@ public final class alice implements socialist_millionaires, Runnable
 		 */
 		toBob.writeObject(DGKOperations.encrypt(pubKey, answer));
 		toBob.flush();
-		return answer;
+		return answer == 1;
 	}
 	
-	public int Protocol2(BigInteger x, BigInteger y) 
+	public boolean Protocol2(BigInteger x, BigInteger y) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		Object bob = null;
@@ -380,7 +380,18 @@ public final class alice implements socialist_millionaires, Runnable
 		alpha = NTL.POSMOD(r, powL);
 
 		// Step 4: Complete Protocol 1 or Protocol 3
-        x_leq_y = Protocol3(alpha, deltaA);
+    	boolean P3 = Protocol3(alpha, deltaA);
+    	if(P3)
+    	{
+    		x_leq_y = 1;
+    	}
+    	else
+    	{
+    		x_leq_y = 0;
+    	}
+    	
+    	// Step 5A: get Delta B
+    	
     	
 		// Step 5A: get Delta B 
     	if(deltaA == x_leq_y)
@@ -433,15 +444,15 @@ public final class alice implements socialist_millionaires, Runnable
 		{
 			throw new IllegalArgumentException("Invalid Comparison output! --> " + comparison);
 		}
-		return comparison;
+		return comparison == 1;
 	}
 	
-	public int Protocol3(BigInteger x) throws ClassNotFoundException, IOException, IllegalArgumentException
+	public boolean Protocol3(BigInteger x) throws ClassNotFoundException, IOException, IllegalArgumentException
 	{
 		return Protocol3(x, rnd.nextInt(2));
 	}
 
-	public int Protocol3_equals(BigInteger x) throws ClassNotFoundException, IOException, IllegalArgumentException
+	public boolean Protocol3_equals(BigInteger x) throws ClassNotFoundException, IOException, IllegalArgumentException
 	{
 		if(x.bitLength() > pubKey.getL())
 		{
@@ -468,7 +479,7 @@ public final class alice implements socialist_millionaires, Runnable
 		{
 			toBob.writeObject(BigInteger.ZERO);
 			toBob.flush();
-			return 0;
+			return false;
 		}
 		else
 		{
@@ -490,7 +501,7 @@ public final class alice implements socialist_millionaires, Runnable
 			toBob.writeObject(XOR);
 			toBob.flush();
 			// Step 3: a XOR a = 0
-			return fromBob.readInt();
+			return fromBob.readInt() == 1;
 		}
 	}
 	
@@ -505,7 +516,7 @@ public final class alice implements socialist_millionaires, Runnable
 	 * x > y -> [[0]]
 	 */
 
-	private int Protocol3(BigInteger x, int deltaA)
+	private boolean Protocol3(BigInteger x, int deltaA)
 			throws ClassNotFoundException, IOException, IllegalArgumentException
 	{
 		if(x.bitLength() > pubKey.getL())
@@ -560,7 +571,7 @@ public final class alice implements socialist_millionaires, Runnable
 			toBob.writeObject(BigInteger.ONE);
 			toBob.flush();
 			// x <= y -> 1 (true)
-			return 1;
+			return true;
 		}
 
 		// Case 2 delta B is 0
@@ -570,7 +581,7 @@ public final class alice implements socialist_millionaires, Runnable
 			toBob.writeObject(BigInteger.ZERO);
 			toBob.flush();
 			// x <= y -> 0 (false)
-			return 0;
+			return false;
 		}
 
 		// if equal bits, proceed!
@@ -657,17 +668,17 @@ public final class alice implements socialist_millionaires, Runnable
 		 */
 		toBob.writeObject(DGKOperations.encrypt(pubKey, BigInteger.valueOf(answer)));
 		toBob.flush();
-		return answer;
+		return answer == 1;
 	}
 	
 	// USED ONLY AS PROTOCOL 3 REPLACEMENT!
 	// WOrks 100% reliably only in DGK Mode as N can skew things a bit, 
 	// especially since I am only using for private comparison NOT sub-protocol
-	public int Modified_Protocol3(BigInteger r)
+	public boolean Modified_Protocol3(BigInteger r)
 			throws ClassNotFoundException, IOException, IllegalArgumentException
 	{
 		BigInteger alpha = null;
-		int answer = -1;
+		boolean answer;
 		// Constraint...
 		if(r.bitLength() > pubKey.getL())
 		{
@@ -690,7 +701,7 @@ public final class alice implements socialist_millionaires, Runnable
 	
 	// Modified Protocol 3 for Protocol 4
 	// This should mostly use ONLY DGK stuff!
-	private int Modified_Protocol3(BigInteger alpha, BigInteger r, int deltaA) 
+	private boolean Modified_Protocol3(BigInteger alpha, BigInteger r, int deltaA) 
 			throws ClassNotFoundException, IOException, IllegalArgumentException
 	{
 		int answer = -1;
@@ -704,7 +715,7 @@ public final class alice implements socialist_millionaires, Runnable
 		BigInteger N = null;
 		long exponent;
 		
-		// Get N from size of Plaintext space
+		// Get N from size of Plain-text space
 		if(isDGK)
 		{
 			N = pubKey.getU();
@@ -762,13 +773,13 @@ public final class alice implements socialist_millionaires, Runnable
 		{
 			toBob.writeObject(BigInteger.ONE);
 			toBob.flush();
-			return 1;
+			return true;
 		}
 		else if(alpha.bitLength() > beta_bits.length)
 		{
 			toBob.writeObject(BigInteger.ZERO);
 			toBob.flush();
-			return 0;
+			return false;
 		}
 		
 		// Step C: Alice corrects d...
@@ -877,10 +888,10 @@ public final class alice implements socialist_millionaires, Runnable
 		}
 		toBob.writeObject(DGKOperations.encrypt(pubKey, answer));
 		toBob.flush();
-		return answer;
+		return answer == 1;
 	}
 	
-	public int Protocol4(BigInteger x, BigInteger y) 
+	public boolean Protocol4(BigInteger x, BigInteger y) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		int deltaB = -1;
@@ -936,13 +947,27 @@ public final class alice implements socialist_millionaires, Runnable
 		{
 			toBob.writeBoolean(false);
 			toBob.flush();
-			x_leq_y = Protocol3(alpha, deltaA);
+			if(Protocol3(alpha, deltaA))
+			{
+				x_leq_y = 1;
+			}
+			else
+			{
+				x_leq_y = 0;
+			}
 		}
 		else
 		{
 			toBob.writeBoolean(true);
 			toBob.flush();
-			x_leq_y = Modified_Protocol3(alpha, r, deltaA);	
+			if(Modified_Protocol3(alpha, r, deltaA))
+			{
+				x_leq_y = 1;
+			}
+			else
+			{
+				x_leq_y = 0;
+			}
 		}
         
 		// Step 5: get Delta B and [[z_1]] and [[z_2]]
@@ -1038,10 +1063,10 @@ public final class alice implements socialist_millionaires, Runnable
 		{
 			throw new IllegalArgumentException("Invalid Comparison result --> " + comparison);
 		}
-		return comparison;
+		return comparison == 1;
 	}
 	
-	public int Protocol4(ElGamal_Ciphertext x, ElGamal_Ciphertext y) 
+	public boolean Protocol4(ElGamal_Ciphertext x, ElGamal_Ciphertext y) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		int deltaB = -1;
@@ -1084,13 +1109,27 @@ public final class alice implements socialist_millionaires, Runnable
 		{
 			toBob.writeBoolean(false);
 			toBob.flush();
-			x_leq_y = Protocol3(alpha, deltaA);
+			if(Protocol3(alpha, deltaA))
+			{
+				x_leq_y = 1;
+			}
+			else
+			{
+				x_leq_y = 0;
+			}
 		}
 		else
 		{
 			toBob.writeBoolean(true);
 			toBob.flush();
-			x_leq_y = Modified_Protocol3(alpha, r, deltaA);	
+			if(Modified_Protocol3(alpha, r, deltaA))
+			{
+				x_leq_y = 1;
+			}
+			else
+			{
+				x_leq_y = 0;
+			}
 		}
         
 		// Step 5: get Delta B and [[z_1]] and [[z_2]]
@@ -1161,7 +1200,7 @@ public final class alice implements socialist_millionaires, Runnable
 			throw new IllegalArgumentException("Invalid Comparison result --> " + comparison);
 			//System.out.println("Invalid Comparison result --> " + comparison);
 		}
-		return comparison;
+		return comparison == 1;
 	}
 	
 	/*
@@ -1232,15 +1271,15 @@ public final class alice implements socialist_millionaires, Runnable
 		// Step 3: Compute secure comparison Protocol
 		if(!FAST_DIVIDE)
 		{
-			t = Protocol3(r.mod(BigInteger.valueOf(d)));
-			if (t == 0)
+			//FLIP IT
+			if(Protocol3(r.mod(BigInteger.valueOf(d))))
 			{
-				t = 1;
+				t = 0;
 			}
 			else
 			{
-				t = 0;
-			}	
+				t = 1;
+			}
 		}
 		
 		// MAYBE IF OVERFLOW HAPPENS?
@@ -1380,16 +1419,15 @@ public final class alice implements socialist_millionaires, Runnable
 		// Step 3: Compute secure comparison Protocol 
 		if(!FAST_DIVIDE)
 		{
-			t = Protocol3(r.mod(BigInteger.valueOf(d)));
 			// FLIP IT
-			if(t == 0)
+			if(Protocol3(r.mod(BigInteger.valueOf(d))))
 			{
-				t = 1;
+				t = 0;
 			}
 			else
 			{
-				t = 0;
-			}	
+				t = 1;
+			}
 		}
 		
 		// Step 4: Bob computes c and Alice receives it
@@ -1505,11 +1543,11 @@ public final class alice implements socialist_millionaires, Runnable
 			toBob.flush();
 			if(USE_PROTOCOL_2)
 			{
-				activation = Protocol2(arr.get(0), arr.get(1)) == 1;	
+				activation = Protocol2(arr.get(0), arr.get(1));	
 			}
 			else
 			{
-				activation = Protocol4(arr.get(0), arr.get(1)) == 1;
+				activation = Protocol4(arr.get(0), arr.get(1));
 			}
 			
 			if (activation)
@@ -1543,11 +1581,11 @@ public final class alice implements socialist_millionaires, Runnable
 			toBob.flush();
 			if(USE_PROTOCOL_2)
 			{
-				activation = Protocol2(arr.get(i), arr.get(i + 1)) == 1;
+				activation = Protocol2(arr.get(i), arr.get(i + 1));
 			}
 			else
 			{
-				activation = Protocol4(arr.get(i), arr.get(i + 1)) == 1;
+				activation = Protocol4(arr.get(i), arr.get(i + 1));
 			}
 			if (activation)
 			{
@@ -1555,11 +1593,11 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = Protocol2(arr.get(i), results.max) == 1;
+					activation = Protocol2(arr.get(i), results.max);
 				}
 				else
 				{
-					activation = Protocol4(arr.get(i), results.max) == 1;
+					activation = Protocol4(arr.get(i), results.max);
 				}
 				if(activation)
 				{
@@ -1569,13 +1607,13 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = Protocol2(arr.get(i + 1), results.min) == 0;
+					activation = Protocol2(arr.get(i + 1), results.min);
 				}
 				else
 				{
-					activation = Protocol4(arr.get(i + 1), results.min) == 0;
+					activation = Protocol4(arr.get(i + 1), results.min);
 				}
-				if(activation)
+				if(!activation)
 				{
 					results.min = arr.get(i + 1);
 				}
@@ -1586,11 +1624,11 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = Protocol2(arr.get(i + 1), results.max) == 1;
+					activation = Protocol2(arr.get(i + 1), results.max);
 				}
 				else
 				{
-					activation = Protocol4(arr.get(i + 1), results.max) == 1;
+					activation = Protocol4(arr.get(i + 1), results.max);
 				}
 				if (activation) 
 				{
@@ -1600,13 +1638,13 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = Protocol2(arr.get(i), results.min) == 0;
+					activation = Protocol2(arr.get(i), results.min);
 				}
 				else
 				{
-					activation = Protocol4(arr.get(i), results.min) == 0;
+					activation = Protocol4(arr.get(i), results.min);
 				}
-				if (activation)
+				if (!activation)
 				{
 					results.min = arr.get(i);
 				}
@@ -1634,11 +1672,11 @@ public final class alice implements socialist_millionaires, Runnable
 			toBob.flush();
 			if(USE_PROTOCOL_2)
 			{
-				activation = Protocol2(arr[0], arr[1]) == 1;	
+				activation = Protocol2(arr[0], arr[1]);	
 			}
 			else
 			{
-				activation = Protocol4(arr[0], arr[1]) == 1;
+				activation = Protocol4(arr[0], arr[1]);
 			}
 			if (activation)     
 			{
@@ -1672,11 +1710,11 @@ public final class alice implements socialist_millionaires, Runnable
 			toBob.flush();
 			if(USE_PROTOCOL_2)
 			{
-				activation = Protocol2(arr[i], arr[i + 1]) == 1;
+				activation = Protocol2(arr[i], arr[i + 1]);
 			}
 			else
 			{
-				activation = Protocol4(arr[i], arr[i + 1]) == 1;
+				activation = Protocol4(arr[i], arr[i + 1]);
 			}
 			if (activation)
 			{
@@ -1684,11 +1722,11 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = Protocol2(arr[i], results.max) == 1;
+					activation = Protocol2(arr[i], results.max);
 				}
 				else
 				{
-					activation = Protocol4(arr[i], results.max) == 1;
+					activation = Protocol4(arr[i], results.max);
 				}
 				if(activation)
 				{
@@ -1698,13 +1736,13 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = Protocol2(arr[i + 1], results.min) == 0;
+					activation = Protocol2(arr[i + 1], results.min);
 				}
 				else
 				{
-					activation = Protocol4(arr[i + 1], results.min) == 0;
+					activation = Protocol4(arr[i + 1], results.min);
 				}
-				if(activation)
+				if(!activation)
 				{
 					results.min = arr[i + 1];
 				}
@@ -1715,11 +1753,11 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = Protocol2(arr[i + 1], results.max) == 1;
+					activation = Protocol2(arr[i + 1], results.max);
 				}
 				else
 				{
-					activation = Protocol4(arr[i + 1], results.max) == 1;
+					activation = Protocol4(arr[i + 1], results.max);
 				}
 				if (activation) 
 				{
@@ -1729,13 +1767,13 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = Protocol2(arr[i], results.min) == 0;
+					activation = Protocol2(arr[i], results.min);
 				}
 				else
 				{
-					activation = Protocol4(arr[i], results.min) == 0;
+					activation = Protocol4(arr[i], results.min);
 				}
-				if (activation)
+				if (!activation)
 				{
 					results.min = arr[i];
 				}
@@ -1939,11 +1977,11 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = this.Protocol2(arr[j], arr[j + 1]) == 1;
+					activation = this.Protocol2(arr[j], arr[j + 1]);
 				}
 				else
 				{
-					activation = this.Protocol4(arr[j], arr[j + 1]) == 1;
+					activation = this.Protocol4(arr[j], arr[j + 1]);
 				}
 				
 				// Originally arr[j] > arr[j + 1]
@@ -1977,11 +2015,11 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = this.Protocol2(arr[j], arr[j + 1]) == 1;
+					activation = this.Protocol2(arr[j], arr[j + 1]);
 				}
 				else
 				{
-					activation = this.Protocol4(arr[j], arr[j + 1]) == 1;
+					activation = this.Protocol4(arr[j], arr[j + 1]);
 				}
 				
 				// Originally arr[j] > arr[j + 1]
@@ -2033,7 +2071,7 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				
 				// Originally arr[j] > arr[j + 1]
-				if (this.Protocol4(arr.get(j), arr.get(j + 1)) == 0)
+				if (!this.Protocol4(arr.get(j), arr.get(j + 1)))
 				{
 					// swap temp and arr[i]
 					temp = arr.get(j);
@@ -2088,19 +2126,18 @@ public final class alice implements socialist_millionaires, Runnable
 			{
 				toBob.writeBoolean(true);
 				toBob.flush();
-				// TODO: IF DGK FACTOR IN THE EQUALITY???
 				// Might need a K-Max test as well!
 				if(USE_PROTOCOL_2)
 				{
-					activation = this.Protocol2(arr[j], arr[j + 1]) == 0;
+					activation = this.Protocol2(arr[j], arr[j + 1]);
 				}
 				else
 				{
-					activation = this.Protocol4(arr[j], arr[j + 1]) == 0;
+					activation = this.Protocol4(arr[j], arr[j + 1]);
 				}
 				
 				// Originally arr[j] > arr[j + 1]
-				if (activation)
+				if (!activation)
 				{
 					// swap temp and arr[i]
 					BigInteger temp = arr[j];
@@ -2178,15 +2215,15 @@ public final class alice implements socialist_millionaires, Runnable
 				toBob.flush();
 				if(USE_PROTOCOL_2)
 				{
-					activation = this.Protocol2(arr.get(j), arr.get(j + 1)) == 0;
+					activation = this.Protocol2(arr.get(j), arr.get(j + 1));
 				}
 				else
 				{
-					activation = this.Protocol4(arr.get(j), arr.get(j + 1)) == 0;
+					activation = this.Protocol4(arr.get(j), arr.get(j + 1));
 				}
 				
 				// Originally arr[j] > arr[j + 1]
-				if (activation)
+				if (!activation)
 				{
 					// swap temp and arr[i]
 					BigInteger temp = arr.get(j);
@@ -2256,14 +2293,14 @@ public final class alice implements socialist_millionaires, Runnable
 			// if (arr[j] <= pivot)
 			if(USE_PROTOCOL_2)
 			{
-				activation = this.Protocol2(arr[j], pivot) == 0;
+				activation = this.Protocol2(arr[j], pivot);
 			}
 			else
 			{
-				activation = this.Protocol4(arr[j], pivot) == 0;
+				activation = this.Protocol4(arr[j], pivot);
 			}
 			
-			if(activation)
+			if(!activation)
 			{
 				++i;
 				// swap arr[i] and arr[j]
@@ -2332,11 +2369,11 @@ public final class alice implements socialist_millionaires, Runnable
 			// tempBigMerg[i] > tempBigMerg[j]
 			if(USE_PROTOCOL_2)
 			{
-				activation = this.Protocol2(tempBigMerg[i], tempBigMerg[j]) == 1;
+				activation = this.Protocol2(tempBigMerg[i], tempBigMerg[j]);
 			}
 			else
 			{
-				activation = this.Protocol4(tempBigMerg[i], tempBigMerg[j]) == 1;
+				activation = this.Protocol4(tempBigMerg[i], tempBigMerg[j]);
 			}
 			
 			if (activation)

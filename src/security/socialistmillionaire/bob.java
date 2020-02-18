@@ -304,7 +304,7 @@ public final class bob implements socialist_millionaires, Runnable
 		System.out.println("ElGamal Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
 	}
 	
-	public int Protocol1(BigInteger y) throws IOException, ClassNotFoundException, IllegalArgumentException
+	public boolean Protocol1(BigInteger y) throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		// Constraint...
 		if(y.bitLength() > pubKey.getL())
@@ -343,7 +343,7 @@ public final class bob implements socialist_millionaires, Runnable
 		else if (in instanceof BigInteger)
 		{
 			deltaA = (BigInteger) in;
-			return deltaA.intValue();
+			return deltaA.intValue() == 1;
 		}
 		else
 		{
@@ -370,7 +370,7 @@ public final class bob implements socialist_millionaires, Runnable
 		in = fromAlice.readObject();
 		if (in instanceof BigInteger)
 		{
-			return DGKOperations.decrypt((BigInteger) in, privKey).intValue();
+			return DGKOperations.decrypt((BigInteger) in, privKey).intValue() == 1;
 		}
 		else
 		{
@@ -380,7 +380,7 @@ public final class bob implements socialist_millionaires, Runnable
 	
 	// NOTE: AS STATED IN CORRECTION PAPER
 	// THIS COMPUTES [[X >= Y]] NOT [X <= Y]]
-	public int Protocol2() throws ClassNotFoundException, IOException, IllegalArgumentException
+	public boolean Protocol2() throws ClassNotFoundException, IOException, IllegalArgumentException
 	{
 		// Step 1: Receive z from Alice
 		// Get the input and output streams
@@ -392,7 +392,7 @@ public final class bob implements socialist_millionaires, Runnable
 		if(isDGK)
 		{
 			System.err.println("COMPARING ENCRYPTED DGK VALUES WITH PROTOCOL 2 IS NOT ALLOWED, PLEASE USE PROTOCOL 4!");
-			return answer;
+			return answer == 1;
 		}
 
 		//Step 1: get [[z]] from Alice
@@ -430,7 +430,7 @@ public final class bob implements socialist_millionaires, Runnable
 			answer = PaillierCipher.decrypt((BigInteger) x, sk).intValue();
 			toAlice.writeInt(answer);
 			toAlice.flush();
-			return answer;
+			return answer == 1;
 		}
 		else
 		{
@@ -438,7 +438,7 @@ public final class bob implements socialist_millionaires, Runnable
 		}
 	}
 
-	public int Protocol3_equals(BigInteger y)
+	public boolean Protocol3_equals(BigInteger y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		// Constraint? 
@@ -465,7 +465,7 @@ public final class bob implements socialist_millionaires, Runnable
 		if (x instanceof BigInteger)
 		{
 			answer = ((BigInteger) x).intValue();
-			return answer;
+			return answer == 1;
 		}
 		else if(x instanceof BigInteger[])
 		{
@@ -476,14 +476,14 @@ public final class bob implements socialist_millionaires, Runnable
 			{
 				toAlice.writeInt(1);
 				toAlice.flush();
-				return 1;
+				return true;
 			}
 			// Not equal
 			else
 			{
 				toAlice.writeInt(0);
 				toAlice.flush();
-				return 0;
+				return false;
 			}
 		}
 		else
@@ -502,7 +502,7 @@ public final class bob implements socialist_millionaires, Runnable
 	 * 1 -> x > y
 	 */
 
-	public int Protocol3(BigInteger y)
+	public boolean Protocol3(BigInteger y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		// Constraint...
@@ -577,17 +577,11 @@ public final class bob implements socialist_millionaires, Runnable
 			// Case 1 delta B is 0
 			// 1 XOR 0 = 0
 			// x <= y -> 1 (true)
-			if (deltaA.intValue() == 1)
-			{
-				return 1;
-			}
+
 			// Case 2, delta B is 0
 			// 0 XOR 0 = 0
 			// x <= y -> 0 (false)
-			if (deltaA.intValue() == 0)
-			{
-				return 0;
-			}
+			return deltaA.intValue() == 1;
 		}
 		else
 		{
@@ -604,7 +598,7 @@ public final class bob implements socialist_millionaires, Runnable
 		x = fromAlice.readObject();
 		if (x instanceof BigInteger)
 		{
-			return DGKOperations.decrypt((BigInteger) x, privKey).intValue();
+			return DGKOperations.decrypt((BigInteger) x, privKey).intValue() == 1;
 		}
 		else
 		{
@@ -613,12 +607,11 @@ public final class bob implements socialist_millionaires, Runnable
 	}
 	
 	// Used for Regular Modified Protocol 3 ONLY 
-	// WOrks 100% reliably only in DGK Mode!
-	public int Modified_Protocol3(BigInteger z) 
+	public boolean Modified_Protocol3(BigInteger z) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		BigInteger beta = null;
-		int answer = -1;
+		boolean answer;
 		
 		// Constraint...
 		if(z.bitLength() > pubKey.getL())
@@ -641,7 +634,7 @@ public final class bob implements socialist_millionaires, Runnable
 	}
 
 	// Use this for Using Modified Protocol3 within Protocol 4
-	private int Modified_Protocol3(BigInteger beta, BigInteger z) 
+	private boolean Modified_Protocol3(BigInteger beta, BigInteger z) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		Object in = null;
@@ -705,7 +698,7 @@ public final class bob implements socialist_millionaires, Runnable
 		else if (in instanceof BigInteger)
 		{
 			deltaA = (BigInteger) in;
-			return deltaA.intValue();
+			return deltaA.intValue() == 1;
 		}
 		else
 		{
@@ -734,10 +727,10 @@ public final class bob implements socialist_millionaires, Runnable
 			throw new IllegalArgumentException("Modified_Protocol 3, Step 8 Invalid Object!");
 		}
 		toAlice.flush();
-		return answer;
+		return answer == 1;
 	}
 	
-	public int Protocol4() 
+	public boolean Protocol4() 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		// Constraint for Paillier
@@ -839,10 +832,10 @@ public final class bob implements socialist_millionaires, Runnable
 		{
 			throw new IllegalArgumentException("Protocol 4, Step 8 Failed");
 		}
-		return answer;
+		return answer == 1;
 	}
 	
-	public int ElGamal_Protocol4() 
+	public boolean ElGamal_Protocol4() 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		int answer = -1;
@@ -910,7 +903,7 @@ public final class bob implements socialist_millionaires, Runnable
 		{
 			throw new IllegalArgumentException("Protocol 4, Step 8 Failed");
 		}
-		return answer;
+		return answer == 1;
 	}
 	
 	public void ElGamal_division(long divisor) 
