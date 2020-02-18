@@ -78,17 +78,16 @@ public final class alice implements socialist_millionaires, Runnable
 	
 	// Current Algorithm to Sort with
 	private Algorithm algo;
-    
     private final BigInteger powL;
     
-    public alice (Socket clientSocket,
-            boolean isDGK) throws IOException, ClassNotFoundException
-    {
-    	this(clientSocket, isDGK, null);
-    }
+    // YOU SHOULD USE THIS CONSTRUCTOR!
+    public alice (Socket clientSocket) throws IOException, ClassNotFoundException
+	{
+    	this(clientSocket, false);
+	}
 	
 	public alice (Socket clientSocket,
-            boolean isDGK, BigInteger[] toSort) throws IOException, ClassNotFoundException
+            boolean is_testing) throws IOException, ClassNotFoundException
 	{
 		if(clientSocket != null)
 		{
@@ -99,57 +98,16 @@ public final class alice implements socialist_millionaires, Runnable
 		{
 			throw new NullPointerException("Client Socket is null!");
 		}
-		this.isDGK = isDGK;
-		this.toSort = toSort;
+		this.isDGK = false;
 		this.algo = Algorithm.BUBBLE_SORT;
 		
 		this.receivePublicKeys();
 		powL = TWO.pow(pubKey.getL());
 		
-		// ONLY FOR DEBUGGING
-		this.debug();
-	}
-	
-	// Avoid trouble, use for SST REU
-	public alice (ObjectInputStream fromBob, ObjectOutputStream toBob,
-            boolean isDGK, BigInteger[] toSort, PaillierPublicKey pk, DGKPublicKey pubKey, ElGamalPublicKey e_pk) 
-            		throws IOException, ClassNotFoundException
-	{
-		this.toBob = toBob;
-		this.fromBob = fromBob;
-
-		this.isDGK = isDGK;
-		this.toSort = toSort;
-		this.algo = Algorithm.BUBBLE_SORT;
-		
-		// DONT GET IT FROM BOB!
-		this.pk = pk;
-		this.pubKey = pubKey;
-		this.e_pk = e_pk;
-		if(this.pubKey != null)
+		if(is_testing)
 		{
-			powL = TWO.pow(pubKey.getL());
+			this.debug();
 		}
-		else
-		{
-			throw new IllegalArgumentException("Why would you need Veugen's comparison Protocols if you are not providing DGK keys?");
-		}
-		// ONLY FOR DEBUGGING
-		//this.debug();
-	}
-	
-	public alice (ObjectInputStream fromBob, ObjectOutputStream toBob,
-            boolean isDGK, PaillierPublicKey pk, DGKPublicKey pubKey) 
-            		throws IOException, ClassNotFoundException
-	{
-		this(fromBob, toBob, isDGK, null, pk, pubKey, null);
-	}
-	
-	public alice (ObjectInputStream fromBob, ObjectOutputStream toBob,
-            boolean isDGK, PaillierPublicKey pk, DGKPublicKey pubKey, ElGamalPublicKey e_pk) 
-            		throws IOException, ClassNotFoundException
-	{
-		this(fromBob, toBob, isDGK, null, pk, pubKey, e_pk);
 	}
 	
 	// Get/Set Fast Divide/Protocol 2

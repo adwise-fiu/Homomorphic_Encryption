@@ -62,74 +62,28 @@ public final class bob implements socialist_millionaires, Runnable
 	
 	private final BigInteger powL;
 	
+	// YOU SHOULD USE THIS CONSTRUCTOR!
 	public bob (Socket clientSocket,
-			KeyPair a, KeyPair b, boolean AUTO_SEND) throws IOException, IllegalArgumentException
+			KeyPair a, KeyPair b) throws IOException, IllegalArgumentException
 	{
-		this(clientSocket, a, b, null, AUTO_SEND);
+		this(clientSocket, a, b, null, false);
 	}
 	
-	public bob (ObjectInputStream fromAlice, ObjectOutputStream toAlice,
-			KeyPair a, KeyPair b, KeyPair c, boolean AUTO_SEND) throws IOException, IllegalArgumentException
+	// YOU SHOULD USE THIS CONSTRUCTOR!
+	public bob (Socket clientSocket,
+			KeyPair a, KeyPair b, KeyPair c) throws IOException, IllegalArgumentException
 	{
-		this.fromAlice = fromAlice;
-		this.toAlice = toAlice;
-
-		if (a.getPublic() instanceof PaillierPublicKey)
-		{
-			this.pk = (PaillierPublicKey) a.getPublic();
-			this.sk = (PaillierPrivateKey) a.getPrivate();
-			if(b.getPublic() instanceof DGKPublicKey)
-			{
-				this.pubKey = (DGKPublicKey) b.getPublic();
-				this.privKey = (DGKPrivateKey) b.getPrivate();
-			}
-			else
-			{
-				throw new IllegalArgumentException("Obtained Paillier Key Pair, Not DGK Key pair!");
-			}
-		}
-		else if (a.getPublic() instanceof DGKPublicKey)
-		{
-			this.pubKey = (DGKPublicKey) a.getPublic();
-			this.privKey = (DGKPrivateKey) a.getPrivate();
-			if (b.getPublic() instanceof PaillierPublicKey)
-			{
-				this.pk = (PaillierPublicKey) a.getPublic();
-				this.sk = (PaillierPrivateKey) a.getPrivate();
-			}
-			else
-			{
-				throw new IllegalArgumentException("Obtained DGK Key Pair, Not Paillier Key pair!");
-			}
-		}
-		if(c != null)
-		{
-			if (c.getPublic() instanceof ElGamalPublicKey)
-			{
-				this.e_pk = (ElGamalPublicKey) c.getPublic();
-				this.e_sk = (ElGamalPrivateKey) c.getPrivate();
-			}
-			else
-			{
-				throw new IllegalArgumentException("Did NOT obtain ElGamal Key Pair!");
-			}
-		}
-		else
-		{
-			System.err.println("BEWARE! ALICE AND BOB DO NOT HAVE AN EL GAMAL KEY PAIR!");
-		}
-		
-		// Give Alice Public Keys NOW!
-		if(AUTO_SEND)
-		{
-			this.sendPublicKeys();
-		}
-		this.isDGK = false;
-		powL = TWO.pow(pubKey.getL());
+		this(clientSocket, a, b, c, false);
 	}
 	
 	public bob (Socket clientSocket,
-			KeyPair a, KeyPair b, KeyPair c, boolean AUTO_SEND) 
+			KeyPair a, KeyPair b, boolean IS_DEBUG) throws IOException, IllegalArgumentException
+	{
+		this(clientSocket, a, b, null, IS_DEBUG);
+	}
+	
+	public bob (Socket clientSocket,
+			KeyPair a, KeyPair b, KeyPair c, boolean IS_DEBUG) 
 					throws IOException, IllegalArgumentException
 	{
 		if(clientSocket != null)
@@ -184,16 +138,15 @@ public final class bob implements socialist_millionaires, Runnable
 				throw new IllegalArgumentException("Third Keypair MUST BE AN EL GAMAL KEY PAIR!");
 			}
 		}
-		// Give Alice Public Keys NOW!
-		if(AUTO_SEND)
-		{
-			this.sendPublicKeys();
-		}
+
+		this.sendPublicKeys();
 		this.isDGK = false;
 		powL = TWO.pow(pubKey.getL());
 		
-		// ONLY FOR DEBUGGING
-		this.debug();
+		if(IS_DEBUG)
+		{
+			this.debug();
+		}
 	}
 
 	// Get/Set Fast Divide/Protocol 2
