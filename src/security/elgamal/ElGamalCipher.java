@@ -76,6 +76,8 @@ public class ElGamalCipher extends CipherSpi
 	protected final int encrypt(byte[] input, int inputOffset, int inputLenth,
 			byte[] output, int outputOffset) throws Exception
 	{
+		return 0;
+		/*
 		byte[] messageBytes = new byte[plaintextSize];
 		int inLenth = Math.min(plaintextSize, inputLenth);
 		System.arraycopy(input, inputOffset, messageBytes, 0, inLenth);
@@ -83,10 +85,10 @@ public class ElGamalCipher extends CipherSpi
 
 		// get the public key in order to encrypt
 		ElGamal_Ciphertext c = Encrypt((ElGamalPublicKey) keyElGamal, m);
-		return 0;
-		//byte [] cBytes = c.toByteArray();
-		//System.arraycopy(cBytes, 0, output, ciphertextSize - cBytes.length, cBytes.length);
-		//return ciphertextSize;
+		byte [] cBytes = c.toByteArray();
+		System.arraycopy(cBytes, 0, output, ciphertextSize - cBytes.length, cBytes.length);
+		return ciphertextSize;
+		*/
 	}
 
 	/**

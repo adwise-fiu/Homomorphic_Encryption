@@ -132,7 +132,7 @@ public class Main
 				bob_socket = new ServerSocket(9254);
 				System.out.println("Bob is ready...");
 				bob_client = bob_socket.accept();
-				andrew = new bob(bob_client, pe, DGK, true);
+				andrew = new bob(bob_client, pe, DGK, el_gamal, true);
 				
 				// Test Protocol 1 - 4 functionality
 				bob_demo();
@@ -816,7 +816,7 @@ public class Main
 		System.out.println("Protocol 2 Tests...DGK...SKIPPED!");
 		
 		// ElGamal
-		System.out.println("Protocol 2 Tests...ElGamal...SKIPPED");
+		System.out.println("Protocol 2 Tests...ElGamal...SKIPPED!");
 
 		// Test Protocol 4 (Builds on Protocol 3)
 		// Paillier

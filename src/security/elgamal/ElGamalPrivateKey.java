@@ -65,9 +65,8 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
     private void decrypt_table() 
 	{
 		// Get maximum size of x - y + r + 2^l
-    	// Assume maximum value is u - and y = 0 --> u - 1 + u - 1 + 2^l 
+    	// Assume maximum value is u: biggest value in DGK which is closest prime from 2^l l = 16 default.
 		BigInteger decrypt_size = FIELD_SIZE.add(FIELD_SIZE).subtract(TWO).add(TWO.pow(16));
-		System.out.println("DECRYPT SIZE IS: " + decrypt_size);
     	long start_time = System.nanoTime();
     	System.out.println("Building Lookup Table g^m --> m for ElGamal");
     	BigInteger message = BigInteger.ZERO;

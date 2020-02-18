@@ -109,7 +109,16 @@ public final class bob implements socialist_millionaires, Runnable
 				this.e_pk = (ElGamalPublicKey) c.getPublic();
 				this.e_sk = (ElGamalPrivateKey) c.getPrivate();
 			}
+			else
+			{
+				throw new IllegalArgumentException("Did NOT obtain ElGamal Key Pair!");
+			}
 		}
+		else
+		{
+			System.err.println("BEWARE! ALICE AND BOB DO NOT HAVE AN EL GAMAL KEY PAIR!");
+		}
+		
 		// Give Alice Public Keys NOW!
 		if(AUTO_SEND)
 		{
