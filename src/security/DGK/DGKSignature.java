@@ -127,13 +127,17 @@ public class DGKSignature extends SignatureSpi
 			throws IllegalArgumentException
 	{
 		// To avoid attacks, You need (message, v) = 1
+		BigInteger signature = null;
+		/*
 		if(!message.gcd(privKey.v).equals(BigInteger.ONE))
 		{
 			throw new IllegalArgumentException("ARE YOU TRYING TO LEAK YOUR PRIVATE KEY?");
 		}
+		*/
 		// g^{v}h^{m} (mod n) 
-		BigInteger signature = privKey.g.modPow(privKey.v, privKey.n);
-		signature = signature.multiply(privKey.h.modPow(message, privKey.n)).mod(privKey.n);
+		signature = privKey.g.modPow(privKey.v, privKey.n);
+		//signature = signature.multiply(privKey.h.modPow(message, privKey.n)).mod(privKey.n);
+		signature = signature.multiply(message).mod(privKey.n);
 		return signature;
 	}
 
@@ -141,7 +145,8 @@ public class DGKSignature extends SignatureSpi
 	{
 		BigInteger challenge = certificate.modPow(pubKey.bigU, pubKey.n);
 		// g^{v}h^{m} (mod n) --> g^{v * u} h^{m * u} (mod n) --> h^{m * u} (mod n)
-		if (pubKey.h.modPow(message.multiply(pubKey.bigU), pubKey.n).compareTo(challenge) == 0)
+		//if (pubKey.h.modPow(message.multiply(pubKey.bigU), pubKey.n).compareTo(challenge) == 0)
+		if (message.modPow(pubKey.bigU, pubKey.n).compareTo(challenge) == 0)
 		{
 			return true;
 		}

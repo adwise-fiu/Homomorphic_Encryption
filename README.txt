@@ -69,4 +69,6 @@ The Ubuntu VM was alice as I placed a command line argument.
 As of 2/17/2020 11:31 PM EST, this should work perfectly. 
 
 ----------TO DO----------------------
-Currently I hope to use the Bouncy castle API to generate certificates from these. I do intend to donate the code to bouncy castle in due time as well.
+1- Currently I hope to use the Bouncy castle API to generate certificates from these. I do intend to donate the code to bouncy castle in due time as well.
+2- Finish ElGamal signature
+

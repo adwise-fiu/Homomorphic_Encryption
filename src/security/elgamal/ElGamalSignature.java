@@ -9,12 +9,9 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.SignatureSpi;
+import java.util.Arrays;
 
-import security.DGK.DGKPrivateKey;
-import security.DGK.DGKPublicKey;
 import security.generic.NTL;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
 
 public class ElGamalSignature extends SignatureSpi
 {
@@ -70,17 +67,62 @@ public class ElGamalSignature extends SignatureSpi
 		}
 		this.encoded_hash = digest.digest(b);
 	}
-
+	
+	// https://en.wikipedia.org/wiki/ElGamal_signature_scheme
 	protected byte[] engineSign()
 			throws SignatureException 
 	{
-		return null;
+		byte [] signature = null;
+		byte [] r = null;
+		byte [] s = null;
+		if(VERIFY_MODE)
+		{
+			throw new SignatureException("Did not Initialize SignInit!");
+		}
+		else
+		{
+			ElGamal_Ciphertext sigma = sign(new BigInteger(encoded_hash));
+			r = sigma.getA().toByteArray();
+			s = sigma.getB().toByteArray();
+			// Concat both BigIntegers!
+			signature = new byte[r.length + s.length];
+			System.out.println(r.length);
+			System.out.println(s.length);
+			System.out.println(signature.length);
+			System.arraycopy(r, 0, signature, 0, r.length);
+			System.arraycopy(s, 0, signature, r.length, s.length);
+		}
+		return signature;
 	}
 
 	protected boolean engineVerify(byte[] sigBytes) 
 			throws SignatureException 
 	{
-		return false;
+		if(VERIFY_MODE)
+		{
+			BigInteger r;
+			BigInteger s;
+			// Split sigBytes into r and s!
+			// r seems to consistently be 128 or 129 bytes long
+			// s seems to be consistently 128 or 129 bytes long
+			if (sigBytes.length == 256)
+			{
+				r = new BigInteger(Arrays.copyOfRange(sigBytes, 0, 128));
+				s = new BigInteger(Arrays.copyOfRange(sigBytes, 128, sigBytes.length));				
+			}
+			else
+			{
+				r = new BigInteger(Arrays.copyOfRange(sigBytes, 0, 129));
+				s = new BigInteger(Arrays.copyOfRange(sigBytes, 129, sigBytes.length));
+			}
+			
+			// arg1 = message, arg2 & arg3 = signed hash
+			return verify(new BigInteger(encoded_hash), new ElGamal_Ciphertext(r, s), pk);			
+		}
+		else
+		{
+			throw new SignatureException("Didn't Initialize Engine Verify Mode!");
+		}
 	}
 
 	protected void engineSetParameter(String param, Object value) 
@@ -95,8 +137,8 @@ public class ElGamalSignature extends SignatureSpi
 		return null;
 	}
 	
-	
-	public ElGamal_Ciphertext sign(BigInteger M, ElGamalPrivateKey sk)
+	// Reference: https://github.com/Legrandin/pycryptodome/blob/master/lib/Crypto/PublicKey/ElGamal.py
+	public ElGamal_Ciphertext sign(BigInteger M)
 	{
 		BigInteger p1 = sk.p.subtract(BigInteger.ONE);
 		BigInteger K = null;
@@ -109,14 +151,15 @@ public class ElGamalSignature extends SignatureSpi
 			}
 		}
 
-		BigInteger a = sk.g.modPow(K, sk.p);
-	    BigInteger t = M.subtract(sk.x.multiply(a)).mod(p1);
+		BigInteger a = this.sk.g.modPow(K, sk.p);
+	    BigInteger t = M.subtract(this.sk.x.multiply(a)).mod(p1);
 	    BigInteger b = null;
-	    while(t.signum() == -1)
+	    do
 	    {
-        	t = t.add(p1);
-        	b = t.multiply(K.modInverse(p1)).mod(p1);
+	    	t = t.add(p1);
 	    }
+	    while(t.signum() == -1);
+    	b = t.multiply(K).modInverse(p1).mod(p1);
 	    return new ElGamal_Ciphertext(a, b);
 	}
 	
@@ -138,4 +181,30 @@ public class ElGamalSignature extends SignatureSpi
         }
         return false;
     }
+    
+	// PUBLIC FACING FUNCTIONS
+	public void initSign(ElGamalPrivateKey sk) throws InvalidKeyException
+	{
+		engineInitSign(sk);
+	}
+	
+	public void initVerify(ElGamalPublicKey pk) throws InvalidKeyException
+	{
+		engineInitVerify(pk);
+	}
+	
+	public void update(byte [] b) throws SignatureException
+	{
+		engineUpdate(b, 0, b.length);
+	}
+	
+	public byte [] sign() throws SignatureException
+	{
+		return engineSign();
+	}
+	
+	public boolean verify(byte [] signature) throws SignatureException
+	{
+		return engineVerify(signature);
+	}
 }

@@ -27,7 +27,7 @@ import security.paillier.PaillierPublicKey;
 // https://github.com/dlitz/pycrypto/blob/master/lib/Crypto/PublicKey/ElGamal.py
 public class ElGamalCipher extends CipherSpi
 {
-	private static final boolean ADDITIVE = true;
+	private static final boolean ADDITIVE = false;
 	
 	protected int stateMode;
 	protected Key keyElGamal;
@@ -287,11 +287,11 @@ public class ElGamalCipher extends CipherSpi
 	{
 		if (stateMode == Cipher.DECRYPT_MODE)
 		{
-			return ciphertextSize ;
+			return ciphertextSize;
 		}
 		else
 		{
-			return plaintextSize ;
+			return plaintextSize;
 		}
 	}
 
@@ -482,12 +482,21 @@ public class ElGamalCipher extends CipherSpi
 	
 	// --------------Additively Homomorphic Operations---------------------------
 	
-	
-    // On input an encrypted value x and a scalar c, returns an encryption of cx.
+    // On input an encrypted value x and a scalar c
+	// IF ADDITIVE returns an encryption of cx.
+	// IF MULTIPLICATIVE r
     public static ElGamal_Ciphertext multiply(ElGamal_Ciphertext ciphertext1, BigInteger scalar, ElGamalPublicKey pk)
     {
-    	ElGamal_Ciphertext answer = null;
-    	answer = new ElGamal_Ciphertext(ciphertext1.gr.modPow(scalar, pk.p), ciphertext1.hrgm.modPow(scalar, pk.p));
+		ElGamal_Ciphertext answer = null;
+    	if(ADDITIVE)
+    	{
+        	answer = new ElGamal_Ciphertext(ciphertext1.gr.modPow(scalar, pk.p), ciphertext1.hrgm.modPow(scalar, pk.p));
+    	}
+    	else
+    	{
+    		// THROW ERROR?
+    		answer = new ElGamal_Ciphertext(ciphertext1.gr.modPow(scalar, pk.p), ciphertext1.hrgm.modPow(scalar, pk.p));
+    	}
         return answer;
     }
     
@@ -502,16 +511,39 @@ public class ElGamalCipher extends CipherSpi
     public static ElGamal_Ciphertext add(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2, ElGamalPublicKey pk)
     {
 		ElGamal_Ciphertext answer = null;
-		answer = new ElGamal_Ciphertext(ciphertext1.gr.multiply(ciphertext2.gr).mod(pk.p), 
+		if (ADDITIVE)
+		{
+			answer = new ElGamal_Ciphertext(ciphertext1.gr.multiply(ciphertext2.gr).mod(pk.p), 
 				ciphertext1.hrgm.multiply(ciphertext2.hrgm).mod(pk.p));
-		return answer;	
+		}
+		else
+		{
+			// NOW YOU ARE GETTING THE PRODUCT NOT SUM OF CIPHER TEXT!
+			answer = new ElGamal_Ciphertext(ciphertext1.gr.multiply(ciphertext2.gr).mod(pk.p), 
+					ciphertext1.hrgm.multiply(ciphertext2.hrgm).mod(pk.p));
+		}
+		return answer;
     }
     
     public static ElGamal_Ciphertext subtract(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2, ElGamalPublicKey pk)
     {
-    	ElGamal_Ciphertext neg_ciphertext2 = ElGamalCipher.multiply(ciphertext2, -1, pk);
-    	ElGamal_Ciphertext ciphertext = ElGamalCipher.add(ciphertext1, neg_ciphertext2, pk);
-		return ciphertext;
+    	ElGamal_Ciphertext neg_ciphertext2 = null;
+    	ElGamal_Ciphertext ciphertext = null;
+    	if(ADDITIVE)
+    	{
+    		neg_ciphertext2 = ElGamalCipher.multiply(ciphertext2, -1, pk);
+    		ciphertext = ElGamalCipher.add(ciphertext1, neg_ciphertext2, pk);
+    	}
+    	else
+    	{
+    		neg_ciphertext2 = ElGamalCipher.multiply(ciphertext2, -1, pk);
+    		ciphertext = ElGamalCipher.add(ciphertext1, neg_ciphertext2, pk);
+    		// You are taking the mod inverse to get cipher-text
+    		//neg_ciphertext2 = ElGamalCipher.multiply(ciphertext2, -1, pk);
+    		//neg_ciphertext2 = new ElGamal_Ciphertext(ciphertext2.gr, ciphertext2.hrgm.modInverse(pk.p))
+    		// ciphertext = new ElGamal_Ciphertext(ciphertext1.gr.multiply(ciphertext2.gr.modInverse(pk.p)), ciphertext2.hrgm.multiply(ciphertext2.hrgm.modInverse(pk.p)));
+    	}
+    	return ciphertext;
     }
 	
 	public static ElGamal_Ciphertext sum(List<ElGamal_Ciphertext> values, ElGamalPublicKey pk, int limit)
@@ -591,8 +623,7 @@ public class ElGamalCipher extends CipherSpi
 		}
 		return ElGamalCipher.sum(product_vector, pk, product_vector.length);
 	}
-    
-	// PUBLIC FACING METHODS
+	// ------------------------PUBLIC FACING METHODS---------------------------------------------------
 	public void init(int encryptMode, PaillierPublicKey pk) 
 			throws InvalidKeyException, InvalidAlgorithmParameterException
 	{

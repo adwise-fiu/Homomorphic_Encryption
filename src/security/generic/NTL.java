@@ -174,4 +174,57 @@ public class NTL
     {
     	return bit(BigInteger.valueOf(a), k);
     }
+    
+    // https://medium.com/coinmonks/probabilistic-encryption-using-the-goldwasser-micali-gm-method-7f9893a93ac9
+    public static BigInteger jacobi(BigInteger a, BigInteger n)
+    {
+    	if (a.equals(BigInteger.ZERO))
+    	{
+    		return BigInteger.ZERO;
+    	}
+    	if (a.equals(BigInteger.ONE))
+    	{
+    		return BigInteger.ONE;
+    	}
+    	BigInteger e = BigInteger.ZERO;
+    	BigInteger a1 = a;
+    	while (a1.mod(BigInteger.TWO).equals(BigInteger.ZERO))
+    	{
+    		e = e.add(BigInteger.ONE);
+    		a1 = a1.divide(BigInteger.TWO);
+    	}
+
+    	// assert 2**e * a1 == a;
+    	BigInteger s = BigInteger.ZERO;
+    	BigInteger temp = n.mod(new BigInteger("8"));
+
+    	if (e.mod(BigInteger.TWO).equals(BigInteger.ZERO))
+    	{
+    		s = BigInteger.ONE;
+    	}
+    	// n % 8 in {1, 7}
+    	else if (!temp.equals(BigInteger.ZERO))
+    	{
+    		s = BigInteger.ONE;
+    	}
+    	// n % 8 in {3, 5}
+    	else if (temp.equals(BigInteger.valueOf(3)) || temp.equals(BigInteger.valueOf(4)) || temp.equals(BigInteger.valueOf(5)))
+    	{
+    		s = new BigInteger("-1");
+    	}
+
+    	if (n.mod(BigInteger.valueOf(4)).equals(BigInteger.valueOf(3)) && a1.mod(BigInteger.valueOf(4)).equals(BigInteger.valueOf(3)))
+    	{
+    		s = s.multiply(new BigInteger("-1"));
+    	}
+    	BigInteger n1 = n.mod(a1);
+    	if (a1.equals(BigInteger.ONE))
+    	{
+    		return s;
+    	}
+    	else
+    	{
+    		return s.multiply(jacobi(n1, a1));
+    	}
+    }
 }

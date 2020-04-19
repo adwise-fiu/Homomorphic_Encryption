@@ -20,8 +20,13 @@ import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalProvider;
 import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalPublicKey;
+import security.elgamal.ElGamalSignature;
 import security.elgamal.ElGamal_Ciphertext;
 import security.generic.NTL;
+import security.gm.GMCipher;
+import security.gm.GMKeyPairGenerator;
+import security.gm.GMPrivateKey;
+import security.gm.GMPublicKey;
 import security.paillier.PaillierCipher;
 import security.paillier.PaillierKeyPairGenerator;
 import security.paillier.PaillierPrivateKey;
@@ -43,6 +48,9 @@ public class Main
 	
 	private static ElGamalPublicKey e_pk;
 	private static ElGamalPrivateKey e_sk;
+	
+	private static GMPublicKey gm_pk;
+	private static GMPrivateKey gm_sk;
 	
 	// Initialize Alice and Bob
 	private static ServerSocket bob_socket = null;
@@ -121,13 +129,29 @@ public class Main
 				e_pk = (ElGamalPublicKey) el_gamal.getPublic();
 				e_sk = (ElGamalPrivateKey) el_gamal.getPrivate();
 				
+				// Build GM Keys
+				GMKeyPairGenerator gmg = new GMKeyPairGenerator();
+				gmg.initialize(KEY_SIZE, null);
+				KeyPair gm = gmg.generateKeyPair();
+				gm_pk = (GMPublicKey) gm.getPublic();
+				gm_sk = (GMPrivateKey) gm.getPrivate();
+				
+				ElGamal_Ciphertext t = ElGamalCipher.encrypt(e_pk, 1000);
+				//ElGamal_Ciphertext t_2 = ElGamalCipher.add(ElGamalCipher.encrypt(e_pk, BigInteger.TEN.modInverse(e_pk.p)), t, e_pk);
+				ElGamal_Ciphertext t_2 = ElGamalCipher.subtract(t, ElGamalCipher.encrypt(e_pk, 10), e_pk);
+				System.out.println(ElGamalCipher.decrypt(e_sk, t_2));
 				test_signature();
+				
+				// start with GM
+				List<BigInteger> enc_bits = GMCipher.encrypt(BigInteger.TEN, gm_pk);
+				System.out.println(GMCipher.decrypt(enc_bits, gm_sk));
 				
 				// Stress Test
 				// System.out.println("Running operations 100,000 times each");
 				// Paillier_Test();
 				// DGK_Test();
 				// ElGamal_Test();
+				System.exit(0);
 				
 				bob_socket = new ServerSocket(9254);
 				System.out.println("Bob is ready...");
@@ -228,7 +252,7 @@ public class Main
 		// Initialize 
 		PaillierSignature p_sig = null;
 		DGKSignature d_sig = null;
-		//ElGamalSignature g_sig = null;
+		ElGamalSignature g_sig = null;
 		byte [] cert = null;
 		
 		// Test Paillier
@@ -243,7 +267,7 @@ public class Main
 			p_sig.update(BigInteger.valueOf(i).toByteArray());
 			if(p_sig.verify(cert))
 			{
-				System.out.println("VALID AT: " + i);
+				System.out.println("PAILLIER VALID AT: " + i);
 			}
 		}
 		
@@ -259,27 +283,25 @@ public class Main
 			d_sig.update(BigInteger.valueOf(i).toByteArray());
 			if(d_sig.verify(cert))
 			{
-				System.out.println("VALID AT: " + i);
+				System.out.println("DGK VALID AT: " + i);
 			}
 		}
 		
 		// Test ElGamal
-		/*
 		g_sig = new ElGamalSignature();
-		g_sig.initSign(sk);
+		g_sig.initSign(e_sk);
 		g_sig.update(new BigInteger("42").toByteArray());
 		cert = g_sig.sign();
 
 		for(int i = 0; i < 1000;i++)
 		{
-			g_sig.initVerify(pk);
+			g_sig.initVerify(e_pk);
 			g_sig.update(BigInteger.valueOf(i).toByteArray());
 			if(g_sig.verify(cert))
 			{
-				System.out.println("VALID AT: " + i);
+				System.out.println("ELGAMAL VALID AT: " + i);
 			}
 		}
-		*/
 	}
 	// ------------------------------------ Stress Test Protocol 1 - 4 DGK and Paillier-----------------------------------
 	

@@ -102,7 +102,7 @@ public class PaillierSignature extends SignatureSpi
 		if(VERIFY_MODE)
 		{
 			// Split sigBytes into Sigma_1 and Sigma_2!
-			// sigma 1 seems to consistenly be 384 bytes long
+			// sigma 1 seems to consistently be 384 bytes long
 			// sigma 2 seems to be consistently 128 or 129 bytes long
 			BigInteger sigma_one = new BigInteger(Arrays.copyOfRange(sigBytes, 0, 384));
 			BigInteger sigma_two = new BigInteger(Arrays.copyOfRange(sigBytes, 384, sigBytes.length));
