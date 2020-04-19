@@ -142,9 +142,9 @@ public class Main
 				System.out.println(ElGamalCipher.decrypt(e_sk, t_2));
 				test_signature();
 				
-				// start with GM
+				// start with GM: BUGS!
 				List<BigInteger> enc_bits = GMCipher.encrypt(BigInteger.TEN, gm_pk);
-				System.out.println(GMCipher.decrypt(enc_bits, gm_sk));
+				System.out.println("GM: " + GMCipher.decrypt(enc_bits, gm_sk));
 				
 				// Stress Test
 				// System.out.println("Running operations 100,000 times each");

@@ -7,8 +7,8 @@ import java.security.PublicKey;
 public class GMPublicKey implements Serializable, PublicKey
 {
 	private static final long serialVersionUID = -235857914395127699L;
-	public BigInteger n;
-	public BigInteger y;
+	protected final BigInteger n;
+	protected final BigInteger y;
 	
 	protected GMPublicKey(BigInteger n, BigInteger y)
 	{

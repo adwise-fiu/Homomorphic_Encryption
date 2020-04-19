@@ -86,9 +86,6 @@ public class ElGamalSignature extends SignatureSpi
 			s = sigma.getB().toByteArray();
 			// Concat both BigIntegers!
 			signature = new byte[r.length + s.length];
-			System.out.println(r.length);
-			System.out.println(s.length);
-			System.out.println(signature.length);
 			System.arraycopy(r, 0, signature, 0, r.length);
 			System.arraycopy(s, 0, signature, r.length, s.length);
 		}
@@ -137,45 +134,49 @@ public class ElGamalSignature extends SignatureSpi
 		return null;
 	}
 	
-	// Reference: https://github.com/Legrandin/pycryptodome/blob/master/lib/Crypto/PublicKey/ElGamal.py
 	public ElGamal_Ciphertext sign(BigInteger M)
 	{
 		BigInteger p1 = sk.p.subtract(BigInteger.ONE);
 		BigInteger K = null;
 		while(true)
 		{
+			// Pick [0, p - 2]
 			K = NTL.RandomBnd(p1);
+			// Need K [2, P - 2[
+			if(K.equals(BigInteger.ONE) || K.equals(BigInteger.ZERO))
+			{
+				continue;
+			}
 			if(K.gcd(p1).equals(BigInteger.ONE))
 			{
 				break;
 			}
-		}
 
-		BigInteger a = this.sk.g.modPow(K, sk.p);
-	    BigInteger t = M.subtract(this.sk.x.multiply(a)).mod(p1);
-	    BigInteger b = null;
-	    do
-	    {
-	    	t = t.add(p1);
-	    }
-	    while(t.signum() == -1);
-    	b = t.multiply(K).modInverse(p1).mod(p1);
-	    return new ElGamal_Ciphertext(a, b);
+		}
+		BigInteger r = this.sk.g.modPow(K, sk.p);
+	    BigInteger s = M.subtract(sk.x.multiply(r)).multiply(K.modInverse(p1)).mod(p1);
+	    return new ElGamal_Ciphertext(r, s);
 	}
 	
+	// https://en.wikipedia.org/wiki/ElGamal_signature_scheme
     public boolean verify(BigInteger M, ElGamal_Ciphertext sig, ElGamalPublicKey pk)
     {
-    	BigInteger a = sig.getA();
-    	BigInteger b = sig.getB();
+    	BigInteger r = sig.getA();
+    	BigInteger s = sig.getB();
+    	BigInteger check = null;
     	
-        if (a.compareTo(BigInteger.ZERO) <= 0 || a.compareTo(pk.p.subtract(BigInteger.ONE)) == 1)
+        if (r.compareTo(BigInteger.ZERO) <= 0 || r.compareTo(pk.p.subtract(BigInteger.ONE)) == 1)
         {
-        	return false;
+        	throw new IllegalArgumentException("Invalid r!");
         }
-        BigInteger v1 = pk.h.modPow(a, pk.p);
-        v1 = (v1.multiply(a.modPow(b, pk.p))).mod(pk.p);
-        BigInteger v2 = pk.g.modPow(M, pk.p);
-        if (v1.compareTo(v2) == 0)
+        if (s.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(pk.p.subtract(BigInteger.TWO)) == 1)
+        {
+        	throw new IllegalArgumentException("Invalid s!");
+        }
+        // h = y = g^x
+        check = pk.h.modPow(r, pk.p);
+        check = check.multiply(r.modPow(s, pk.p)).mod(pk.p);
+        if (check.compareTo(pk.g.modPow(M, pk.p)) == 0)
         {
         	return true;
         }

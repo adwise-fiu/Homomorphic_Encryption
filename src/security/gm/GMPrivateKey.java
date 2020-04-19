@@ -7,8 +7,8 @@ import java.security.PrivateKey;
 public class GMPrivateKey implements Serializable, PrivateKey
 {
 	private static final long serialVersionUID = -6003066379615503599L;
-	protected BigInteger p;
-	protected BigInteger q;
+	protected final BigInteger p;
+	protected final BigInteger q;
 	
 	protected GMPrivateKey(BigInteger p, BigInteger q)
 	{
