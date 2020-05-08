@@ -71,5 +71,5 @@ As of 2/17/2020 11:31 PM EST, this should work perfectly.
 ----------TO DO----------------------
 1- Currently I hope to use the Bouncy castle API to generate certificates from these. I do intend to donate the code to bouncy castle in due time as well.
 2- Finish ElGamal signature testing
-3- Start C++ branch
+3- Start C++ creation, but NTL installation needs to be completing
 
