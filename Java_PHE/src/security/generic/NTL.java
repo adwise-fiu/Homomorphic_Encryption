@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 public class NTL
 {
+	private static BigInteger TWO = new BigInteger("2");
     private static SecureRandom rnd = new SecureRandom();
     
     public static boolean AKSTest(BigInteger p)
@@ -188,17 +189,17 @@ public class NTL
     	}
     	BigInteger e = BigInteger.ZERO;
     	BigInteger a1 = a;
-    	while (a1.mod(BigInteger.TWO).equals(BigInteger.ZERO))
+    	while (a1.mod(TWO).equals(BigInteger.ZERO))
     	{
     		e = e.add(BigInteger.ONE);
-    		a1 = a1.divide(BigInteger.TWO);
+    		a1 = a1.divide(TWO);
     	}
 
     	// assert 2**e * a1 == a;
     	BigInteger s = BigInteger.ZERO;
     	BigInteger temp = n.mod(new BigInteger("8"));
 
-    	if (e.mod(BigInteger.TWO).equals(BigInteger.ZERO))
+    	if (e.mod(TWO).equals(BigInteger.ZERO))
     	{
     		s = BigInteger.ONE;
     	}

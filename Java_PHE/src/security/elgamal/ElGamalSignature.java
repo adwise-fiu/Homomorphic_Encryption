@@ -15,6 +15,7 @@ import security.generic.NTL;
 
 public class ElGamalSignature extends SignatureSpi
 {
+	private static BigInteger TWO = new BigInteger("2");
 	private ElGamalPrivateKey sk;
 	private ElGamalPublicKey pk;
 	private boolean VERIFY_MODE;
@@ -169,7 +170,7 @@ public class ElGamalSignature extends SignatureSpi
         {
         	throw new IllegalArgumentException("Invalid r!");
         }
-        if (s.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(pk.p.subtract(BigInteger.TWO)) == 1)
+        if (s.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(pk.p.subtract(TWO)) == 1)
         {
         	throw new IllegalArgumentException("Invalid s!");
         }

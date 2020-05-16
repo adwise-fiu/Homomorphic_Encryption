@@ -43,7 +43,7 @@ enum Algorithm
     INSERT_SORT, MERGE_SORT, QUICK_SORT, BUBBLE_SORT;
 }
 
-public final class alice implements socialist_millionaires, Runnable
+public final class alice extends socialist_millionaires implements Runnable
 {
 	private class Pair 
 	{

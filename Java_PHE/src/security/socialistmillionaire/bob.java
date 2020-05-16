@@ -39,7 +39,7 @@ Protocol 3 and Protocol 4 was created referencing Thjis Veugen's Paper:
 Improving the DGK Comparison Protocol (2012)
 */
 
-public final class bob implements socialist_millionaires, Runnable
+public final class bob extends socialist_millionaires implements Runnable
 {
 	// Use Protocol 2 or Protocol 4 for Sorting
 	private boolean USE_PROTOCOL_2 = false;

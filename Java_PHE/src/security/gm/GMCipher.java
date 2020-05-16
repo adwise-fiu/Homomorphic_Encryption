@@ -20,6 +20,7 @@ import javax.crypto.ShortBufferException;
 
 public class GMCipher extends CipherSpi
 {
+	private final static BigInteger TWO = new BigInteger("2");
 	protected byte[] engineDoFinal(byte[] arg0, int arg1, int arg2)
 			throws IllegalBlockSizeException, BadPaddingException
 	{
@@ -29,7 +30,6 @@ public class GMCipher extends CipherSpi
 	protected int engineDoFinal(byte[] arg0, int arg1, int arg2, byte[] arg3, int arg4)
 			throws ShortBufferException, IllegalBlockSizeException, BadPaddingException
 	{
-
 		return 0;
 	}
 
@@ -103,11 +103,11 @@ public class GMCipher extends CipherSpi
 	    	x = NTL.RandomBnd(pk.n);
 	        if (bit == '1')
 	        {
-	        	enc_bits.add(pk.y.multiply(x.modPow(BigInteger.TWO, pk.n)).mod(pk.n));
+	        	enc_bits.add(pk.y.multiply(x.modPow(TWO, pk.n)).mod(pk.n));
 	        }
 	        else
 	        {
-	        	enc_bits.add(x.modPow(BigInteger.TWO, pk.n));
+	        	enc_bits.add(x.modPow(TWO, pk.n));
 	        }
 	    }
 	    return enc_bits;
