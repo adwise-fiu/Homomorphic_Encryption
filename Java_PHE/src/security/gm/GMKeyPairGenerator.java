@@ -7,13 +7,11 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
+import security.generic.CipherConstants;
 import security.generic.NTL;
 
-public class GMKeyPairGenerator extends KeyPairGeneratorSpi
+public class GMKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
 {
-	// k2 controls the error probability of the primality testing algorithm
-	// (specifically, with probability at most 2^(-k2) a NON prime is chosen).
-	private final static int CERTAINTY = 40;
 	private int keysize = 1024;
 	private SecureRandom rnd = null;
 
@@ -33,14 +31,7 @@ public class GMKeyPairGenerator extends KeyPairGeneratorSpi
 		
 	    BigInteger p = new BigInteger(keysize/2, CERTAINTY, rnd);
 	    BigInteger q = new BigInteger(keysize/2, CERTAINTY, rnd);
-	    BigInteger y = null;
-	    /*
-	    while (p == q)
-	    {
-	        p2 = big_prime(prime_size);
-	    }
-	    */
-	    y = pseudosquare(p, q);
+	    BigInteger y = pseudosquare(p, q);
 	    BigInteger n = p.multiply(q);
 	    return new KeyPair(new GMPublicKey(n, y), new GMPrivateKey(p, q));
 	}
@@ -49,32 +40,27 @@ public class GMKeyPairGenerator extends KeyPairGeneratorSpi
 	{
 		BigInteger a = quadratic_non_residue(p);
 		BigInteger b = quadratic_non_residue(q);
-	    return gauss_crt(a, b, p, q);
+		BigInteger [] a_list = {a, b};
+		BigInteger [] n_list = {p, q};
+	    return gauss_crt(a_list, n_list);
 	}
 
 	// a = {a, b} and m = {p, q}
-	public BigInteger gauss_crt(BigInteger a, BigInteger b, BigInteger p, BigInteger q)
+	public BigInteger gauss_crt(BigInteger [] a, BigInteger [] n)
 	{
-	    // return x in ' x = a mod m'.
-	    // BigInteger modulus = reduce(lambda a,b: a*b, m);
-		BigInteger modulus = p.multiply(q);
-	    BigInteger M = null;
-	    BigInteger multi_1 = null;
-	    BigInteger multi_2 = null;
-	    BigInteger inverse = null;
-	    
-	    M = modulus.divide(p);
-	    inverse = xeuclid_inverse(M, p);
-	    multi_1 = inverse.multiply(M.mod(modulus));
-	    
-	    M = modulus.divide(q);
-	    inverse = xeuclid_inverse(M, q);
-	    multi_2 = inverse.multiply(M.mod(modulus));
-	    
-	    BigInteger result = BigInteger.ZERO;
-	    result = result.add(multi_1).multiply(a).mod(modulus);
-	    result = result.add(multi_2).multiply(b).mod(modulus);
-	    return result;
+		BigInteger x = BigInteger.ZERO;
+		BigInteger N = n[0].multiply(n[1]);
+		BigInteger n_i = null;
+		BigInteger m_i = null;
+		for (int i = 0; i < n.length; i++)
+		{
+	        n_i = N.divide(n[i]);
+	        // p and q are primes,
+	        // so n_i^(-1) mod n = n_i^(n - 2) mod n
+	        m_i = x.modPow(n[i].subtract(new BigInteger("2")), n[i]);
+	        x = x.add(a[i].multiply(n_i).multiply(m_i).mod(n[i]));
+		}
+		return x;
 	}
 	
 	public BigInteger xeuclid_inverse(BigInteger a, BigInteger b)

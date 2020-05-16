@@ -6,15 +6,14 @@ import java.security.KeyPairGeneratorSpi;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import security.generic.CipherConstants;
 import security.generic.NTL;
 
-public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi
+public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
 {
-	public static final BigInteger TWO = new BigInteger("2");
 	private int keysize = 1024;
 	private SecureRandom random = null;
 	private static final int BILLION = BigInteger.TEN.pow(9).intValue();
-	private static final int CERTAINTY = 40;
 	
 	public void initialize(int keysize, SecureRandom random) 
 	{

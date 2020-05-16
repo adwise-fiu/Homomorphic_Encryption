@@ -17,9 +17,8 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-public class NTL
+public class NTL implements CipherConstants
 {
-	private static BigInteger TWO = new BigInteger("2");
     private static SecureRandom rnd = new SecureRandom();
     
     public static boolean AKSTest(BigInteger p)
@@ -197,24 +196,24 @@ public class NTL
 
     	// assert 2**e * a1 == a;
     	BigInteger s = BigInteger.ZERO;
-    	BigInteger temp = n.mod(new BigInteger("8"));
-
+    	BigInteger temp = n.mod(EIGHT);
+    	
     	if (e.mod(TWO).equals(BigInteger.ZERO))
     	{
     		s = BigInteger.ONE;
     	}
     	// n % 8 in {1, 7}
-    	else if (!temp.equals(BigInteger.ZERO))
+    	else if (temp.equals(BigInteger.ONE) || temp.equals(SEVEN))
     	{
     		s = BigInteger.ONE;
     	}
     	// n % 8 in {3, 5}
-    	else if (temp.equals(BigInteger.valueOf(3)) || temp.equals(BigInteger.valueOf(4)) || temp.equals(BigInteger.valueOf(5)))
+    	else if (temp.equals(THREE) || temp.equals(FIVE))
     	{
     		s = new BigInteger("-1");
     	}
 
-    	if (n.mod(BigInteger.valueOf(4)).equals(BigInteger.valueOf(3)) && a1.mod(BigInteger.valueOf(4)).equals(BigInteger.valueOf(3)))
+    	if (n.mod(FOUR).equals(THREE) && a1.mod(FOUR).equals(THREE))
     	{
     		s = s.multiply(new BigInteger("-1"));
     	}

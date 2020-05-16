@@ -15,6 +15,7 @@ import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
 import security.elgamal.ElGamal_Ciphertext;
+import security.generic.CipherConstants;
 import security.generic.NTL;
 import security.paillier.PaillierCipher;
 import security.paillier.PaillierPrivateKey;
@@ -51,15 +52,6 @@ public final class alice extends socialist_millionaires implements Runnable
 		BigInteger max;
 	}
 	
-    // To avoid code reuse in Sorting...Flag to use Protocol 2 or Protocol 4
-    private boolean USE_PROTOCOL_2 = false;
-    private boolean FAST_DIVIDE = false;
-    
-	// Alice  will be given the Public Keys
-	private PaillierPublicKey pk = null;
-	private DGKPublicKey pubKey = null;
-	private ElGamalPublicKey e_pk = null;
-
 	// ONLY USED FOR DEBUGGING
 	private DGKPrivateKey privKey = null;
 	private PaillierPrivateKey sk = null;
@@ -78,7 +70,6 @@ public final class alice extends socialist_millionaires implements Runnable
 	
 	// Current Algorithm to Sort with
 	private Algorithm algo;
-    private final BigInteger powL;
     
     // YOU SHOULD USE THIS CONSTRUCTOR!
     public alice (Socket clientSocket) throws IOException, ClassNotFoundException
@@ -1042,7 +1033,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		BigInteger N = e_pk.getP().subtract(BigInteger.ONE);
 		
 		// Step 1: 0 <= r < N
-		r = NTL.RandomBnd(e_pk.FIELD_SIZE);
+		r = NTL.RandomBnd(CipherConstants.FIELD_SIZE);
 		
 		/*
 		 * Step 2: Alice computes [[z]] = [[x - y + 2^l + r]]
@@ -1425,7 +1416,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		ElGamal_Ciphertext y_prime = null;
 		BigInteger a = null;
 		BigInteger b = null;
-		BigInteger N = e_pk.FIELD_SIZE;
+		BigInteger N = CipherConstants.FIELD_SIZE;
 		
 		// Step 1
 		a = NTL.RandomBnd(N);

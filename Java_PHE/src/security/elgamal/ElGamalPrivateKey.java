@@ -9,7 +9,9 @@ import java.security.PrivateKey;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, PrivateKey, Runnable
+import security.generic.CipherConstants;
+
+public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, PrivateKey, Runnable, CipherConstants
 {
 	//Private Key parameters
 	protected final BigInteger x;
@@ -21,9 +23,6 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
     protected final BigInteger h;
 	
     private static final long serialVersionUID = 9160045368787508459L;
-    private final static BigInteger TWO = new BigInteger("2");
-    // Same as DGK: U with 16 bits
-    public final BigInteger FIELD_SIZE = TWO.pow(16).nextProbablePrime();
     
 	public ElGamalPrivateKey(BigInteger p, BigInteger x, BigInteger g, BigInteger h)
 	{

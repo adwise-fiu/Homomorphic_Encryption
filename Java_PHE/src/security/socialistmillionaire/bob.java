@@ -40,27 +40,14 @@ Improving the DGK Comparison Protocol (2012)
 */
 
 public final class bob extends socialist_millionaires implements Runnable
-{
-	// Use Protocol 2 or Protocol 4 for Sorting
-	private boolean USE_PROTOCOL_2 = false;
-    private boolean FAST_DIVIDE = false;
-    
+{    
 	// Key Master
-	private PaillierPublicKey pk = null;
 	private PaillierPrivateKey sk = null;
-	
-	private DGKPublicKey pubKey = null;
 	private DGKPrivateKey privKey = null;
-	
-	private ElGamalPublicKey e_pk = null;
 	private ElGamalPrivateKey e_sk = null;
 
 	private ObjectOutputStream toAlice = null;
 	private ObjectInputStream fromAlice = null;
-
-	private boolean isDGK = false;
-	
-	private final BigInteger powL;
 	
 	// YOU SHOULD USE THIS CONSTRUCTOR!
 	public bob (Socket clientSocket,

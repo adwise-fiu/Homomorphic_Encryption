@@ -140,7 +140,7 @@ public class Main
 				//ElGamal_Ciphertext t_2 = ElGamalCipher.add(ElGamalCipher.encrypt(e_pk, BigInteger.TEN.modInverse(e_pk.p)), t, e_pk);
 				ElGamal_Ciphertext t_2 = ElGamalCipher.subtract(t, ElGamalCipher.encrypt(e_pk, 10), e_pk);
 				System.out.println(ElGamalCipher.decrypt(e_sk, t_2));
-				test_signature();
+				//test_signature();
 				
 				// start with GM: BUGS!
 				List<BigInteger> enc_bits = GMCipher.encrypt(BigInteger.TEN, gm_pk);

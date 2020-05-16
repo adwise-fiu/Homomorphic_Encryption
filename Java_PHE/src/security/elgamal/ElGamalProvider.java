@@ -10,7 +10,7 @@ public class ElGamalProvider extends Provider
 	{
 		 super("ElGamal", 1.0, "ElGamal v1.0");
 		 put("KeyPairGenerator.ElGamal", ElGamalKeyPairGenerator.class.getName());
-		 //put("Cipher.ElGamal", ElGamalCipher.class.getName());
+		 put("Cipher.ElGamal", ElGamalCipher.class.getName());
 		 put("KeyFactory.ElGamal", ElGamalKeyFactory.class.getName());
 	}
 }

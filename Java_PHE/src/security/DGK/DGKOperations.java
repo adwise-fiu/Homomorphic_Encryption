@@ -43,8 +43,6 @@ import java.util.ArrayList;
 
 public final class DGKOperations extends CipherSpi
 {
-	protected final static BigInteger TWO = new BigInteger("2");
-	
 	protected int stateMode;
 	protected Key keyDGK;
 	protected SecureRandom SECURE_RANDOM;

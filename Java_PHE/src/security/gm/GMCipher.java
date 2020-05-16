@@ -10,6 +10,8 @@ import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.List;
+
+import security.generic.CipherConstants;
 import security.generic.NTL;
 
 import javax.crypto.BadPaddingException;
@@ -18,9 +20,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
-public class GMCipher extends CipherSpi
+public class GMCipher extends CipherSpi implements CipherConstants
 {
-	private final static BigInteger TWO = new BigInteger("2");
 	protected byte[] engineDoFinal(byte[] arg0, int arg1, int arg2)
 			throws IllegalBlockSizeException, BadPaddingException
 	{
@@ -93,13 +94,13 @@ public class GMCipher extends CipherSpi
 	
 	public static List<BigInteger> encrypt(BigInteger m, GMPublicKey pk)
 	{
-		List<BigInteger> enc_bits = new ArrayList<BigInteger>();
-	    String bits = m.toString(2);    
-	    char [] bit_array = bits.toCharArray();
+		List<BigInteger> enc_bits = new ArrayList<BigInteger>();  
+	    char [] bit_array = m.toString(2).toCharArray();
 	    BigInteger x = null;
 	    // Encrypt bits
 	    for(char bit : bit_array)
 	    {
+	    	System.out.print(bit);
 	    	x = NTL.RandomBnd(pk.n);
 	        if (bit == '1')
 	        {
@@ -110,6 +111,7 @@ public class GMCipher extends CipherSpi
 	        	enc_bits.add(x.modPow(TWO, pk.n));
 	        }
 	    }
+	    System.out.println(" ");
 	    return enc_bits;
 	}
 	

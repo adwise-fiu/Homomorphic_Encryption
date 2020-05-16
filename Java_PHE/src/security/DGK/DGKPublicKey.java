@@ -8,10 +8,11 @@ import java.math.BigInteger;
 import java.security.PublicKey;
 import java.util.HashMap;
 
-public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Runnable
+import security.generic.CipherConstants;
+
+public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Runnable, CipherConstants
 {
 	private static final long serialVersionUID = -1613333167285302035L;
-	private static final BigInteger TWO = new BigInteger("2");
 	
 	protected final BigInteger n;
 	protected final BigInteger g;

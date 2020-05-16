@@ -18,10 +18,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
+import security.generic.CipherConstants;
 import security.generic.NTL;
-import security.paillier.PaillierKey;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
 
 // Reference
 // https://github.com/dlitz/pycrypto/blob/master/lib/Crypto/PublicKey/ElGamal.py
@@ -336,14 +334,14 @@ public class ElGamalCipher extends CipherSpi
 	{
 		if (mode == Cipher.ENCRYPT_MODE)
 		{
-			if (!(key instanceof PaillierPublicKey))
+			if (!(key instanceof ElGamalPublicKey))
 			{
 				throw new InvalidKeyException("I didn't get a ElGamalPublicKey!");
 			}
 		}
 		else if (mode == Cipher.DECRYPT_MODE)
 		{
-			if (!(key instanceof PaillierPrivateKey))
+			if (!(key instanceof ElGamalPrivateKey))
 			{
 				throw new InvalidKeyException("I didn't get a ElGamalPrivateKey!");
 			}
@@ -355,7 +353,7 @@ public class ElGamalCipher extends CipherSpi
 		this.stateMode = mode;
 		this.keyElGamal = key;
 		this.SECURE_RANDOM = random;
-		int modulusLength = ((PaillierKey) key).getN().bitLength();
+		int modulusLength = ((ElGamal_Key) key).getP().bitLength();
 		calculateBlockSizes(modulusLength);
 	}
 
@@ -468,7 +466,7 @@ public class ElGamalCipher extends CipherSpi
 		if (m != null)
 		{
 			// If I get this, there is a chance I might have a negative number to make?
-			if (m.compareTo(key.FIELD_SIZE) == 1)
+			if (m.compareTo(CipherConstants.FIELD_SIZE) == 1)
 			{
 				m = m.mod(key.p.subtract(BigInteger.ONE));
 			}
@@ -624,13 +622,13 @@ public class ElGamalCipher extends CipherSpi
 		return ElGamalCipher.sum(product_vector, pk, product_vector.length);
 	}
 	// ------------------------PUBLIC FACING METHODS---------------------------------------------------
-	public void init(int encryptMode, PaillierPublicKey pk) 
+	public void init(int encryptMode, ElGamalPublicKey pk) 
 			throws InvalidKeyException, InvalidAlgorithmParameterException
 	{
 		engineInit(encryptMode, pk, new SecureRandom());
 	}
 
-	public void init(int decryptMode, PaillierPrivateKey sk)
+	public void init(int decryptMode, ElGamalPrivateKey sk)
 			throws InvalidKeyException, InvalidAlgorithmParameterException 
 	{
 		engineInit(decryptMode, sk, new SecureRandom());

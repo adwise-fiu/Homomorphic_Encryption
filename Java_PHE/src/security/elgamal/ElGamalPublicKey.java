@@ -13,7 +13,6 @@ public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_
 	protected final BigInteger p;
 	protected final BigInteger g;
 	protected final BigInteger h;
-    public final BigInteger FIELD_SIZE = new BigInteger("2").pow(16).nextProbablePrime();
 
 	public ElGamalPublicKey(BigInteger p, BigInteger g, BigInteger h)
 	{
@@ -59,7 +58,6 @@ public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_
     	answer += "p=" + this.p + '\n';
     	answer += "g=" + this.g + '\n';
     	answer += "h=" + this.h + '\n';
-    	answer += "u=" + this.FIELD_SIZE;
     	return answer;
     }
 }
