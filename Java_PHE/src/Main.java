@@ -5,7 +5,6 @@ import java.net.Socket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.util.ArrayList;
@@ -143,7 +142,6 @@ public class Main
 				gm_sk = (GMPrivateKey) gm.getPrivate();
 				
 				ElGamal_Ciphertext t = ElGamalCipher.encrypt(e_pk, 1000);
-				//ElGamal_Ciphertext t_2 = ElGamalCipher.add(ElGamalCipher.encrypt(e_pk, BigInteger.TEN.modInverse(e_pk.p)), t, e_pk);
 				ElGamal_Ciphertext t_2 = ElGamalCipher.subtract(t, ElGamalCipher.encrypt(e_pk, 10), e_pk);
 				System.out.println(ElGamalCipher.decrypt(e_sk, t_2));
 				//test_signature();
@@ -153,8 +151,8 @@ public class Main
 				System.out.println("GM: " + GMCipher.decrypt(enc_bits, gm_sk));
 				
 				// Stress Test
-				System.out.println("Running operations 100,000 times each");
-				// Paillier_Test();
+				System.out.println("Running operations " + SIZE + " times each");
+				Paillier_Test();
 				// DGK_Test();
 				ElGamal_Test();
 				System.exit(0);
@@ -999,10 +997,33 @@ public class Main
 		BigInteger t = NTL.generateXBitRandom(15);
 		long start = 0;
 		
+		PaillierCipher test_pa = new PaillierCipher();
+		byte [] test;
+		
 		start = System.nanoTime();
 		for(int i = 0; i < SIZE; i++)
 		{
 			PaillierCipher.encrypt(t, pk);
+			try 
+			{
+				test_pa.init(Cipher.ENCRYPT_MODE, pk);
+				test = test_pa.doFinal(t.toByteArray());
+				test_pa.init(Cipher.DECRYPT_MODE, sk);
+				System.out.println(test.length);
+				test = test_pa.doFinal(test);
+				if(new BigInteger(test).equals(t))
+				{
+					System.out.println("YAY!");
+				}
+				else
+				{
+					System.out.println("FUCKKKKKK");
+				}
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
 		System.out.println("Time to complete encryption: " + ((System.nanoTime() - start)/BILLION) + " seconds");
 		
@@ -1115,7 +1136,6 @@ public class Main
 				test_el.init(Cipher.ENCRYPT_MODE, e_pk);
 				test = test_el.doFinal(t.toByteArray());
 				test_el.init(Cipher.DECRYPT_MODE, e_sk);
-				System.out.println(test.length);
 				test = test_el.doFinal(test);
 				if(new BigInteger(test).equals(t))
 				{

@@ -71,9 +71,6 @@ public final class PaillierCipher extends CipherSpi
 	protected final int encrypt(byte[] input, int inputOffset, int inputLenth,
 			byte[] output, int outputOffset) throws Exception
 	{
-		byte[] messageBytes = new byte[plaintextSize];
-		int inLenth = Math.min(plaintextSize, inputLenth);
-		System.arraycopy(input, inputOffset, messageBytes, 0, inLenth);
 		BigInteger m = new BigInteger(input);
 
 		// get the public key in order to encrypt
@@ -107,7 +104,6 @@ public final class PaillierCipher extends CipherSpi
 		byte[] cBytes = new byte[input.length];
 		System.arraycopy(input, inputOffset, cBytes, 0, input.length);
 		
-	
 		// calculate the message
 		byte[] messageBytes = decrypt(new BigInteger(cBytes), key).toByteArray();
 		int gatedLength = Math.min(messageBytes.length, plaintextSize);
@@ -305,7 +301,7 @@ public final class PaillierCipher extends CipherSpi
 	{
 		if (stateMode == Cipher.ENCRYPT_MODE) 
 		{
-			return  ciphertextSize;
+			return ciphertextSize;
 		} 
 		else 
 		{
@@ -365,8 +361,11 @@ public final class PaillierCipher extends CipherSpi
 	 */
 	protected final void calculateBlockSizes(int modulusLength)
 	{
+		System.out.println(modulusLength);
 		plaintextSize = ((modulusLength + 8) / 8);
 		ciphertextSize = (((modulusLength + 12) / 8) * 2) - 1;
+		System.out.println(plaintextSize);
+		System.out.println(ciphertextSize);
 	}
 	
 	// PUBLIC FACING METHODS
