@@ -133,4 +133,19 @@ public class GMCipher extends CipherSpi implements CipherConstants
 		}
 	    return new BigInteger(bits, 2);
 	}
+	
+	// Homomorphic property of GM, multiplying both cipher-texts gets you the bit XOR
+	public BigInteger[] xor(BigInteger [] cipher_1, BigInteger[] cipher_2, GMPublicKey pk)
+	{
+		if(cipher_1.length != cipher_2.length)
+		{
+			throw new IllegalArgumentException("Unequal Size of Ciphertext for XOR!");
+		}
+		BigInteger [] xor_solution = new BigInteger[cipher_1.length];
+		for (int i = 0; i < cipher_1.length; i++)
+		{
+			xor_solution[i] = cipher_1[i].multiply(cipher_2[i]).mod(pk.n);
+		}
+		return xor_solution;
+	}
 }

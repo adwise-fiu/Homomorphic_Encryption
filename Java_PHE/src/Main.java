@@ -2,12 +2,18 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 
 import security.DGK.DGKKeyPairGenerator;
 import security.DGK.DGKOperations;
@@ -64,7 +70,7 @@ public class Main
 	private static BigInteger [] high = generate_high();
 	
 	private static final int TEST = 100;
-	private static final int SIZE = 100000;
+	private static final int SIZE = 100;
 	private static final int KEY_SIZE = 1024;
 	private static final int BILLION = BigInteger.TEN.pow(9).intValue();
 	
@@ -147,10 +153,10 @@ public class Main
 				System.out.println("GM: " + GMCipher.decrypt(enc_bits, gm_sk));
 				
 				// Stress Test
-				// System.out.println("Running operations 100,000 times each");
+				System.out.println("Running operations 100,000 times each");
 				// Paillier_Test();
 				// DGK_Test();
-				// ElGamal_Test();
+				ElGamal_Test();
 				System.exit(0);
 				
 				bob_socket = new ServerSocket(9254);
@@ -196,8 +202,14 @@ public class Main
 			{
 				try 
 				{
-					bob_client.close();
-					bob_socket.close();
+					if(bob_client != null)
+					{
+						bob_client.close();
+					}
+					if(bob_socket != null)
+					{
+						bob_socket.close();
+					}
 				}
 				catch (IOException e) 
 				{
@@ -1096,6 +1108,33 @@ public class Main
 		start = System.nanoTime();
 		for(int i = 0; i < SIZE; i++)
 		{
+			byte [] test;
+			ElGamalCipher test_el = new ElGamalCipher();
+			try 
+			{
+				test_el.init(Cipher.ENCRYPT_MODE, e_pk);
+				test = test_el.doFinal(t.toByteArray());
+				test_el.init(Cipher.DECRYPT_MODE, e_sk);
+				System.out.println(test.length);
+				test = test_el.doFinal(test);
+				if(new BigInteger(test).equals(t))
+				{
+					System.out.println("YAY!");
+				}
+				else
+				{
+					System.out.println("FUCKKKKKK");
+				}
+			}
+			catch (InvalidKeyException | InvalidAlgorithmParameterException e) 
+			{
+				e.printStackTrace();
+			} catch (BadPaddingException e) {
+				e.printStackTrace();
+			} catch (IllegalBlockSizeException e) {
+				e.printStackTrace();
+			}
+			
 			ElGamalCipher.encrypt(e_pk, t);
 		}
 		System.out.println("Time to complete encryption: " + ((System.nanoTime() - start)/BILLION) + " seconds");

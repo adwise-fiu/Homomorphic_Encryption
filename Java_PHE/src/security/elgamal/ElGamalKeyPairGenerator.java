@@ -13,7 +13,6 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 {
 	private int keysize = 1024;
 	private SecureRandom random = null;
-	private static final int BILLION = BigInteger.TEN.pow(9).intValue();
 	
 	public void initialize(int keysize, SecureRandom random) 
 	{
@@ -78,6 +77,11 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 		// secret key is (p, x) and public key is (p, g, h)
 		ElGamalPrivateKey sk = new ElGamalPrivateKey(p, x, g, h);
 		ElGamalPublicKey pk = new ElGamalPublicKey(p, g, h);
+		
+		// PRINT SIZE
+		System.out.println(q.bitLength());
+		System.out.println(p.bitLength());
+		System.out.println(g.bitLength());
 		return new KeyPair(pk, sk);
 	}
 

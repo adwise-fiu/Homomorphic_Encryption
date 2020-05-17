@@ -11,11 +11,11 @@ import java.security.SignatureException;
 import java.security.SignatureSpi;
 import java.util.Arrays;
 
+import security.generic.CipherConstants;
 import security.generic.NTL;
 
-public class ElGamalSignature extends SignatureSpi
+public class ElGamalSignature extends SignatureSpi implements CipherConstants
 {
-	private static BigInteger TWO = new BigInteger("2");
 	private ElGamalPrivateKey sk;
 	private ElGamalPublicKey pk;
 	private boolean VERIFY_MODE;
@@ -143,7 +143,7 @@ public class ElGamalSignature extends SignatureSpi
 		{
 			// Pick [0, p - 2]
 			K = NTL.RandomBnd(p1);
-			// Need K [2, P - 2[
+			// Need K [2, P - 2]
 			if(K.equals(BigInteger.ONE) || K.equals(BigInteger.ZERO))
 			{
 				continue;
@@ -152,7 +152,6 @@ public class ElGamalSignature extends SignatureSpi
 			{
 				break;
 			}
-
 		}
 		BigInteger r = this.sk.g.modPow(K, sk.p);
 	    BigInteger s = M.subtract(sk.x.multiply(r)).multiply(K.modInverse(p1)).mod(p1);

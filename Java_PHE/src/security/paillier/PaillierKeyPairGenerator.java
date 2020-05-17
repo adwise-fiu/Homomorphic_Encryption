@@ -5,14 +5,15 @@ import java.security.KeyPair;
 import java.security.KeyPairGeneratorSpi;
 import java.security.SecureRandom;
 
-public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi 
+import security.generic.CipherConstants;
+
+public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
 {
 	// k2 controls the error probability of the primality testing algorithm
 	// (specifically, with probability at most 2^(-k2) a NON prime is chosen).
 	private final static int CERTAINTY = 40;
 	private int keysize = 1024;
 	private SecureRandom rnd = null;
-	private final static BigInteger TWO = new BigInteger("2");
 	
 	public void initialize(int keysize, SecureRandom random) 
 	{
@@ -63,8 +64,8 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi
 		BigInteger gcd = p.subtract(BigInteger.ONE).gcd(q.subtract(BigInteger.ONE));
 		BigInteger alpha = find_alpha(lambda.divide(gcd), modulus);
 		
-		PaillierPublicKey pk = new PaillierPublicKey(keysize, n, modulus, g);
-		PaillierPrivateKey sk = new PaillierPrivateKey(keysize, n, modulus, lambda, mu, g, alpha);
+		PaillierPublicKey pk = new PaillierPublicKey(this.keysize, n, modulus, g);
+		PaillierPrivateKey sk = new PaillierPrivateKey(this.keysize, n, modulus, lambda, mu, g, alpha);
 		
 		System.out.println("Completed building Paillier Key Pair!");
 		return new KeyPair(pk, sk);

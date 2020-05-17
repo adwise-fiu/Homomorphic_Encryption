@@ -227,4 +227,16 @@ public class NTL implements CipherConstants
     		return s.multiply(jacobi(n1, a1));
     	}
     }
+    
+    public static BigInteger quadratic_non_residue(BigInteger p)
+    {
+    	BigInteger a = BigInteger.ZERO;
+    	while (!NTL.jacobi(a, p).equals(neg_one))
+    	{
+    		// a = randint(1, p) --> [1, p]
+    		// x = pseudo-random number in the range [0..n-1]
+    		a = NTL.RandomBnd(p);
+    	}
+    	return a;
+    }
 }

@@ -155,7 +155,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 		BigInteger q, rq;
 		BigInteger g, h ;
 		BigInteger n, r ;
-		BigInteger u = new BigInteger("2").pow(this.l);
+		BigInteger u = TWO.pow(this.l);
 		BigInteger vp, vq, vpvq, tmp;
 
 		while(true)
@@ -353,13 +353,11 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 		{
 			pubKey.run();
 		}
-		System.out.println("FINISHED WITH DGK KEY GENERATION in " + (System.nanoTime() - start_time)/1000000000 + " seconds!");
 		
-		//System.out.println(h.modPow(vp.multiply(vq), n));
-		//System.out.println(g.modPow(vp.multiply(vq).multiply(u), n));
+		System.out.println("FINISHED WITH DGK KEY GENERATION in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
 		return new KeyPair(pubKey, privkey);
 	}
-	
+
 	public String toString()
 	{
 		String s = "";

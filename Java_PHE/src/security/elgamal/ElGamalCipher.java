@@ -8,6 +8,7 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -32,6 +33,10 @@ public class ElGamalCipher extends CipherSpi
 	protected SecureRandom SECURE_RANDOM;
 	protected int plaintextSize;
 	protected int ciphertextSize;
+	
+	protected byte [] hrgm;
+	protected byte [] gr;
+	protected byte [] plaintext;
 	
 	/**
 	 * This class support no modes, so engineSetMode() throw exception when
@@ -74,19 +79,18 @@ public class ElGamalCipher extends CipherSpi
 	protected final int encrypt(byte[] input, int inputOffset, int inputLenth,
 			byte[] output, int outputOffset) throws Exception
 	{
-		return 0;
-		/*
-		byte[] messageBytes = new byte[plaintextSize];
-		int inLenth = Math.min(plaintextSize, inputLenth);
-		System.arraycopy(input, inputOffset, messageBytes, 0, inLenth);
 		BigInteger m = new BigInteger(input);
 
 		// get the public key in order to encrypt
 		ElGamal_Ciphertext c = Encrypt((ElGamalPublicKey) keyElGamal, m);
-		byte [] cBytes = c.toByteArray();
-		System.arraycopy(cBytes, 0, output, ciphertextSize - cBytes.length, cBytes.length);
+		
+		// Convert to bytes!
+		gr = c.gr.toByteArray();
+		hrgm = c.hrgm.toByteArray();
+
+		plaintextSize = input.length;
+		ciphertextSize = gr.length + hrgm.length;
 		return ciphertextSize;
-		*/
 	}
 
 	/**
@@ -108,18 +112,27 @@ public class ElGamalCipher extends CipherSpi
 	protected final int decrypt(byte[] input, int inputOffset, int inputLenth,
 			byte[] output, int outputOffset)
 	{
-		// extract c
-		byte[] cBytes = new byte[input.length];
-		System.arraycopy(input, inputOffset, cBytes, 0, input.length);
-		return 0;
+		// extract gr and hrgm
+		BigInteger gr = null;
+		BigInteger hrgm = null;
+		System.out.println("DECRYPT INPUT SIZE");
+		System.out.println(input.length);
+		if (input.length == 256)
+		{
+			gr = new BigInteger(Arrays.copyOfRange(input, 0, 128));
+			hrgm = new BigInteger(Arrays.copyOfRange(input, 128, input.length));				
+		}
+		else
+		{
+			gr = new BigInteger(Arrays.copyOfRange(input, 0, 129));
+			hrgm = new BigInteger(Arrays.copyOfRange(input, 129, input.length));
+		}
+		
 		// calculate the message
-		/*
-		BigInteger m = Decrypt((ElGamalPrivateKey) keyElGamal, new ElGamal_Ciphertext(cBytes));
-		byte [] messageBytes = m.toByteArray();
-		int gatedLength = Math.min(messageBytes.length, plaintextSize);
-		System.arraycopy(messageBytes, 0, output, plaintextSize - gatedLength, gatedLength);
+		BigInteger m = Decrypt((ElGamalPrivateKey) keyElGamal, new ElGamal_Ciphertext(gr, hrgm));
+		plaintext = m.toByteArray();
+		plaintextSize = plaintext.length;
 		return plaintextSize;
-		*/
 	}
 
 	/**
@@ -158,10 +171,21 @@ public class ElGamalCipher extends CipherSpi
 	 */
 	protected final byte[] engineUpdate(byte[] input, int inputOffset, int inputLen) 
 	{
-		byte[] out = new byte[engineGetOutputSize(inputLen)];
+		int size;
+		byte[] out = null;
 		try 
 		{
-			 engineUpdate(input, inputOffset, inputLen, out, 0);
+			size = engineUpdate(input, inputOffset, inputLen, out, 0);
+			out = new byte[size];
+			if(stateMode == Cipher.ENCRYPT_MODE)
+			{
+				System.arraycopy(gr, 0, out, 0, gr.length);
+				System.arraycopy(hrgm, 0, out, gr.length, hrgm.length);
+			}
+			else
+			{
+				System.arraycopy(plaintext, 0, out, 0, size);
+			}		
 		} 
 		catch (ShortBufferException sbe) 
 		{
@@ -191,11 +215,13 @@ public class ElGamalCipher extends CipherSpi
 	protected final int engineUpdate(byte[] input, int inputOffset, int inputLen,
 			byte[] output, int outputOffset) throws ShortBufferException 
 	{
+		int size;
 		if (stateMode == Cipher.ENCRYPT_MODE)
 		{
-			try 
+			try
 			{
-				return encrypt(input, inputOffset, inputLen, output, outputOffset);
+				size = encrypt(input, inputOffset, inputLen, output, outputOffset);
+				return size;
 			} 
 			catch (Exception e) 
 			{
@@ -204,7 +230,8 @@ public class ElGamalCipher extends CipherSpi
 		}
 		else if (stateMode == Cipher.DECRYPT_MODE)
 		{
-			return decrypt(input, inputOffset, inputLen, output, outputOffset);
+			size = decrypt(input, inputOffset, inputLen, output, outputOffset);
+			return size;
 		}
 		return 0;
 	}
@@ -218,11 +245,21 @@ public class ElGamalCipher extends CipherSpi
 	protected final byte[] engineDoFinal(byte[] input, int inputOffset, int inputLen)
 			throws IllegalBlockSizeException, BadPaddingException
 	{
-
-		byte [] out = new byte[engineGetOutputSize(inputLen)];
+		byte [] out = null;
+		int size;
 		try 
 		{
-			engineDoFinal(input, inputOffset, inputLen, out, 0);
+			size = engineDoFinal(input, inputOffset, inputLen, out, 0);
+			out = new byte[size];
+			if (stateMode == Cipher.ENCRYPT_MODE)
+			{
+				System.arraycopy(gr, 0, out, 0, gr.length);
+				System.arraycopy(hrgm, 0, out, gr.length, hrgm.length);	
+			}
+			else
+			{
+				System.arraycopy(plaintext, 0, out, 0, size);
+			}
 		} 
 		catch (ShortBufferException sbe)
 		{
@@ -252,6 +289,8 @@ public class ElGamalCipher extends CipherSpi
 			byte[] output, int outputOffset)
 					throws ShortBufferException, IllegalBlockSizeException, BadPaddingException
 	{
+		// Gets called....
+		System.out.println("LOOK AT ME!");
 		// Create a single array of input data
 		byte[] totalInput = new byte[inputLen];
 		if (inputLen > 0)
@@ -262,12 +301,12 @@ public class ElGamalCipher extends CipherSpi
 		{
 			try 
 			{
-				return encrypt(input, inputOffset, inputLen, output, outputOffset);	
-			} 
+				return encrypt(input, inputOffset, inputLen, output, outputOffset);
+			}
 			catch (Exception e) 
 			{
 				e.printStackTrace();
-			}
+			}	
 		}
 		else if (stateMode == Cipher.DECRYPT_MODE)
 		{
@@ -299,26 +338,6 @@ public class ElGamalCipher extends CipherSpi
 	protected final byte[] engineGetIV()
 	{
 		return null;
-	}
-
-	/**
-	 * Return  the size based on the state of the cipher. This is one 
-	 * shot encryption or decryption, no need to calculate internal buffer.
-	 * @param inputLen
-	 *            the input length (in bytes)
-	 * @return outLength - the required output size (in bytes)
-	 */
-	protected final int engineGetOutputSize(int inputLen)
-	{
-		if (stateMode == Cipher.ENCRYPT_MODE) 
-		{
-			return  ciphertextSize;
-		} 
-		else 
-		{
-			return plaintextSize;
-		}
-
 	}
 
 	protected final AlgorithmParameters engineGetParameters() 
@@ -353,30 +372,8 @@ public class ElGamalCipher extends CipherSpi
 		this.stateMode = mode;
 		this.keyElGamal = key;
 		this.SECURE_RANDOM = random;
-		int modulusLength = ((ElGamal_Key) key).getP().bitLength();
-		calculateBlockSizes(modulusLength);
 	}
 
-	/**
-	 * Calculates the size of the plaintext block and a ciphertext block, based
-	 * on the size of the key used to initialise the cipher. The ciphertext is
-	 * twice the length of the n modulus , and plaintext should be slightly
-	 * shorter than the modulus. Ciphertext is little more than twice the length
-	 * of the plaintext. Plaintext - we adding 8 bits(1 byte) before to divide by 8 to
-	 * ensure the bigger possible plaintex will fit into created array.
-	 * EngineUpdate and engineDoFinal methods check if the size of the array is
-	 * to big and reduced to the right size. Similar for the ciphertext. Where
-	 * the initial size is set to the size of the n^2 plus one byte . 
-	 * 
-	 * @param modulusLength
-	 *            - n = p*q
-	 */
-	protected final void calculateBlockSizes(int modulusLength)
-	{
-		plaintextSize = ((modulusLength + 8) / 8);
-		ciphertextSize = (((modulusLength + 12) / 8) * 2)-1;
-	}	
-	
 	// --------------------------Relevant ElGamal---------------------------------------
 	public static ElGamal_Ciphertext encrypt(ElGamalPublicKey key, BigInteger message)
 	{
@@ -416,8 +413,10 @@ public class ElGamalCipher extends CipherSpi
 	{
 		BigInteger pPrime = Key.p.subtract(BigInteger.ONE).divide(ElGamalKeyPairGenerator.TWO);
 		BigInteger r = NTL.RandomBnd(pPrime);
+		BigInteger gr = Key.g.modPow(r, Key.p);
+		BigInteger hrgm = message.multiply(Key.h.modPow(r, Key.p)).mod(Key.p);
 		// encrypt couple (g^r (mod p), m * h^r (mod p))
-		return new ElGamal_Ciphertext(Key.g.modPow(r, Key.p), message.multiply(Key.h.modPow(r, Key.p)).mod(Key.p));
+		return new ElGamal_Ciphertext(gr, hrgm);
 	}
 
 	/*
@@ -429,7 +428,6 @@ public class ElGamalCipher extends CipherSpi
 	private static ElGamal_Ciphertext Encrypt_Homomorph(ElGamalPublicKey key, BigInteger message) 
 	{
 		BigInteger pPrime = key.p.subtract(BigInteger.ONE).divide(ElGamalKeyPairGenerator.TWO);
-		// TODO [0, N -1] or [1, N-1] ?
 		BigInteger r = NTL.RandomBnd(pPrime);
 		// encrypt couple (g^r (mod p), h^r * g^m (mod p))
 		BigInteger hr = key.h.modPow(r, key.p);
@@ -637,6 +635,19 @@ public class ElGamalCipher extends CipherSpi
 	public byte[] doFinal(byte[] bytes) 
 			throws BadPaddingException, IllegalBlockSizeException 
 	{
-		return engineDoFinal(bytes, 0, bytes.length);	
+		byte [] answer = engineDoFinal(bytes, 0, bytes.length);
+		return answer;
+	}
+
+	protected int engineGetOutputSize(int inputLen) 
+	{
+		if (stateMode == Cipher.ENCRYPT_MODE) 
+		{
+			return ciphertextSize;
+		} 
+		else 
+		{
+			return plaintextSize;
+		}
 	}
 }

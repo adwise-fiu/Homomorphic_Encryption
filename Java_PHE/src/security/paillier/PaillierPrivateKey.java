@@ -7,6 +7,10 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.PrivateKey;
 
+// Links:
+// https://github.com/AndrewQuijano/bc-java/blob/master/prov/src/main/java/org/bouncycastle/jcajce/provider/asymmetric/
+	
+//org/bouncycastle/jcajce/provider/asymmetric/
 /*
 import java.util.Enumeration;
 import org.bouncycastle.asn1.ASN1Encodable;

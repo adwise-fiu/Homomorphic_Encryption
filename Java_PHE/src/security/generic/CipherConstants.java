@@ -23,4 +23,10 @@ public interface CipherConstants
 	final static BigInteger FIVE = new BigInteger("5");
 	final static BigInteger SEVEN = new BigInteger("7");
 	final static BigInteger EIGHT = new BigInteger("8");
+
+	// Misc
+	final static BigInteger neg_one = new BigInteger("-1");
+	
+	// For tracking time in nano-seconds to seconds
+	final int BILLION = BigInteger.TEN.pow(9).intValue();
 }

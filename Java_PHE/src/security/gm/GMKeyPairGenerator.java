@@ -38,8 +38,8 @@ public class GMKeyPairGenerator extends KeyPairGeneratorSpi implements CipherCon
 	
 	public BigInteger pseudosquare(BigInteger p, BigInteger q)
 	{
-		BigInteger a = quadratic_non_residue(p);
-		BigInteger b = quadratic_non_residue(q);
+		BigInteger a = NTL.quadratic_non_residue(p);
+		BigInteger b = NTL.quadratic_non_residue(q);
 		BigInteger [] a_list = {a, b};
 		BigInteger [] n_list = {p, q};
 	    return gauss_crt(a_list, n_list);
@@ -100,18 +100,4 @@ public class GMKeyPairGenerator extends KeyPairGeneratorSpi implements CipherCon
 	    return answer;
 	}
     
-    //-------------------Relevent to GM----------------------
-
-    public BigInteger quadratic_non_residue(BigInteger p)
-    {
-    	BigInteger a = BigInteger.ZERO;
-    	BigInteger neg_one = new BigInteger("-1");
-    	while (!NTL.jacobi(a, p).equals(neg_one))
-    	{
-    		// a = randint(1, p) --> [1, p]
-    		// x = pseudo-random number in the range [0..n-1]
-    		a = NTL.RandomBnd(p);
-    	}
-    	return a;
-    }
 }

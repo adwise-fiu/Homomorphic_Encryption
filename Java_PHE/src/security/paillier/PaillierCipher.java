@@ -388,7 +388,7 @@ public final class PaillierCipher extends CipherSpi
 		return engineDoFinal(bytes, 0, bytes.length);	
 	}
 
-	//-----------------------Old Paillier----------------------------------------------
+	//-----------------------BigInteger Paillier----------------------------------------------
 
     // Compute ciphertext = (mn+1)r^n (mod n^2) in two stages: (mn+1) and (r^n).
     public static BigInteger encrypt(BigInteger plaintext, PaillierPublicKey pk) 
