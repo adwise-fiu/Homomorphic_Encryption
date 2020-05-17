@@ -361,14 +361,11 @@ public final class PaillierCipher extends CipherSpi
 	 */
 	protected final void calculateBlockSizes(int modulusLength)
 	{
-		System.out.println(modulusLength);
 		plaintextSize = ((modulusLength + 8) / 8);
 		ciphertextSize = (((modulusLength + 12) / 8) * 2) - 1;
-		System.out.println(plaintextSize);
-		System.out.println(ciphertextSize);
 	}
 	
-	// PUBLIC FACING METHODS
+	// -------------------------PUBLIC FACING METHODS---------------------------------
 	public void init(int encryptMode, PaillierPublicKey pk) 
 			throws InvalidKeyException, InvalidAlgorithmParameterException
 	{

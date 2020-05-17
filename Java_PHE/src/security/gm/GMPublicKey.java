@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.PublicKey;
 
-public class GMPublicKey implements Serializable, PublicKey
+public class GMPublicKey implements Serializable, PublicKey, GMKey
 {
 	private static final long serialVersionUID = -235857914395127699L;
 	protected final BigInteger n;
@@ -29,5 +29,10 @@ public class GMPublicKey implements Serializable, PublicKey
 	public byte[] getEncoded()
 	{
 		return null;
+	}
+
+	public BigInteger getN() 
+	{
+		return this.n;
 	}
 }

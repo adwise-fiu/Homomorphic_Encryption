@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.Security;
@@ -10,9 +9,7 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 
 import security.DGK.DGKKeyPairGenerator;
 import security.DGK.DGKOperations;
@@ -146,15 +143,12 @@ public class Main
 				System.out.println(ElGamalCipher.decrypt(e_sk, t_2));
 				//test_signature();
 				
-				// start with GM: BUGS!
-				List<BigInteger> enc_bits = GMCipher.encrypt(BigInteger.TEN, gm_pk);
-				System.out.println("GM: " + GMCipher.decrypt(enc_bits, gm_sk));
-				
 				// Stress Test
 				System.out.println("Running operations " + SIZE + " times each");
-				Paillier_Test();
+				GM_Test();
+				// Paillier_Test();
 				// DGK_Test();
-				ElGamal_Test();
+				//ElGamal_Test();
 				System.exit(0);
 				
 				bob_socket = new ServerSocket(9254);
@@ -997,33 +991,10 @@ public class Main
 		BigInteger t = NTL.generateXBitRandom(15);
 		long start = 0;
 		
-		PaillierCipher test_pa = new PaillierCipher();
-		byte [] test;
-		
 		start = System.nanoTime();
 		for(int i = 0; i < SIZE; i++)
 		{
 			PaillierCipher.encrypt(t, pk);
-			try 
-			{
-				test_pa.init(Cipher.ENCRYPT_MODE, pk);
-				test = test_pa.doFinal(t.toByteArray());
-				test_pa.init(Cipher.DECRYPT_MODE, sk);
-				System.out.println(test.length);
-				test = test_pa.doFinal(test);
-				if(new BigInteger(test).equals(t))
-				{
-					System.out.println("YAY!");
-				}
-				else
-				{
-					System.out.println("FUCKKKKKK");
-				}
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
 		}
 		System.out.println("Time to complete encryption: " + ((System.nanoTime() - start)/BILLION) + " seconds");
 		
@@ -1128,33 +1099,7 @@ public class Main
 		System.out.println("START ELGAMAL TESTING!");
 		start = System.nanoTime();
 		for(int i = 0; i < SIZE; i++)
-		{
-			byte [] test;
-			ElGamalCipher test_el = new ElGamalCipher();
-			try 
-			{
-				test_el.init(Cipher.ENCRYPT_MODE, e_pk);
-				test = test_el.doFinal(t.toByteArray());
-				test_el.init(Cipher.DECRYPT_MODE, e_sk);
-				test = test_el.doFinal(test);
-				if(new BigInteger(test).equals(t))
-				{
-					System.out.println("YAY!");
-				}
-				else
-				{
-					System.out.println("FUCKKKKKK");
-				}
-			}
-			catch (InvalidKeyException | InvalidAlgorithmParameterException e) 
-			{
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				e.printStackTrace();
-			} catch (IllegalBlockSizeException e) {
-				e.printStackTrace();
-			}
-			
+		{	
 			ElGamalCipher.encrypt(e_pk, t);
 		}
 		System.out.println("Time to complete encryption: " + ((System.nanoTime() - start)/BILLION) + " seconds");
@@ -1182,5 +1127,51 @@ public class Main
 			temp = ElGamalCipher.multiply(temp, t, e_pk);
 		}
 		System.out.println("Time to complete multiplication: " + ((System.nanoTime() - start)/BILLION) + " seconds");
+	}
+	
+	// ElGamal Testing
+	public static void GM_Test()
+	{		
+		// Encrypt
+		BigInteger t = NTL.generateXBitRandom(15);
+		List<BigInteger> enc_t = GMCipher.encrypt(t, gm_pk);
+		long start = 0;
+
+		System.out.println("START GOLDWASSER-MICALI TESTING!");
+		start = System.nanoTime();
+		GMCipher gm_test = new GMCipher();
+		byte [] test;
+		for(int i = 0; i < SIZE; i++)
+		{
+			GMCipher.encrypt(t, gm_pk);
+			try
+			{
+				gm_test.init(Cipher.ENCRYPT_MODE, gm_pk);
+				test = gm_test.doFinal(t.toByteArray());
+				gm_test.init(Cipher.DECRYPT_MODE, gm_sk);
+				test = gm_test.doFinal(test);
+				if(new BigInteger(test).equals(t))
+				{
+					System.out.println("YAY");
+				}
+				else
+				{
+					System.out.println("FUCK");
+				}
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Time to complete encryption: " + ((System.nanoTime() - start)/BILLION) + " seconds");
+
+		// Decrypt
+		start = System.nanoTime();
+		for(int i = 0; i < SIZE; i++)
+		{
+			GMCipher.decrypt(enc_t, gm_sk);
+		}
+		System.out.println("Time to complete decryption: " + ((System.nanoTime() - start)/BILLION) + " seconds");
 	}
 }
