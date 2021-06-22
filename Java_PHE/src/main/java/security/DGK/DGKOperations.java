@@ -571,10 +571,10 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 		{
 			throw new HomomorphicException("DGKMultiply Invalid Parameter ciphertext: " + ciphertext);
 		}
-		if(plaintext.compareTo(pk.bigU) == 1)
-		{
-			throw new HomomorphicException("DGKMultiply Invalid Parameter plaintext: " + plaintext);
-		}
+		//if(plaintext.compareTo(pk.bigU) == 1)
+		//{
+		//	throw new HomomorphicException("DGKMultiply Invalid Parameter plaintext: " + plaintext);
+		//}
 		return ciphertext.modPow(plaintext, pk.n);
 	}
 	

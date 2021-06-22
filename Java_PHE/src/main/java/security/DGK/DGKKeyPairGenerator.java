@@ -18,6 +18,11 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	private boolean no_skip_public_key_maps = true;
 	private SecureRandom rnd = null;
 	
+	public DGKKeyPairGenerator()
+	{
+		this.initialize(this.k, null);
+	}
+	
 	/**
 	 * Initialize DGK Key pair generator and sets DGK parameters
 	 * @param l - sets size of plaintext
@@ -59,12 +64,12 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 		this.l = l;
 		this.t = t;
 		this.k = k;
-		this.initialize(k, null);
+		this.initialize(this.k, null);
 	}
 
 	public int getL()
 	{
-		return l;
+		return this.l;
 	}
 	
 	public void setL(int l) throws HomomorphicException
@@ -88,7 +93,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	
 	public int getT()
 	{
-		return t;
+		return this.t;
 	}
 	
 	public void setT(int t) throws HomomorphicException
@@ -146,7 +151,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	}
 
 	/**
-	 * @return DGK Keypair
+	 * @return DGK Key Pair
 	 */
 	public KeyPair generateKeyPair() 
 	{
