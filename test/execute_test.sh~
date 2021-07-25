@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Create Bob and Alice
+javac -cp crypto.jar test_alice.java
+javac -cp crypto.jar test_bob.java
+
+# Create Bob to run in background
+java -cp crypto.jar test.test_bob 
+#sleep 5m
+#java -cp crypto.jar test.test_alice
