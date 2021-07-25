@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
 import security.DGK.DGKOperations;
 import security.DGK.DGKPublicKey;
 import security.elgamal.ElGamalCipher;
@@ -21,7 +20,7 @@ import security.socialistmillionaire.alice;
 // https://docs.jboss.org/jrunit/docs/ch03.html
 
 // Client
-public class Alice extends TestCase
+public class Alice
 {
 	private static alice Niu = null;
 	

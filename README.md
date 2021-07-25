@@ -737,9 +737,15 @@ Code author: Andrew Quijano
 
 | Name/Title with Link | Authors | Venue | Description
 | ------------- | ------------- |  ------------- | ------------- |
-| [Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting](https://arxiv.org/abs/2008.11612) | Quijano A. and Akkaya K. | IEEE MASS 2019 | This paper is implemented the libaray in this repository
+| [Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting](https://arxiv.org/abs/2008.11612) | Andrew Quijano and Kemal Akkaya | IEEE MASS 2019 | This paper is implemented the libaray in this repository
+| [Efficient and Secure Comparison for On-Line Auctions](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.215.5941&rep=rep1&type=pdf) | Ivan Damgaard, Martin Geisler, and Mikkel Kroigaard | Australasian conference on information security and privacy. | This paper is the first introduction to DGK. There is a correction to this paper listed [here](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.215.5941&rep=rep1&type=pdf)
+|[Improving the DGK comparison protocol](citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.456.5314&rep=rep1&type=pdf)| Thijs Veugen | 2012 IEEE International Workshop on Information Forensics and Security (WIFS) | This paper describes improvements to the DGK comparison protocol. Protocol 4 had a correction shown [here](https://eprint.iacr.org/2018/1100.pdf)
+ |[Encrypted Integer Division](https://www.academia.edu/download/51716137/Encrypted_integer_division20170209-12588-kq9aar.pdf)| Thijis Veugen | 2010 IEEE International Workshop on Information Forensics and Security | This repository implements Protocol 2 for Encrypted Division
+ |[Correction of a Secure Comparison Protocol for Encrypted Integers in IEEE WIFS 2012](https://link.springer.com/chapter/10.1007/978-3-319-64200-0_11) | Baptiste Vinh Mau & Koji Nuida | 2012 IEEE International Workshop on Information Forensics and Security (WIFS) | This paper describes a secure multiplication protocol used in this repository
+ |[A Secure and Optimally Efficient Multi-Authority Election Scheme](citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.57.127&rep=rep1&type=pdf)| Ronald Cramer, Rosario Gennaro, Berry Schoenmakers | | This paper describes how El-Gamal was implemented in this repo
+ |[Public-Key Cryptosystems Based on Composite Degree Residuosity Classes](https://link.springer.com/content/pdf/10.1007/3-540-48910-X_16.pdf) | Pascal Paillier | International conference on the theory and applications of cryptographic techniques | This paper is the original paper describing Paillier, which is how it is currently implemented as it has certain advantages over other variations
 
-The work to create this repository was initially funded by the US NSF REU Site at FIU under the grant number REU CNS-1461119.
+The work to create this repository was initially funded by the US NSF REU Site at FIU under the grant number REU CNS-1461119.  
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)

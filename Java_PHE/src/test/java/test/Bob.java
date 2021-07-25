@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 
-import junit.framework.TestCase;
 import security.DGK.DGKKeyPairGenerator;
 import security.elgamal.ElGamalKeyPairGenerator;
 import security.misc.HomomorphicException;
@@ -15,7 +14,7 @@ import security.paillier.PaillierKeyPairGenerator;
 import security.socialistmillionaire.bob;
 
 //Server
-public class Bob extends TestCase
+public class Bob
 {
 	// Initialize Alice and Bob
 	private static ServerSocket bob_socket = null;
