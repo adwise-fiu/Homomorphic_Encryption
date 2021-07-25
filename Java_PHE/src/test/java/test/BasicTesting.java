@@ -178,5 +178,12 @@ public class BasicTesting
 		BigInteger [] c = GMCipher.xor(a, a, pk);
 		assertEquals(BigInteger.ZERO, GMCipher.decrypt(c, sk));
 	}
+	
+	
+	@Test
+	public void integration() throws HomomorphicException 
+	{
+		
+	}
 
 }

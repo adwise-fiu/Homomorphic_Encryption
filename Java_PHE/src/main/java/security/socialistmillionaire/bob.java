@@ -110,7 +110,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		powL = TWO.pow(pubKey.getL());
 		
 		// ONLY IN DEBUG/DEVELOP
-		this.debug();
+		// this.debug();
 	}
 	
 	/**
@@ -346,7 +346,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		BigInteger deltaA = null;
 
 		//Step 1: Bob sends encrypted bits to Alice
-		BigInteger EncY[] = new BigInteger[y.bitLength()];
+		BigInteger [] EncY = new BigInteger[y.bitLength()];
 		for (int i = 0; i < y.bitLength(); i++)
 		{
 			if(y.testBit(i))
@@ -1001,6 +1001,7 @@ public final class bob extends socialist_millionaires implements Runnable
 
 	protected void debug() throws IOException
 	{
+		System.out.println("WARNING: DEBUG MODE ACTIVATED. IF USING FOR REAL COMMENT OUT LINE 113");
 		toAlice.writeObject(privKey);
 		toAlice.flush();
 		toAlice.writeObject(sk);

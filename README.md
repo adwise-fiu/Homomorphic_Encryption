@@ -145,23 +145,27 @@ Please review Protocol 2 in the "Encrypted Integer Division" paper by Thjis Veug
 # security.socialistmillionaire.bob
 **Initialize**
 ```java
+ServerSocket bob_socket = null;
+Socket bob_client = null;
+int KEY_SIZE = 1024;
+bob andrew = null;
+    	
 // Build all Key Pairs
-GMKeyPairGenerator gmg = new GMKeyPairGenerator();
-gmg.initialize(KEY_SIZE, null);
-KeyPair gm = gmg.generateKeyPair();
-
 PaillierKeyPairGenerator p = new PaillierKeyPairGenerator();
 p.initialize(KEY_SIZE, null);
 KeyPair pe = p.generateKeyPair();
 
+DGKKeyPairGenerator d = new DGKKeyPairGenerator();
+d.initialize(KEY_SIZE, null);
+KeyPair DGK = d.generateKeyPair();
+    	
 ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator();
-// NULL -> ADDITIVE
-// NOT NULL -> MULTIPLICATIVE
 pg.initialize(KEY_SIZE, new SecureRandom());
 KeyPair el_gamal = pg.generateKeyPair();
-	
+    		
 bob_socket = new ServerSocket(9254);
 bob_client = bob_socket.accept();
+    	
 // Note: Alice automatically gets the public keys!
 andrew = new bob(bob_client, pe, DGK, el_gamal);
 ```
@@ -722,6 +726,7 @@ Verify the signature using the Paillier Public Key
     * valid (**boolean**) - true if valid, false if not valid 
 * Raises (**HomomorphicException**)
     * N/A
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
@@ -730,12 +735,9 @@ Please make sure to update tests as appropriate.
 ## Authors and acknowledgment
 Code author: Andrew Quijano  
 
-All papers and protocols used in the code have been published in various cryptography journals. Please view the Papers directory to read the paper this library code implements. If you use this library, please cite the papers in the Papers directory. 
-
-Also, please cite the paper:
-A. Quijano and K. Akkaya, "Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting," 2019 IEEE 16th International Conference on Mobile Ad Hoc and Sensor Systems Workshops (MASSW), Monterey, CA, USA, 2019, pp. 53-57, doi: 10.1109/MASSW.2019.00017.  
-
-https://arxiv.org/abs/2008.11612
+| Name/Title with Link | Authors | Venue | Description
+| ------------- | ------------- |  ------------- | ------------- |
+| [Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting](https://arxiv.org/abs/2008.11612) | Quijano A. and Akkaya K. | IEEE MASS 2019 | This paper is implemented the libaray in this repository
 
 The work to create this repository was initially funded by the US NSF REU Site at FIU under the grant number REU CNS-1461119.
 

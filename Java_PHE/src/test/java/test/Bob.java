@@ -1,33 +1,28 @@
 package test;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyPair;
 import java.security.SecureRandom;
-import java.util.List;
 
+import junit.framework.TestCase;
 import security.DGK.DGKKeyPairGenerator;
 import security.elgamal.ElGamalKeyPairGenerator;
-import security.gm.GMCipher;
-import security.gm.GMKeyPairGenerator;
-import security.gm.GMPrivateKey;
-import security.gm.GMPublicKey;
 import security.misc.HomomorphicException;
-import security.paillier.PaillierCipher;
 import security.paillier.PaillierKeyPairGenerator;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
 import security.socialistmillionaire.bob;
 
-public class Bob 
+//Server
+public class Bob extends TestCase
 {
 	// Initialize Alice and Bob
 	private static ServerSocket bob_socket = null;
 	private static Socket bob_client = null;
 	private static bob andrew = null;
 	
-	private static final int KEY_SIZE = 1624;
+	private static final int KEY_SIZE = 1024;
 
 	// Get your test data...
 	private static BigInteger [] low = StressTest.generate_low();
@@ -53,15 +48,6 @@ public class Bob
 			// NOT NULL -> MULTIPLICATIVE
 			pg.initialize(KEY_SIZE, new SecureRandom());
 			KeyPair el_gamal = pg.generateKeyPair();
-			
-			// Build GM Keys
-			GMKeyPairGenerator gmg = new GMKeyPairGenerator();
-			gmg.initialize(KEY_SIZE, null);
-			KeyPair gm = gmg.generateKeyPair();
-			
-			basic_Paillier(pe);
-			basic_gm(gm);
-			System.exit(0);
 			
 			bob_socket = new ServerSocket(9254);
 			System.out.println("Bob is ready...");
@@ -116,48 +102,6 @@ public class Bob
 				e.printStackTrace();
 			}
 		}
-	}
-	
-	public static void basic_Paillier(KeyPair p) throws HomomorphicException
-	{
-		PaillierPublicKey pk = (PaillierPublicKey) p.getPublic();
-		PaillierPrivateKey sk = (PaillierPrivateKey) p.getPrivate();
-		
-		// Test D(E(X)) = X
-		BigInteger a = PaillierCipher.encrypt(BigInteger.TEN, pk);
-		a = PaillierCipher.decrypt(a, sk);
-		assert(BigInteger.TEN.equals(a));
-		
-		// Test Addition
-		a = PaillierCipher.encrypt(a, pk);
-		a = PaillierCipher.add(a, a, pk);//20
-		assert(new BigInteger("20").equals(PaillierCipher.decrypt(a, sk)));
-		
-		// Test Subtraction
-		a = PaillierCipher.subtract(a, PaillierCipher.encrypt(BigInteger.TEN, pk), pk);// 20 - 10
-		assert(BigInteger.TEN.equals(PaillierCipher.decrypt(a, sk)));
-		
-		// Test Multiplication
-		a = PaillierCipher.multiply(a, BigInteger.TEN, pk); // 10 * 10
-		assert(new BigInteger("100").equals(PaillierCipher.decrypt(a, sk)));
-		
-		// Test Division
-		a = PaillierCipher.divide(a, new BigInteger("2"), pk); // 100/2 
-		assert(new BigInteger("50").equals(PaillierCipher.decrypt(a, sk)));
-	}
-	
-	public static void basic_gm(KeyPair p) throws HomomorphicException 
-	{
-		GMPublicKey pk = (GMPublicKey) p.getPublic();
-		GMPrivateKey sk = (GMPrivateKey) p.getPrivate();
-		
-		// Test D(E(X)) = X
-		List<BigInteger> a = GMCipher.encrypt(BigInteger.TEN, pk);
-		assert(BigInteger.TEN.equals(GMCipher.decrypt(a, sk)));
-		
-		// Test XOR
-		BigInteger [] c = GMCipher.xor(a, a, pk);
-		assert(BigInteger.ZERO.equals(GMCipher.decrypt(c, sk)));
 	}
 	
 	// ------------------------------------ Basic demo methods-------------------------------------

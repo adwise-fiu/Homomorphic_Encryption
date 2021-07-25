@@ -113,7 +113,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
-			throw new IllegalArgumentException("Protocol 3 Step 1: Missing Y-bits!");
+			throw new IllegalArgumentException("Protocol 1 Step 1: Missing Y-bits!");
 		}
 
 		if (x.bitLength() < Encrypted_Y.length)
@@ -369,6 +369,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + in.getClass().getName());
 			throw new IllegalArgumentException("Protocol 3 Step 1: Missing Y-bits!");
 		}
 
@@ -568,6 +569,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + in.getClass().getName());
 			throw new IllegalArgumentException("BigInteger: d not found!");
 		}
 		
@@ -579,6 +581,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + in.getClass().getName());
 			throw new IllegalArgumentException("BigInteger []: C not found!");
 		}
 		
@@ -871,6 +874,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + bob.getClass().getName());
 			throw new IllegalArgumentException("Protocol 2, Step 5: BigInteger z_1 not found!");
 		}
 		
@@ -881,6 +885,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + bob.getClass().getName());
 			throw new IllegalArgumentException("Protocol 2, Step 5: BigInteger z_2 not found!");
 		}
 		
@@ -1033,6 +1038,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + bob.getClass().getName());
 			throw new IllegalArgumentException("Protocol 4, Step 5: BigInteger z_1 not found!");
 		}
 		
@@ -1043,6 +1049,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + bob.getClass().getName());
 			throw new IllegalArgumentException("Protocol 4, Step 5: BigInteger z_2 not found!");
 		}
 		
@@ -1176,6 +1183,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + in.getClass().getName());
 			throw new IllegalArgumentException("Division: c is not found: " + in.getClass().getName());
 		}
 		
@@ -1248,6 +1256,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + in.getClass().getName());
 			throw new IllegalArgumentException("Didn't get [[x' * y']] from Bob: " + in.getClass().getName());
 		}
 		return result;
@@ -1308,6 +1317,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + in.getClass().getName());
 			throw new IllegalArgumentException("Didn't get [[x' * y']] from Bob: " + in.getClass().getName());
 		}
 		return result;
@@ -1357,6 +1367,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + in.getClass().getName());
 			throw new IllegalArgumentException("Alice: BigInteger not found! " + in.getClass().getName());
 		}
 		
@@ -1416,6 +1427,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		else
 		{
+			System.err.println("Invalid Object received: " + in.getClass().getName());
 			throw new IllegalArgumentException("Didn't get [[x' * y']] from Bob: " + in.getClass().getName());
 		}
 		return result;
@@ -1786,6 +1798,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		x = fromBob.readObject();
 		if (x instanceof DGKPublicKey)
 		{
+			System.out.println("Alice Received DGK Public key from Bob");
 			pubKey = (DGKPublicKey) x;
 		}
 		else
@@ -1796,6 +1809,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		x = fromBob.readObject();
 		if(x instanceof PaillierPublicKey)
 		{
+			System.out.println("Alice Received Paillier Public key from Bob");
 			pk = (PaillierPublicKey) x;
 		}
 		else
@@ -1806,6 +1820,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		x = fromBob.readObject();
 		if(x instanceof ElGamalPublicKey)
 		{
+			System.out.println("Alice Received ElGamal Public key from Bob");
 			e_pk = (ElGamalPublicKey) x;
 		}
 		else
