@@ -15,8 +15,7 @@ As the partially homomorphic encryption systems only support addition with two c
 * Secure Comparison
 
 ## Installation
-Please retrieve the JAR file from the latest release:  
-https://github.com/AndrewQuijano/Homomorphic_Encryption/tags
+Please retrieve the JAR file from [here](https://github.com/AndrewQuijano/Homomorphic_Encryption/tags)
 
 As this library uses Java 8, the JAR file can be imported into an Android project.
 If you want to review/edit the library, import the JAVA_PHE directory into a Eclipse project and edit as necessary. The Main.java folder only exists for testing and provide examples of how to use the library.

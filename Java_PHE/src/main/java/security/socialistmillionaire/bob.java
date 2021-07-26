@@ -109,7 +109,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		this.isDGK = false;
 		powL = TWO.pow(pubKey.getL());
 		
-		// ONLY IN DEBUG/DEVELOP
+		// ONLY IN DEBUG/DEVELOPMENT
 		// this.debug();
 	}
 	
@@ -975,6 +975,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		if(pubKey != null)
 		{
 			toAlice.writeObject(pubKey);
+			System.out.println("Bob sent DGK Public Key to Alice");
 		}
 		else
 		{
@@ -982,7 +983,8 @@ public final class bob extends socialist_millionaires implements Runnable
 		}
 		if(pk != null)
 		{
-			toAlice.writeObject(pk);	
+			toAlice.writeObject(pk);
+			System.out.println("Bob sent Paillier Public Key to Alice");
 		}
 		else
 		{
@@ -991,6 +993,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		if(e_pk != null)
 		{
 			toAlice.writeObject(e_pk);
+			System.out.println("Bob sent ElGamal Public Key to Alice");
 		}
 		else
 		{

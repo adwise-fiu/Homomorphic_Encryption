@@ -79,6 +79,14 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 		// secret key is (p, x) and public key is (p, g, h)
 		ElGamalPrivateKey sk = new ElGamalPrivateKey(p, x, g, h, ADDITIVE);
 		ElGamalPublicKey pk = new ElGamalPublicKey(p, g, h, ADDITIVE);
+		if (ADDITIVE)
+		{
+			System.out.println("El-Gamal Key pair generated! (Supports Addition over Ciphertext/Scalar Multiplication");
+		}
+		else
+		{
+			System.out.println("El-Gamal Key pair generated! (Supports Multiplication over Ciphertext)");
+		}
 		return new KeyPair(pk, sk);
 	}
 
