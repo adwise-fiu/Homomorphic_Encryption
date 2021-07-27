@@ -5,53 +5,41 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyPair;
-import java.security.SecureRandom;
 
-import security.DGK.DGKKeyPairGenerator;
-import security.elgamal.ElGamalKeyPairGenerator;
 import security.misc.HomomorphicException;
-import security.paillier.PaillierKeyPairGenerator;
 import security.socialistmillionaire.bob;
 
-//Server
-public class Bob
+// Server-side
+public class Bob implements Runnable
 {
 	// Initialize Alice and Bob
 	private static ServerSocket bob_socket = null;
 	private static Socket bob_client = null;
 	private static bob andrew = null;
 	
-	private static final int KEY_SIZE = 1024;
-
 	// Get your test data...
 	private static BigInteger [] low = StressTest.generate_low();
 	private static BigInteger [] mid = StressTest.generate_mid();
 	
-	public static void main(String [] args) throws HomomorphicException
+	private KeyPair p;
+	private KeyPair d;
+	private KeyPair e;
+	
+	public Bob(KeyPair paillier, KeyPair dgk, KeyPair elgamal)
 	{
+		this.p = paillier;
+		this.d = dgk;
+		this.e = elgamal;
+	}
+	
+	// This could would be in Bob's Main Method
+	public void run() {
 		try
-		{
-			// Build DGK Keys
-			DGKKeyPairGenerator gen = new DGKKeyPairGenerator(16, 160, 1624);
-			gen.initialize(KEY_SIZE, null);
-			KeyPair DGK = gen.generateKeyPair();
-			
-			// Build Paillier Keys
-			PaillierKeyPairGenerator p = new PaillierKeyPairGenerator();
-			p.initialize(KEY_SIZE, null);
-			KeyPair pe = p.generateKeyPair();
-			
-			// Build ElGamal Keys
-			ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator();
-			// NULL -> ADDITIVE
-			// NOT NULL -> MULTIPLICATIVE
-			pg.initialize(KEY_SIZE, new SecureRandom());
-			KeyPair el_gamal = pg.generateKeyPair();
-			
+		{	
 			bob_socket = new ServerSocket(9254);
 			System.out.println("Bob is ready...");
 			bob_client = bob_socket.accept();
-			andrew = new bob(bob_client, pe, DGK, el_gamal);
+			andrew = new bob(bob_client, this.p, this.d, this.e);
 			
 			// Test K-Min using Protocol 4
 			// Line 99 in Alice matches to Line 158-165 in Bob
@@ -67,13 +55,6 @@ public class Bob
 			// Lines 162-163 in Alice matches to Line 167-168 in Bob
 			bob_demo();
 			bob_demo_ElGamal();
-
-			// Stress Test the Protocols (get time to compute)
-			//andrew.setDGKMode(false);
-			//bob(); //Paillier
-			//andrew.setDGKMode(true);
-			//bob(); //DGK
-			//bob_ElGamal();
 		}
 		catch (IOException | ClassNotFoundException x)
 		{
@@ -82,6 +63,9 @@ public class Bob
 		catch(IllegalArgumentException o)
 		{
 			o.printStackTrace();
+		} 
+		catch (HomomorphicException e) {
+			e.printStackTrace();
 		}
 		finally
 		{
@@ -224,4 +208,6 @@ public class Bob
 			andrew.ElGamal_Protocol4();
 		}
 	}
+
+
 }

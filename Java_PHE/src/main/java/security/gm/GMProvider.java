@@ -8,7 +8,7 @@ public class GMProvider extends Provider
 
 	public GMProvider() 
 	{
-		 super("GM", 1.0, "GM v1.0");
+		 super("GM", "GM", "1.0");
 		 put("KeyPairGenerator.GM", GMKeyPairGenerator.class.getName());
 		 put("Cipher.GM", GMCipher.class.getName());
 		 // put("KeyFactory.GM", GMKeyFactory.class.getName());

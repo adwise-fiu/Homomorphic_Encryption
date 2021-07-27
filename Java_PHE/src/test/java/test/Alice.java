@@ -17,10 +17,8 @@ import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;
 import security.socialistmillionaire.alice;
 
-// https://docs.jboss.org/jrunit/docs/ch03.html
-
 // Client
-public class Alice
+public class Alice implements Runnable
 {
 	private static alice Niu = null;
 	
@@ -33,10 +31,14 @@ public class Alice
 	private static BigInteger [] mid = StressTest.generate_mid();
 	private static BigInteger [] high = StressTest.generate_high();
 	
-	public static void main(String [] args)
-	{
+	// This would have been in Alice's (Client) Main Function
+	public void run() {
 		try 
 		{
+			// Wait then connect!
+			System.out.println("Alice sleeps...");
+			Thread.sleep(2 * 1000);
+			System.out.println("Alice woke up...");
 			Niu = new alice(new Socket("127.0.0.1", 9254));
 			pk = Niu.getPaillierPublicKey();
 			pubKey = Niu.getDGKPublicKey();
@@ -48,19 +50,16 @@ public class Alice
 			// Test Protocol 1 - 4 Functionality
 			alice_demo();
 			alice_demo_ElGamal();
-		
-			// Stress Test Protocol 1 - 4 Functionality
-			// Niu.setDGKMode(false);
-			// alice_Paillier();
-			// Niu.setDGKMode(true);
-			// alice_DGK();
-			// alice_ElGamal();
-		} 
+		}
 		catch (ClassNotFoundException | IOException e) 
 		{
 			e.printStackTrace();
 		} 
 		catch (HomomorphicException e) 
+		{
+			e.printStackTrace();
+		}
+		catch (InterruptedException e)
 		{
 			e.printStackTrace();
 		}

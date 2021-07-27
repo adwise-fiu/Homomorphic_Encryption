@@ -108,9 +108,6 @@ public final class bob extends socialist_millionaires implements Runnable
 		this.sendPublicKeys();
 		this.isDGK = false;
 		powL = TWO.pow(pubKey.getL());
-		
-		// ONLY IN DEBUG/DEVELOPMENT
-		// this.debug();
 	}
 	
 	/**
@@ -672,7 +669,9 @@ public final class bob extends socialist_millionaires implements Runnable
 		{
 			if(isDGK)
 			{
-				answer = (int) (DGKOperations.decrypt((BigInteger) x, privKey) + 1 % pubKey.getU().longValue());
+				long decrypt = DGKOperations.decrypt((BigInteger) x, privKey);
+				decrypt = (decrypt + 1) % pubKey.getU().longValue();
+				answer = (int) decrypt;
 			}
 			else
 			{
@@ -994,24 +993,6 @@ public final class bob extends socialist_millionaires implements Runnable
 		{
 			toAlice.writeObject(e_pk);
 			System.out.println("Bob sent ElGamal Public Key to Alice");
-		}
-		else
-		{
-			toAlice.writeObject(BigInteger.ZERO);
-		}
-		toAlice.flush();
-	}
-
-	protected void debug() throws IOException
-	{
-		System.out.println("WARNING: DEBUG MODE ACTIVATED. IF USING FOR REAL COMMENT OUT LINE 113");
-		toAlice.writeObject(privKey);
-		toAlice.flush();
-		toAlice.writeObject(sk);
-		toAlice.flush();
-		if(e_sk != null)
-		{
-			toAlice.writeObject(e_sk);
 		}
 		else
 		{
