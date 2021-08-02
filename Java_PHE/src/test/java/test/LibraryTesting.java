@@ -30,31 +30,31 @@ import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.util.List;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class LibraryTesting 
 {	
-	private int KEY_SIZE = 1024;
+	private static int KEY_SIZE = 1024;
 	
 	// All Key Pairs
-	private KeyPair dgk = null;
-	private KeyPair paillier = null;
-	private KeyPair el_gamal = null;
+	private static KeyPair dgk = null;
+	private static KeyPair paillier = null;
+	private static KeyPair el_gamal = null;
 	
 	// Build DGK Keys
-	private DGKPublicKey dgk_pk = null;
-	private DGKPrivateKey dgk_sk = null;
+	private static DGKPublicKey dgk_pk = null;
+	private static DGKPrivateKey dgk_sk = null;
 	
-	private PaillierPublicKey pk = null;
-	private PaillierPrivateKey sk = null;
+	private static PaillierPublicKey pk = null;
+	private static PaillierPrivateKey sk = null;
 
-	private ElGamalPublicKey el_pk = null;
-	private ElGamalPrivateKey el_sk = null;
+	private static ElGamalPublicKey el_pk = null;
+	private static ElGamalPrivateKey el_sk = null;
 	
-	@Before
-	public void generate_keys() throws HomomorphicException
+	@BeforeClass
+	public static void generate_keys() throws HomomorphicException
 	{
 		// Build DGK Keys
 		DGKKeyPairGenerator p = new DGKKeyPairGenerator();
@@ -67,9 +67,9 @@ public class LibraryTesting
 		// Build Paillier Keys
 		PaillierKeyPairGenerator pa = new PaillierKeyPairGenerator();
 		p.initialize(KEY_SIZE, null);
-		this.paillier = pa.generateKeyPair();		
-		pk = (PaillierPublicKey) this.paillier.getPublic();
-		sk = (PaillierPrivateKey) this.paillier.getPrivate();
+		paillier = pa.generateKeyPair();		
+		pk = (PaillierPublicKey) paillier.getPublic();
+		sk = (PaillierPrivateKey) paillier.getPrivate();
 		
 		// Build Additive El-Gamal Key
 		ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator();
@@ -77,8 +77,8 @@ public class LibraryTesting
 		// NOT NULL -> MULTIPLICATIVE
 		pg.initialize(KEY_SIZE, null);
 		el_gamal = pg.generateKeyPair();
-		el_pk = (ElGamalPublicKey) this.el_gamal.getPublic();
-		el_sk = (ElGamalPrivateKey) this.el_gamal.getPrivate();
+		el_pk = (ElGamalPublicKey) el_gamal.getPublic();
+		el_sk = (ElGamalPrivateKey) el_gamal.getPrivate();
 	}
 	
 	@Test
