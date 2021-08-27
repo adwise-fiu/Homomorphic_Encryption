@@ -15,14 +15,15 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-test {
-    testLogging {
+// Commenting because it doesn't work well on TravisCI
+//test {
+//    testLogging {
         // Make sure output from
         // standard out or error is shown
         // in Gradle output.
-        showStandardStreams = true
-    }
-}
+//        showStandardStreams = true
+//    }
+//}
 
 // This library was built for Java 8 so it can be imported into Android as well.
 // If you want to use a later version of Java, this should help point what to tweak.
