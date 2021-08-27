@@ -201,13 +201,14 @@ public class LibraryTesting
 		for (int i = 0; i < 1000; i++)
 		{
 			paillier.update(BigInteger.valueOf(i).toByteArray());
+			boolean answer = paillier.verify(signed_answer);
 			if (i == 42)
 			{
-				assertEquals(paillier.verify(signed_answer), true);
+				assertEquals(answer, true);
 			}
 			else
 			{
-				assertEquals(paillier.verify(signed_answer), false);
+				assertEquals(answer, false);
 			}
 		}
 		
