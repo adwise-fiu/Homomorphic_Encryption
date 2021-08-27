@@ -24,6 +24,14 @@ test {
     }
 }
 
+// This library was built for Java 8 so it can be imported into Android as well.
+// If you want to use a later version of Java, this should help point what to tweak.
+gradle.projectsEvaluated {
+      	tasks.withType(JavaCompile){
+   		options.compilerArgs << "-Xlint:deprecation"
+	}
+}
+
 jacocoTestReport {
     reports {
         xml.enabled true
