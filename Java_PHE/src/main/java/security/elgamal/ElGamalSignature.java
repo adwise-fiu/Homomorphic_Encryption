@@ -230,12 +230,12 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 
 		if (r.compareTo(BigInteger.ZERO) <= 0 || r.compareTo(pk.p.subtract(BigInteger.ONE)) == 1)
 		{
-			System.err.println("r: " + r + " and " + pk.p.subtract(BigInteger.ONE));
+			//System.err.println("(ElGamal Signature) r: " + r + " and " + pk.p.subtract(BigInteger.ONE));
 			return false;
 		}
 		if (s.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(pk.p.subtract(TWO)) == 1)
 		{
-			System.err.println("s: " + s + " and " + pk.p.subtract(TWO));
+			//System.err.println("(ElGamal Signature) s: " + s + " and " + pk.p.subtract(TWO));
 			return false;
 		}
 		// h = y = g^x
