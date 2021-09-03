@@ -1,6 +1,7 @@
 # Compiled class file
 *.class
-test/*.class
+auction_offline/*.class
+auction_online/*.class
 
 # Log file
 *.log
@@ -12,7 +13,7 @@ test/*.class
 .mtj.tmp/
 
 # Package Files #
-*.jar
+#*.jar
 *.war
 *.nar
 *.ear
