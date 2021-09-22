@@ -17,6 +17,10 @@ import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;
 import security.socialistmillionaire.alice;
 
+
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 // Client
 public class Alice implements Runnable
 {
@@ -123,15 +127,27 @@ public class Alice implements Runnable
 	public void run() {
 		try 
 		{
+		      	ObjectInputStream fromBob = null;
+			ObjectOutputStream toBob = null;
+
 			// Wait then connect!
 			System.out.println("Alice sleeps...");
-			Thread.sleep(2 * 1000);
+			Thread.sleep(4 * 1000);
 			System.out.println("Alice woke up...");
-			Niu = new alice(new Socket("127.0.0.1", 9254));
+			
+			Socket bob_socket = new Socket("127.0.0.1", 9254);
+			toBob = new ObjectOutputStream(bob_socket.getOutputStream());
+			fromBob = new ObjectInputStream(bob_socket.getInputStream());
+
+			Niu = new alice(bob_socket);
 			pk = Niu.getPaillierPublicKey();
 			pubKey = Niu.getDGKPublicKey();
 			e_pk = Niu.getElGamalPublicKey();
 			
+			// Read object from Bob
+        		Object x = fromBob.readObject();
+        		BigInteger firstNumberEncrypted = (BigInteger) x;
+
 			// Test K-min
 			k_min();
 			

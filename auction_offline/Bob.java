@@ -8,6 +8,12 @@ import java.security.KeyPair;
 import security.misc.HomomorphicException;
 import security.socialistmillionaire.bob;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import security.paillier.PaillierCipher;
+import security.paillier.PaillierPublicKey;
+
 // Server-side
 public class Bob implements Runnable
 {
@@ -93,12 +99,30 @@ public class Bob implements Runnable
 	// This could would be in Bob's Main Method
 	public void run() {
 		try
-		{	
+		{
+		    	ObjectInputStream fromAlice = null;
+			ObjectOutputStream toAlice = null;
+			
+			PaillierPublicKey pk = (PaillierPublicKey) this.p.getPublic();
+			BigInteger encrypted_bob = PaillierCipher.encrypt(new BigInteger("9001"), pk);
+
 			bob_socket = new ServerSocket(9254);
 			System.out.println("Bob is ready...");
 			bob_client = bob_socket.accept();
+			System.out.println("Bob Connected...");
+
+			// Create communication to Alice
+			toAlice = new ObjectOutputStream(bob_client.getOutputStream());
+			System.out.println("Bob Stream 1");
+			fromAlice = new ObjectInputStream(bob_client.getInputStream());
+			
+			// Set up Alice/Bob connection
 			andrew = new bob(bob_client, this.p, this.d, this.e);
 			
+    			// Send the encrypted number to Alice
+    			toAlice.writeObject(encrypted_bob);
+    			toAlice.flush();
+    			
 			// Test K-Min using Protocol 4
 			// Line 99 in Alice matches to Line 158-165 in Bob
 			andrew.setDGKMode(false);
