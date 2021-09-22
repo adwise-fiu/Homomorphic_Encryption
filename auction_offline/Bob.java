@@ -109,11 +109,9 @@ public class Bob implements Runnable
 			bob_socket = new ServerSocket(9254);
 			System.out.println("Bob is ready...");
 			bob_client = bob_socket.accept();
-			System.out.println("Bob Connected...");
 
 			// Create communication to Alice
 			toAlice = new ObjectOutputStream(bob_client.getOutputStream());
-			System.out.println("Bob Stream 1");
 			fromAlice = new ObjectInputStream(bob_client.getInputStream());
 			
 			// Set up Alice/Bob connection
