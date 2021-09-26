@@ -78,10 +78,13 @@ public class OfflineAuction
 		el_gamal = pg.generateKeyPair();
 		el_pk = (ElGamalPublicKey) el_gamal.getPublic();
 		el_sk = (ElGamalPrivateKey) el_gamal.getPrivate();
+		
+		BigInteger a = new BigInteger("128");
+		BigInteger b = new BigInteger("129");
 
-		Thread andrew = new Thread(new Bob(paillier, dgk, el_gamal));
+		Thread andrew = new Thread(new Bob(paillier, dgk, el_gamal, b));
 		andrew.start();
-		Thread yujia = new Thread(new Alice());
+		Thread yujia = new Thread(new Alice(a));
 		yujia.start();
 		try
 		{
