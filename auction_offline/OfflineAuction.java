@@ -1,34 +1,10 @@
-
-import security.gm.GMCipher;
-import security.gm.GMKeyPairGenerator;
-import security.gm.GMPrivateKey;
-import security.gm.GMPublicKey;
-import security.misc.HomomorphicException;
-
-import security.paillier.PaillierCipher;
 import security.paillier.PaillierKeyPairGenerator;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
-import security.paillier.PaillierSignature;
 import security.DGK.DGKOperations;
 import security.DGK.DGKKeyPairGenerator;
-import security.DGK.DGKPrivateKey;
-import security.DGK.DGKPublicKey;
-import security.DGK.DGKSignature;
-import security.elgamal.ElGamalCipher;
-import security.elgamal.ElGamalKeyPairGenerator;
-import security.elgamal.ElGamalPrivateKey;
-import security.elgamal.ElGamalPublicKey;
-import security.elgamal.ElGamalSignature;
-import security.elgamal.ElGamal_Ciphertext;
+import security.misc.HomomorphicException;
 
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.SecureRandom;
-import java.security.SignatureException;
-import java.util.List;
-
 import java.io.IOException;
 
 public class OfflineAuction
@@ -38,53 +14,27 @@ public class OfflineAuction
 	// All Key Pairs
 	private static KeyPair dgk = null;
 	private static KeyPair paillier = null;
-	private static KeyPair el_gamal = null;
-	
-	// Build DGK Keys
-	private static DGKPublicKey dgk_pk = null;
-	private static DGKPrivateKey dgk_sk = null;
-	
-	private static PaillierPublicKey pk = null;
-	private static PaillierPrivateKey sk = null;
 
-	private static ElGamalPublicKey el_pk = null;
-	private static ElGamalPrivateKey el_sk = null;
+	private BigInteger x;
+	private BigInteger y;
 	
-
-	public static void main(String[] args) 
-    		throws HomomorphicException, IOException, ClassNotFoundException 
-
+	private boolean result = false;
+	
+	public OfflineAuction(BigInteger x, BigInteger y, KeyPair paillier, KeyPair dgk)
 	{
-		// Build DGK Keys
-		DGKKeyPairGenerator p = new DGKKeyPairGenerator();
-		p.initialize(KEY_SIZE, null);
-		dgk = p.generateKeyPair();
-		
-		dgk_pk = (DGKPublicKey) dgk.getPublic();
-		dgk_sk = (DGKPrivateKey) dgk.getPrivate();	
-		
-		// Build Paillier Keys
-		PaillierKeyPairGenerator pa = new PaillierKeyPairGenerator();
-		p.initialize(KEY_SIZE, null);
-		paillier = pa.generateKeyPair();		
-		pk = (PaillierPublicKey) paillier.getPublic();
-		sk = (PaillierPrivateKey) paillier.getPrivate();
-		
-		// Build Additive El-Gamal Key
-		ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator();
-		// NULL -> ADDITIVE
-		// NOT NULL -> MULTIPLICATIVE
-		pg.initialize(KEY_SIZE, null);
-		el_gamal = pg.generateKeyPair();
-		el_pk = (ElGamalPublicKey) el_gamal.getPublic();
-		el_sk = (ElGamalPrivateKey) el_gamal.getPrivate();
-		
-		BigInteger a = new BigInteger("128");
-		BigInteger b = new BigInteger("129");
-
-		Thread andrew = new Thread(new Bob(paillier, dgk, el_gamal, b));
+		this.x = x;
+		this.y = y;
+		this.paillier = paillier;
+		this.dgk = dgk;
+		run_compare();
+	}
+	
+	public void run_compare()
+	{
+		Alice Niu = new Alice(this.x);
+		Thread andrew = new Thread(new Bob(this.paillier, this.dgk, this.y));
 		andrew.start();
-		Thread yujia = new Thread(new Alice(a));
+		Thread yujia = new Thread(Niu);
 		yujia.start();
 		try
 		{
@@ -95,5 +45,62 @@ public class OfflineAuction
 		{
 			e.printStackTrace();
 		}
+		this.result = Niu.getResult();		
+	}
+	
+	public boolean getResult() {
+		return this.result;
+	}
+	
+	public void setX(BigInteger x) {
+		this.x = x;
+	}
+	
+	public void setY(BigInteger y) {
+		this.y = y;
+	}
+	
+	public static void main(String[] args) 
+    		throws HomomorphicException, IOException, ClassNotFoundException 
+
+	{
+		// Build DGK Keys - Should be generated once, stored in another class
+		DGKKeyPairGenerator p = new DGKKeyPairGenerator();
+		p.initialize(KEY_SIZE, null);
+		dgk = p.generateKeyPair();		
+		
+		// Build Paillier Keys - Should be generated once, stored in another class
+		PaillierKeyPairGenerator pa = new PaillierKeyPairGenerator();
+		p.initialize(KEY_SIZE, null);
+		paillier = pa.generateKeyPair();		
+		
+		// Create OfflineAuction and run comparisons one time as needed
+		// I don't know if you want the args to already be encrypted?
+		BigInteger a = new BigInteger("128");
+		BigInteger b = new BigInteger("129");
+		
+		OfflineAuction auction = new OfflineAuction(a, b, paillier, dgk);
+		if(auction.getResult())
+		{
+			System.out.println("Offline- X >= Y");
+		}
+		else
+		{
+			System.out.println("Offline - X < Y");
+		}
+		
+		// If you need to re-use with same keys, set variables and run offline auction!
+		auction.setX(new BigInteger("32"));
+		auction.setY(new BigInteger("33"));
+		auction.run_compare();
+		if(auction.getResult())
+		{
+			System.out.println("Offline- X >= Y");
+		}
+		else
+		{
+			System.out.println("Offline - X < Y");
+		}	
+		
 	}
 }

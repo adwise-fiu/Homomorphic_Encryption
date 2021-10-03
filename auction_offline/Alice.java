@@ -31,11 +31,16 @@ public class Alice implements Runnable
 	private static ElGamalPublicKey e_pk;
 	
 	private BigInteger a;
+	private boolean result;
 
 	public Alice(BigInteger a)
 	{
 		this.a = a;
 		System.out.println("Alice got X: " + a);
+	}
+	
+	public boolean getResult() {
+		return this.result;
 	}
 		
 	// This would have been in Alice's (Client) Main Function
@@ -64,7 +69,8 @@ public class Alice implements Runnable
         		BigInteger y = (BigInteger) o; // 129
         		BigInteger x = PaillierCipher.encrypt(a, pk);// 128
 
-			if(Niu.Protocol4(x, y))
+			this.result = Niu.Protocol4(x, y);
+			if(result)
 			{
 				System.out.println("X >= Y");			
 			}

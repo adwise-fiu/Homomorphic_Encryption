@@ -1,4 +1,3 @@
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ServerSocket;
@@ -27,13 +26,18 @@ public class Bob implements Runnable
 	private KeyPair e;
 	private BigInteger b;
 	
-	public Bob(KeyPair paillier, KeyPair dgk, KeyPair elgamal, BigInteger b)
+	private boolean result = false;
+	
+	public Bob(KeyPair paillier, KeyPair dgk, BigInteger b)
 	{
 		this.p = paillier;
 		this.d = dgk;
-		this.e = elgamal;
 		this.b = b;
 		System.out.println("Bob got Y: " + b);
+	}
+	
+	public boolean getResult() {
+		return this.result;
 	}
 	
 	// This could would be in Bob's Main Method
@@ -62,7 +66,8 @@ public class Bob implements Runnable
     			toAlice.flush();
     			
 			// Run Protocol 4
-			if (andrew.Protocol4())
+			this.result = andrew.Protocol4();
+			if (result)
 			{
 				System.out.println("X >= Y");			
 			}
