@@ -27,13 +27,15 @@ public class Bob implements Runnable
 	private BigInteger b;
 	
 	private boolean result = false;
+	private boolean dgk_mode;
 	
-	public Bob(KeyPair paillier, KeyPair dgk, BigInteger b)
+	public Bob(KeyPair paillier, KeyPair dgk, BigInteger b, boolean dgk_mode)
 	{
 		this.p = paillier;
 		this.d = dgk;
 		this.b = b;
-		System.out.println("Bob got Y: " + b);
+		this.dgk_mode = dgk_mode;
+		//System.out.println("Bob got Y: " + b);
 	}
 	
 	public boolean getResult() {
@@ -47,9 +49,6 @@ public class Bob implements Runnable
 		    	ObjectInputStream fromAlice = null;
 			ObjectOutputStream toAlice = null;
 			
-			PaillierPublicKey pk = (PaillierPublicKey) this.p.getPublic();
-			BigInteger encrypted_bob = PaillierCipher.encrypt(b, pk);
-
 			bob_socket = new ServerSocket(9254);
 			System.out.println("Bob is ready...");
 			bob_client = bob_socket.accept();
@@ -60,9 +59,10 @@ public class Bob implements Runnable
 			
 			// Set up Alice/Bob connection
 			andrew = new bob(bob_client, this.p, this.d, this.e);
+			andrew.setDGKMode(this.dgk_mode);
 			
     			// Send the encrypted number to Alice
-    			toAlice.writeObject(encrypted_bob);
+    			toAlice.writeObject(this.b);
     			toAlice.flush();
     			
 			// Run Protocol 4

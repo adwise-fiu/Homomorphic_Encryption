@@ -30,13 +30,15 @@ public class Alice implements Runnable
 	private static DGKPublicKey pubKey;
 	private static ElGamalPublicKey e_pk;
 	
-	private BigInteger a;
+	private BigInteger x;
 	private boolean result;
+	private boolean dgk_mode;
 
-	public Alice(BigInteger a)
+	public Alice(BigInteger x, boolean dgk_mode)
 	{
-		this.a = a;
-		System.out.println("Alice got X: " + a);
+		this.x = x;
+		this.dgk_mode = dgk_mode;
+		//System.out.println("Alice got X: " + x);
 	}
 	
 	public boolean getResult() {
@@ -60,6 +62,8 @@ public class Alice implements Runnable
 			fromBob = new ObjectInputStream(bob_socket.getInputStream());
 
 			Niu = new alice(bob_socket);
+			Niu.setDGKMode(this.dgk_mode);
+			
 			pk = Niu.getPaillierPublicKey();
 			pubKey = Niu.getDGKPublicKey();
 			e_pk = Niu.getElGamalPublicKey();
@@ -67,9 +71,9 @@ public class Alice implements Runnable
 			// Read object from Bob
         		Object o = fromBob.readObject();
         		BigInteger y = (BigInteger) o; // 129
-        		BigInteger x = PaillierCipher.encrypt(a, pk);// 128
+        		// x = 128
 
-			this.result = Niu.Protocol4(x, y);
+			this.result = Niu.Protocol4(this.x, y);
 			if(result)
 			{
 				System.out.println("X >= Y");			

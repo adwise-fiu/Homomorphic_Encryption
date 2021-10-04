@@ -1,6 +1,13 @@
 import security.paillier.PaillierKeyPairGenerator;
+import security.paillier.PaillierCipher;
+import security.paillier.PaillierPublicKey;
+
 import security.DGK.DGKOperations;
 import security.DGK.DGKKeyPairGenerator;
+import security.DGK.DGKPublicKey;
+
+import security.socialistmillionaire.alice;
+import security.socialistmillionaire.bob;
 import security.misc.HomomorphicException;
 
 import java.math.BigInteger;
@@ -19,26 +26,61 @@ public class OfflineAuction
 	private BigInteger y;
 	
 	private boolean result = false;
+	private int type = -1;
 	
-	public OfflineAuction(BigInteger x, BigInteger y, KeyPair paillier, KeyPair dgk)
+	/*
+	= 	1 	Pailler X>=1
+	>= 	2	Pailler X>=Y
+	>	3	DGK	X>Y
+	<=	4	Pailler Y>=X
+	<	5	DGK	Y>X
+	*/	
+	
+	public OfflineAuction(BigInteger x, BigInteger y, KeyPair paillier, KeyPair dgk, int type)
 	{
-		this.x = x;
-		this.y = y;
+		if (type == 4 || type == 5) {
+			this.y = x;
+			this.x = y;
+		}
+		else {
+			this.x = x;
+			this.y = y;
+		}
 		this.paillier = paillier;
 		this.dgk = dgk;
-		run_compare();
+		this.type = type;
 	}
 	
-	public void run_compare()
+	public void run_compare() throws HomomorphicException
 	{
-		Alice Niu = new Alice(this.x);
-		Thread andrew = new Thread(new Bob(this.paillier, this.dgk, this.y));
-		andrew.start();
+		if (type == 1) {
+			PaillierPublicKey pk = (PaillierPublicKey) this.paillier.getPublic();
+			this.y = PaillierCipher.encrypt(BigInteger.ONE, pk);
+			this.x = x; 
+		}
+		
+
+		Alice Niu = null;
+		Bob andrew = null;
+		
+		if (type == 1 || type == 2 || type == 4) {
+			// pick Pailler
+			Niu = new Alice(this.x, false);
+			andrew = new Bob(this.paillier, this.dgk, this.y, false);
+		}
+		else {
+			// pick DGK
+			Niu = new Alice(this.x, true);
+			andrew = new Bob(this.paillier, this.dgk, this.y, true);
+		}
+		
+		Thread andrew_compare = new Thread(andrew);
+		andrew_compare.start();
 		Thread yujia = new Thread(Niu);
 		yujia.start();
 		try
 		{
-			andrew.join();
+			andrew_compare.join();
 			yujia.join();
 		}
 		catch (InterruptedException e)
@@ -60,6 +102,10 @@ public class OfflineAuction
 		this.y = y;
 	}
 	
+	public void setType(int type) {
+		this.type = type;
+	}
+	
 	public static void main(String[] args) 
     		throws HomomorphicException, IOException, ClassNotFoundException 
 
@@ -76,22 +122,18 @@ public class OfflineAuction
 		
 		// Create OfflineAuction and run comparisons one time as needed
 		// I don't know if you want the args to already be encrypted?
-		BigInteger a = new BigInteger("128");
-		BigInteger b = new BigInteger("129");
+		BigInteger plain_a = new BigInteger("128");
+		BigInteger plain_b = new BigInteger("129");
 		
-		OfflineAuction auction = new OfflineAuction(a, b, paillier, dgk);
-		if(auction.getResult())
-		{
-			System.out.println("Offline- X >= Y");
-		}
-		else
-		{
-			System.out.println("Offline - X < Y");
-		}
+		PaillierPublicKey pk = (PaillierPublicKey) paillier.getPublic();
+		DGKPublicKey dgk_pk = (DGKPublicKey) dgk.getPublic();
 		
-		// If you need to re-use with same keys, set variables and run offline auction!
-		auction.setX(new BigInteger("32"));
-		auction.setY(new BigInteger("33"));
+		BigInteger a = PaillierCipher.encrypt(plain_a, pk);
+		BigInteger b = PaillierCipher.encrypt(plain_b, pk);
+		
+		// PLEASE NOTE, I assume you correctly picked DGK or Paillier Encryption before putting
+		// in the constructor!
+		OfflineAuction auction = new OfflineAuction(a, b, paillier, dgk, 2);
 		auction.run_compare();
 		if(auction.getResult())
 		{
@@ -100,6 +142,23 @@ public class OfflineAuction
 		else
 		{
 			System.out.println("Offline - X < Y");
+		}
+		
+		a = DGKOperations.encrypt(plain_a, dgk_pk);
+		b = DGKOperations.encrypt(plain_b, dgk_pk);
+		
+		// If you need to re-use with same keys, set variables and run offline auction!
+		auction.setX(a);
+		auction.setY(b);
+		auction.setType(3);
+		auction.run_compare();
+		if(auction.getResult())
+		{
+			System.out.println("Offline- X > Y");
+		}
+		else
+		{
+			System.out.println("Offline - X <= Y");
 		}	
 		
 	}
