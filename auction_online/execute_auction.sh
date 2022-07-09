@@ -5,7 +5,7 @@ javac -cp crypto.jar test_alice.java
 javac -cp crypto.jar test_bob.java
 
 # Create Bob to run in background
-java -cp crypto.jar test.test_bob &
+java -cp ".:crypto.jar" test_bob &
 echo "Bob is ready. Sleep a minute to give time for Alice to Run"
 sleep 1m
-java -cp crypto.jar test.test_alice
+java -cp ".:crypto.jar" test_alice

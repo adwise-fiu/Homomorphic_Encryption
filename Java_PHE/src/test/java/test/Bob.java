@@ -154,6 +154,9 @@ public class Bob implements Runnable
 		{
 			andrew.Protocol4();
 		}
+		// Protocol 4, Spyridion Request
+		andrew.Protocol4();
+		andrew.Protocol4();
 				
 		System.out.println("Finished Testing Protocol 4 w/ DGK");
 		// Division Protocol Test, Paillier

@@ -33,8 +33,7 @@ public final class bob extends socialist_millionaires implements Runnable
 	 * If a is not a Pailler Keypair or b is not a DGK key pair
 	 */
 	public bob (Socket clientSocket,
-			KeyPair a, KeyPair b) throws IOException, IllegalArgumentException
-	{
+			KeyPair a, KeyPair b) throws IOException, IllegalArgumentException {
 		this(clientSocket, a, b, null);
 	}
 	
@@ -53,54 +52,43 @@ public final class bob extends socialist_millionaires implements Runnable
 			KeyPair a, KeyPair b, KeyPair c) 
 					throws IOException, IllegalArgumentException
 	{
-		if(clientSocket != null)
-		{
+		if(clientSocket != null) {
 			this.fromAlice = new ObjectInputStream(clientSocket.getInputStream());
 			this.toAlice = new ObjectOutputStream(clientSocket.getOutputStream());
 		}
-		else
-		{
+		else {
 			throw new NullPointerException("Client Socket is null!");
 		}
 		
-		if (a.getPublic() instanceof PaillierPublicKey)
-		{
+		if (a.getPublic() instanceof PaillierPublicKey) {
 			this.pk = (PaillierPublicKey) a.getPublic();
 			this.sk = (PaillierPrivateKey) a.getPrivate();
-			if(b.getPublic() instanceof DGKPublicKey)
-			{
+			if(b.getPublic() instanceof DGKPublicKey) {
 				this.pubKey = (DGKPublicKey) b.getPublic();
 				this.privKey = (DGKPrivateKey) b.getPrivate();
 			}
-			else
-			{
+			else {
 				throw new IllegalArgumentException("Obtained Paillier Key Pair, Not DGK Key pair!");
 			}
 		}
-		else if (a.getPublic() instanceof DGKPublicKey)
-		{
+		else if (a.getPublic() instanceof DGKPublicKey) {
 			this.pubKey = (DGKPublicKey) a.getPublic();
 			this.privKey = (DGKPrivateKey) a.getPrivate();
-			if (b.getPublic() instanceof PaillierPublicKey)
-			{
+			if (b.getPublic() instanceof PaillierPublicKey) {
 				this.pk = (PaillierPublicKey) a.getPublic();
 				this.sk = (PaillierPrivateKey) a.getPrivate();
 			}
-			else
-			{
+			else {
 				throw new IllegalArgumentException("Obtained DGK Key Pair, Not Paillier Key pair!");
 			}
 		}
 		
-		if(c != null)
-		{
-			if (c.getPublic() instanceof ElGamalPublicKey)
-			{
+		if(c != null) {
+			if (c.getPublic() instanceof ElGamalPublicKey) {
 				this.e_pk = (ElGamalPublicKey) c.getPublic();
 				this.e_sk = (ElGamalPrivateKey) c.getPrivate();
 			}
-			else
-			{
+			else {
 				throw new IllegalArgumentException("Third Keypair MUST BE AN EL GAMAL KEY PAIR!");
 			}
 		}
@@ -115,12 +103,10 @@ public final class bob extends socialist_millionaires implements Runnable
 	 * will consistently sort using Protocol 2
 	 */
 	private void repeat_Protocol2()
-			throws IOException, ClassNotFoundException, HomomorphicException
-	{
+			throws IOException, ClassNotFoundException, HomomorphicException {
 		long start_time = System.nanoTime();
 		int counter = 0;
-		while(fromAlice.readBoolean())
-		{
+		while(fromAlice.readBoolean()) {
 			++counter;
 			this.Protocol2();
 		}
@@ -133,22 +119,18 @@ public final class bob extends socialist_millionaires implements Runnable
 	 * will consistently sort using Protocol 4
 	 */
 	private void repeat_Protocol4()
-			throws IOException, ClassNotFoundException, HomomorphicException
-	{
+			throws IOException, ClassNotFoundException, HomomorphicException {
 		long start_time = System.nanoTime();
 		int counter = 0;
-		while(fromAlice.readBoolean())
-		{
+		while(fromAlice.readBoolean()) {
 			++counter;
 			this.Protocol4();
 		}
-		if(isDGK)
-		{
+		if(isDGK) {
 			System.out.println("DGK Protocol 4 was used " + counter + " times!");
 			System.out.println("DGK Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");			
 		}
-		else
-		{
+		else {
 			System.out.println("Paillier Protocol 4 was used " + counter + " times!");
 			System.out.println("Paillier Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
 		}
@@ -159,8 +141,7 @@ public final class bob extends socialist_millionaires implements Runnable
 	 * will consistently sort using Protocol 4
 	 */
 	public void repeat_ElGamal_Protocol4()
-			throws IOException, ClassNotFoundException, IllegalArgumentException
-	{
+			throws IOException, ClassNotFoundException, IllegalArgumentException {
 		long start_time = System.nanoTime();
 		int counter = 0;
 		while(fromAlice.readBoolean())
@@ -184,8 +165,7 @@ public final class bob extends socialist_millionaires implements Runnable
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		// Constraint...
-		if(y.bitLength() > pubKey.getL())
-		{
+		if(y.bitLength() > pubKey.getL()) {
 			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
 		}
 
@@ -196,8 +176,7 @@ public final class bob extends socialist_millionaires implements Runnable
 
 		//Step 1: Bob sends encrypted bits to Alice
 		BigInteger [] EncY = new BigInteger[y.bitLength()];
-		for (int i = 0; i < y.bitLength(); i++)
-		{
+		for (int i = 0; i < y.bitLength(); i++) {
 			EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), pubKey);
 		}
 		toAlice.writeObject(EncY);
@@ -209,24 +188,19 @@ public final class bob extends socialist_millionaires implements Runnable
 		// Step 5: Alice...
 		// Step 6: Check if one of the numbers in C_i is decrypted to 0.
 		in = fromAlice.readObject();
-		if(in instanceof BigInteger[])
-		{
+		if(in instanceof BigInteger[]) {
 			C = (BigInteger []) in;
 		}
-		else if (in instanceof BigInteger)
-		{
+		else if (in instanceof BigInteger) {
 			deltaA = (BigInteger) in;
 			return deltaA.intValue() == 1;
 		}
-		else
-		{
+		else {
 			throw new IllegalArgumentException("Protocol 1, Step 6: Invalid object: " + in.getClass().getName());
 		}
 
-		for (BigInteger C_i: C)
-		{
-			if (DGKOperations.decrypt(C_i, privKey) == 0)
-			{
+		for (BigInteger C_i: C) {
+			if (DGKOperations.decrypt(C_i, privKey) == 0) {
 				deltaB = 1;
 				break;
 			}
@@ -241,12 +215,10 @@ public final class bob extends socialist_millionaires implements Runnable
 		// Alice sends the answer, decrypt it and keep it for yourself
 		// This is best used in situations like an auction where Bob needs to know
 		in = fromAlice.readObject();
-		if (in instanceof BigInteger)
-		{
+		if (in instanceof BigInteger) {
 			return DGKOperations.decrypt((BigInteger) in, privKey) == 1;
 		}
-		else
-		{
+		else {
 			throw new IllegalArgumentException("Invalid response from Alice in Step 8: " + in.getClass().getName());
 		}
 	}
@@ -262,8 +234,7 @@ public final class bob extends socialist_millionaires implements Runnable
 	 */
 	
 	public boolean Protocol2() 
-			throws ClassNotFoundException, IOException, HomomorphicException
-	{
+			throws ClassNotFoundException, IOException, HomomorphicException {
 		// Step 1: Receive z from Alice
 		// Get the input and output streams
 		int answer = -1;
@@ -271,20 +242,17 @@ public final class bob extends socialist_millionaires implements Runnable
 		BigInteger beta = null;
 		BigInteger z = null;
 		
-		if(isDGK)
-		{
+		if(isDGK) {
 			System.err.println("COMPARING ENCRYPTED DGK VALUES WITH PROTOCOL 2 IS NOT ALLOWED, PLEASE USE PROTOCOL 4!");
 			return answer == 1;
 		}
 
 		//Step 1: get [[z]] from Alice
 		x = fromAlice.readObject();
-		if (x instanceof BigInteger)
-		{
+		if (x instanceof BigInteger) {
 			z = (BigInteger) x;
 		}
-		else
-		{
+		else {
 			throw new IllegalArgumentException("Bob Step 1: Invalid Object!" + x.getClass().getName());
 		}
 		
@@ -306,8 +274,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		
 		// Step 8 (UNOFFICIAL): Alice needs the answer for [[x <= y]]
 		x = fromAlice.readObject();
-		if (x instanceof BigInteger)
-		{
+		if (x instanceof BigInteger) {
 			answer = PaillierCipher.decrypt((BigInteger) x, sk).intValue();
 			toAlice.writeInt(answer);
 			toAlice.flush();
@@ -393,21 +360,17 @@ public final class bob extends socialist_millionaires implements Runnable
 
 		x = fromAlice.readObject();
 		// Number of bits are the same for both numbers
-		if (x instanceof BigInteger [])
-		{
+		if (x instanceof BigInteger []) {
 			C = (BigInteger []) x;
-			for (BigInteger C_i: C)
-			{
-				if (DGKOperations.decrypt(C_i, privKey) == 0)
-				{
+			for (BigInteger C_i: C) {
+				if (DGKOperations.decrypt(C_i, privKey) == 0) {
 					deltaB = 1;
 					break;
 				}
 			}
 		}
 		// Number of bits gives away the answer!
-		else if (x instanceof BigInteger)
-		{
+		else if (x instanceof BigInteger) {
 			deltaA = (BigInteger) x;
 			// Case 1 delta B is 0
 			// 1 XOR 0 = 0
@@ -418,8 +381,7 @@ public final class bob extends socialist_millionaires implements Runnable
 			// x <= y -> 0 (false)
 			return deltaA.intValue() == 1;
 		}
-		else
-		{
+		else {
 			throw new IllegalArgumentException("Protocol 3, Step 4: Invalid object! " + x.getClass().getName());
 		}
 
@@ -431,12 +393,10 @@ public final class bob extends socialist_millionaires implements Runnable
 		// Alice sends the answer, decrypt it and keep it for yourself
 		// This is best used in situations like an auction where Bob needs to know
 		x = fromAlice.readObject();
-		if (x instanceof BigInteger)
-		{
+		if (x instanceof BigInteger) {
 			return DGKOperations.decrypt((BigInteger) x, privKey) == 1;
 		}
-		else
-		{
+		else {
 			throw new IllegalArgumentException("Invalid response from Alice in Step 8! " + x.getClass().getName());
 		}
 	}
@@ -449,12 +409,10 @@ public final class bob extends socialist_millionaires implements Runnable
 		boolean answer;
 		
 		// Constraint...
-		if(z.bitLength() > pubKey.getL())
-		{
+		if(z.bitLength() > pubKey.getL()) {
 			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, x is: " + z.bitLength() + " bits");
 		}
-		if(isDGK)
-		{
+		if(isDGK) {
 			beta = z.mod(powL);
 			answer = Modified_Protocol3(beta, z);
 		}
@@ -670,8 +628,17 @@ public final class bob extends socialist_millionaires implements Runnable
 			if(isDGK)
 			{
 				long decrypt = DGKOperations.decrypt((BigInteger) x, privKey);
-				decrypt = (decrypt + 1) % pubKey.getU().longValue();
-				answer = (int) decrypt;
+				// IF SOMETHING HAPPENS...GET POST MORTERM HERE
+				if (decrypt != 0 && pubKey.getU().longValue() - 1 != decrypt) {
+					throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
+				}
+				
+				if (pubKey.getU().longValue() - 1 == decrypt) {
+					answer = 0;
+				}
+				else {
+					answer = 1;
+				}
 			}
 			else
 			{
@@ -683,6 +650,11 @@ public final class bob extends socialist_millionaires implements Runnable
 		else
 		{
 			throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
+		}
+		// IF SOMETHING HAPPENS...GET POST MORTERM HERE
+		if (answer != 0 && answer != 1)
+		{
+			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
 		}
 		return answer == 1;
 	}
@@ -753,6 +725,11 @@ public final class bob extends socialist_millionaires implements Runnable
 		else
 		{
 			throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
+		}
+		// IF SOMETHING HAPPENS...GET POST MORTERM HERE
+		if (answer != 0 && answer != 1)
+		{
+			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
 		}
 		return answer == 1;
 	}

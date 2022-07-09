@@ -1,5 +1,3 @@
-package test;
-
 import security.misc.HomomorphicException;
 import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;

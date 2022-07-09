@@ -197,10 +197,13 @@ public class Alice implements Runnable
 		Niu.setDGKMode(false);
 		for (int i = 0; i < low.length;i++)
 		{
+			// X < Y - RETURNS FALSE
 			System.out.println(!Niu.Protocol4(PaillierCipher.encrypt(low[i], pk), 
 					PaillierCipher.encrypt(mid[i], pk)));
+			// X == Y - RETURNS FALSE
 			System.out.println(Niu.Protocol4(PaillierCipher.encrypt(mid[i], pk), 
 					PaillierCipher.encrypt(mid[i], pk)));
+			// X >= Y - RETURNS FALSE
 			System.out.println(Niu.Protocol4(PaillierCipher.encrypt(high[i], pk), 
 					PaillierCipher.encrypt(mid[i], pk)));
 		}
@@ -210,13 +213,23 @@ public class Alice implements Runnable
 		System.out.println("Protocol 4 Tests...DGK");
 		for (int i = 0; i < low.length;i++)
 		{
+			// X < Y - RETURNS FALSE
 			System.out.println(!Niu.Protocol4(DGKOperations.encrypt(low[i], pubKey), 
 					DGKOperations.encrypt(mid[i], pubKey)));
+			// X == Y - RETURNS FALSE
 			System.out.println(!Niu.Protocol4(DGKOperations.encrypt(mid[i], pubKey), 
 					DGKOperations.encrypt(mid[i], pubKey)));
+			// X > Y - RETURNS TRUE
 			System.out.println(Niu.Protocol4(DGKOperations.encrypt(high[i], pubKey), 
 					DGKOperations.encrypt(mid[i], pubKey)));
 		}
+		// Protocol 4, Spyridion Request
+		System.out.println("Spyridion Test Starting...");
+		System.out.println(Niu.Protocol4(DGKOperations.encrypt(100, pubKey), 
+				DGKOperations.encrypt(98, pubKey)));
+		System.out.println(Niu.Protocol4(DGKOperations.encrypt(10, pubKey), 
+				DGKOperations.encrypt(8, pubKey)));
+		System.out.println("Spyridion Test Ending...");
 		
 		// Division Test, Paillier
 		// REMEMBER THE OUTPUT IS THE ENCRYPTED ANSWER, ONLY BOB CAN VERIFY THE ANSWER

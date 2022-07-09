@@ -32,8 +32,7 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 
 	//DGK Constructor with ALL parameters
 	public DGKPublicKey(BigInteger n, BigInteger g, BigInteger h, BigInteger u,
-						int l, int t, int k)
-	{
+						int l, int t, int k) {
 		this.n = n;
 		this.g = g;
 		this.h = h;
@@ -45,39 +44,33 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 	}
 		
 	private void readObject(ObjectInputStream aInputStream)
-			throws ClassNotFoundException,IOException
-	{
+			throws ClassNotFoundException,IOException {
 		aInputStream.defaultReadObject();
 	}
 
-	private void writeObject(ObjectOutputStream aOutputStream) throws IOException
-	{
+	private void writeObject(ObjectOutputStream aOutputStream) throws IOException {
 		aOutputStream.defaultWriteObject();
 	}
 
-	public BigInteger ZERO()
-	{
+	public BigInteger ZERO() {
 		return DGKOperations.encrypt(0, this);
 	}
 	
-	public BigInteger ONE()
-	{
+	public BigInteger ONE() {
 		return DGKOperations.encrypt(1, this);
 	}
 
 	/**
 	 * @return DGK
 	 */
-	public String getAlgorithm() 
-	{
+	public String getAlgorithm() {
 		return "DGK";
 	}
 
 	/**
 	 * @return String representation of DGK Public Key
 	 */
-	public String toString()
-	{
+	public String toString() {
 		String answer = "";
 		answer += "n: " + n + ", " + '\n';
 		answer += "g: " + g + ", " + '\n';
@@ -89,26 +82,21 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		return answer;
 	}
 
-	public String getFormat() 
-	{
+	public String getFormat() {
 		return "X.509";
 	}
 
-	public byte[] getEncoded() 
-	{
+	public byte[] getEncoded() {
 		return null;
 	}
 
-	public void run() 
-	{
+	public void run() {
 		this.generatehLUT();
 		this.generategLUT();
 	}
 
-	private void generatehLUT()
-	{		
-		for (long i = 0; i < 2 * t; ++i)
-		{
+	private void generatehLUT() {		
+		for (long i = 0; i < 2 * t; ++i) {
 			// e = 2^i (mod n)
 			// h^{2^i (mod n)} (mod n)
 			// f(i) = h^{2^i}(mod n)
@@ -117,27 +105,26 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		}
 	}
 
-	private void generategLUT()
-	{	
-		for (long i = 0; i < this.u; ++i)
-		{
+	private void generategLUT() {	
+		for (long i = 0; i < this.u; ++i) {
 			BigInteger out = this.g.modPow(BigInteger.valueOf(i), this.n);
 			this.gLUT.put(i, out);
 		}
 	}
+	
+	public long getu() {
+		return this.u;
+	}
 
-	public BigInteger getU() 
-	{
+	public BigInteger getU() {
 		return this.bigU;
 	}
 
-	public BigInteger getN() 
-	{
+	public BigInteger getN() {
 		return this.n;
 	}
 
-	public int getL()
-	{
+	public int getL() {
 		return this.l;
 	}
 }

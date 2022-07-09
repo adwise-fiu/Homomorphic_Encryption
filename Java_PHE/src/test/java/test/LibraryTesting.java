@@ -60,9 +60,10 @@ public class LibraryTesting
 		DGKKeyPairGenerator p = new DGKKeyPairGenerator();
 		p.initialize(KEY_SIZE, null);
 		dgk = p.generateKeyPair();
+		p.setL(20);
 		
 		dgk_pk = (DGKPublicKey) dgk.getPublic();
-		dgk_sk = (DGKPrivateKey) dgk.getPrivate();	
+		dgk_sk = (DGKPrivateKey) dgk.getPrivate();
 		
 		// Build Paillier Keys
 		PaillierKeyPairGenerator pa = new PaillierKeyPairGenerator();
