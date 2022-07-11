@@ -7,13 +7,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import security.DGK.DGKOperations;
+import security.DGK.DGKPrivateKey;
 import security.DGK.DGKPublicKey;
 import security.elgamal.ElGamalCipher;
+import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
 import security.elgamal.ElGamal_Ciphertext;
 import security.misc.HomomorphicException;
 import security.misc.NTL;
 import security.paillier.PaillierCipher;
+import security.paillier.PaillierPrivateKey;
 import security.paillier.PaillierPublicKey;
 import security.socialistmillionaire.alice;
 
@@ -25,6 +28,10 @@ public class Alice implements Runnable
 	private static PaillierPublicKey pk;
 	private static DGKPublicKey pubKey;
 	private static ElGamalPublicKey e_pk;
+	
+	private static PaillierPrivateKey sk;
+	private static DGKPrivateKey privKey;
+	private static ElGamalPrivateKey e_sk;
 	
 	// Get your test data...
 	private static BigInteger [] low = StressTest.generate_low();
@@ -43,6 +50,12 @@ public class Alice implements Runnable
 			pk = Niu.getPaillierPublicKey();
 			pubKey = Niu.getDGKPublicKey();
 			e_pk = Niu.getElGamalPublicKey();
+			
+			// Get Private Keys from Bob
+			// This is only for verifying tests...
+			sk = (PaillierPrivateKey) Niu.readObject();
+			privKey = (DGKPrivateKey) Niu.readObject();
+			e_sk = (ElGamalPrivateKey) Niu.readObject();
 			
 			// Test K-min
 			k_min();
@@ -101,13 +114,20 @@ public class Alice implements Runnable
 		}
 	}
 
-	public static void alice_demo() throws ClassNotFoundException, IOException, HomomorphicException
-	{	
+	public static void alice_demo() throws ClassNotFoundException, IOException, HomomorphicException {
+		boolean result = false;
+		System.out.println("Please note all printed values should return true...");
+		BigInteger temp = null;
+		long temp_value;
+		
 		// Check the multiplication, DGK
 		Niu.setDGKMode(true);
 		System.out.println("Testing Multiplication with DGK");
-		Niu.multiplication(DGKOperations.encrypt(new BigInteger("1000"), pubKey), 
+		temp = Niu.multiplication(DGKOperations.encrypt(new BigInteger("1000"), pubKey), 
 				DGKOperations.encrypt(new BigInteger("2"), pubKey));
+		temp_value = DGKOperations.decrypt(temp, privKey);
+		assert (temp_value == 2000);
+		
 		Niu.multiplication(DGKOperations.encrypt(new BigInteger("1000"), pubKey), 
 				DGKOperations.encrypt(new BigInteger("3"), pubKey));
 		Niu.multiplication(DGKOperations.encrypt(new BigInteger("1000"), pubKey), 
@@ -125,62 +145,61 @@ public class Alice implements Runnable
 
 		// Test Protocol 3, mode doesn't matter as DGK is always used!
 		System.out.println("Protocol 3 Tests...");
-		for(BigInteger l: low)
-		{
-			System.out.println(Niu.Protocol3(l));
+		for(BigInteger l: low) {
+			result = Niu.Protocol3(l);
+			System.out.println(result);
 		}
-		for(BigInteger l: mid)
-		{
-			System.out.println(Niu.Protocol3(l));
+		for(BigInteger l: mid) {
+			result = Niu.Protocol3(l);
+			System.out.println(result);
 		}
-		for(BigInteger l: high)
-		{
-			System.out.println(!Niu.Protocol3(l));
+		for(BigInteger l: high) {
+			result = Niu.Protocol3(l);
+			System.out.println(!result);
 		}
-		for(BigInteger l: high)
-		{
-			System.out.println(!Niu.Protocol3(l));
+		for(BigInteger l: high) {
+			result = Niu.Protocol3(l);
+			System.out.println(!result);
 		}
-		for(BigInteger l: mid)
-		{
-			System.out.println(!Niu.Protocol3(l));
+		for(BigInteger l: mid) {
+			result = Niu.Protocol3(l);
+			System.out.println(!result);
 		}
 		
 		// Test Protocol 1
-		for(BigInteger l: low)
-		{
+		for(BigInteger l: low) {
 			System.out.println(Niu.Protocol1(l));
 		}
-		for(BigInteger l: mid)
-		{
+		for(BigInteger l: mid) {
 			System.out.println(Niu.Protocol1(l));
 		}
-		for(BigInteger l: high)
-		{
+		for(BigInteger l: high) {
 			System.out.println(!Niu.Protocol1(l));
 		}
 		
 		// Test Modified Protocol 3, mode doesn't matter as DGK is always used!
+		// Will be compared against mid
 		System.out.println("Modified Protocol 3 Tests...");
-		for(BigInteger l: low)
-		{
-			System.out.println(Niu.Modified_Protocol3(l));
+		for(BigInteger l: low) {
+			result = Niu.Modified_Protocol3(l);
+			System.out.println("Modified Protcool 3, X < Y: " + result);
 		}
 		for(BigInteger l: mid)
 		{
-			System.out.println(Niu.Modified_Protocol3(l));
+			result = Niu.Modified_Protocol3(l);
+			System.out.println("Modified Protocol 3, X == Y: " + result);
 		}
 		for(BigInteger l: high)
 		{
-			System.out.println(!Niu.Modified_Protocol3(l));
+			result = Niu.Modified_Protocol3(l);
+			System.out.println("Modified Protocol 3, X > Y: " + !result);
 		}
 		
 		// Test Protocol 2 (Builds on Protocol 3). REMEMEBER [X >= Y]
 		// Paillier
 		System.out.println("Protocol 2 Tests...Paillier");
 		Niu.setDGKMode(false);
-		for (int i = 0; i < low.length;i++)
-		{
+		for (int i = 0; i < low.length;i++) {
 			System.out.println(!Niu.Protocol2(PaillierCipher.encrypt(low[i], pk), 
 					PaillierCipher.encrypt(mid[i], pk)));
 			System.out.println(Niu.Protocol2(PaillierCipher.encrypt(mid[i], pk), 
@@ -195,8 +214,7 @@ public class Alice implements Runnable
 		// Paillier, Protocol 4 returns (X >= Y)
 		System.out.println("Protocol 4 Tests...Paillier");
 		Niu.setDGKMode(false);
-		for (int i = 0; i < low.length;i++)
-		{
+		for (int i = 0; i < low.length;i++) {
 			// X < Y - RETURNS FALSE
 			System.out.println(!Niu.Protocol4(PaillierCipher.encrypt(low[i], pk), 
 					PaillierCipher.encrypt(mid[i], pk)));
@@ -211,8 +229,7 @@ public class Alice implements Runnable
 		// DGK, Protocol 4 returns (X > Y)
 		Niu.setDGKMode(true);
 		System.out.println("Protocol 4 Tests...DGK");
-		for (int i = 0; i < low.length;i++)
-		{
+		for (int i = 0; i < low.length;i++) {
 			// X < Y - RETURNS FALSE
 			System.out.println(!Niu.Protocol4(DGKOperations.encrypt(low[i], pubKey), 
 					DGKOperations.encrypt(mid[i], pubKey)));
@@ -225,6 +242,7 @@ public class Alice implements Runnable
 		}
 		// Protocol 4, Spyridion Request
 		System.out.println("Spyridion Test Starting...");
+		Niu.setDGKMode(true);
 		System.out.println(Niu.Protocol4(DGKOperations.encrypt(100, pubKey), 
 				DGKOperations.encrypt(98, pubKey)));
 		System.out.println(Niu.Protocol4(DGKOperations.encrypt(10, pubKey), 

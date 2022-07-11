@@ -567,8 +567,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	
 	public static BigInteger multiply(BigInteger ciphertext, BigInteger plaintext, DGKPublicKey pk) throws HomomorphicException
 	{
-		if (ciphertext.signum() == -1 || ciphertext.compareTo(pk.n) == 1)
-		{
+		if (ciphertext.signum() == -1 || ciphertext.compareTo(pk.n) == 1) {
 			throw new HomomorphicException("DGKMultiply Invalid Parameter ciphertext: " + ciphertext);
 		}
 		//if(plaintext.compareTo(pk.bigU) == 1)
@@ -579,8 +578,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	}
 	
 	public static BigInteger multiply(BigInteger cipher, long plaintext, DGKPublicKey pk) 
-			throws HomomorphicException
-	{
+			throws HomomorphicException {
 		return multiply(cipher, BigInteger.valueOf(plaintext), pk);
 	}
 
@@ -597,14 +595,12 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 */
 	
 	public static BigInteger divide(BigInteger ciphertext, BigInteger plaintext, DGKPublicKey pk) 
-			throws HomomorphicException
-	{
-		return multiply(ciphertext, plaintext.modInverse(pk.n), pk);
+			throws HomomorphicException {
+		return multiply(ciphertext, plaintext.modInverse(pk.getU()), pk);
 	}
 
 	public static BigInteger divide(BigInteger ciphertext, long plaintext, DGKPublicKey pk) 
-			throws HomomorphicException
-	{
+			throws HomomorphicException {
 		return divide(ciphertext, BigInteger.valueOf(plaintext), pk);
 	}
 
@@ -619,8 +615,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 			throws HomomorphicException
 	{
 		BigInteger sum = DGKOperations.encrypt(0, pk);
-		for (int i = 0; i < parts.length; i++)
-		{
+		for (int i = 0; i < parts.length; i++) {
 			sum = add(sum, parts[i], pk);
 		}
 		return sum;
@@ -638,16 +633,13 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 			throws HomomorphicException
 	{
 		BigInteger sum = DGKOperations.encrypt(0, pk);
-		if (limit > values.length)
-		{
+		if (limit > values.length) {
 			return sum(values, pk);
 		}
-		else if(limit <= 0)
-		{
+		else if(limit <= 0) {
 			return sum;
 		}
-		for (int i = 0; i < limit; i++)
-		{
+		for (int i = 0; i < limit; i++) {
 			sum = add(sum, values[i], pk);
 		}
 		return sum;
@@ -665,8 +657,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 			throws HomomorphicException
 	{
 		BigInteger sum = DGKOperations.encrypt(0, pk);
-		for (int i = 0; i < values.size(); i++)
-		{
+		for (int i = 0; i < values.size(); i++) {
 			sum = add(sum, values.get(i), pk);
 		}
 		return sum;
@@ -684,16 +675,13 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 			throws HomomorphicException
 	{
 		BigInteger sum = DGKOperations.encrypt(0, pk);
-		if (limit > values.size())
-		{
+		if (limit > values.size()) {
 			return sum(values, pk);
 		}
-		else if(limit <= 0)
-		{
+		else if(limit <= 0) {
 			return sum;
 		}
-		for (int i = 0; i < limit; i++)
-		{
+		for (int i = 0; i < limit; i++) {
 			sum = add(sum, values.get(i), pk);
 		}
 		return sum;
@@ -712,14 +700,12 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	public static BigInteger sum_product (List<BigInteger> ciphertext, List<Long> plaintext, DGKPublicKey pk) 
 			throws HomomorphicException
 	{
-		if(ciphertext.size() != plaintext.size())
-		{
+		if(ciphertext.size() != plaintext.size()) {
 			throw new HomomorphicException("Lists are NOT the same size!");
 		}
 		BigInteger sum = DGKOperations.encrypt(0, pk);
 		BigInteger temp = null;
-		for (int i = 0; i < ciphertext.size(); i++)
-		{
+		for (int i = 0; i < ciphertext.size(); i++) {
 			temp = DGKOperations.multiply(ciphertext.get(i), plaintext.get(i), pk);
 			sum = DGKOperations.add(temp, sum, pk);
 		}
@@ -741,15 +727,13 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	public static BigInteger sum_product (BigInteger[] ciphertext, Long [] plaintext, DGKPublicKey pk)
 			throws HomomorphicException
 	{
-		if(ciphertext.length != plaintext.length)
-		{
+		if(ciphertext.length != plaintext.length) {
 			throw new HomomorphicException("Arrays are NOT the same size!");
 		}
 		
 		BigInteger sum = DGKOperations.encrypt(0, pk);
 		BigInteger temp = null;
-		for (int i = 0; i < ciphertext.length; i++)
-		{
+		for (int i = 0; i < ciphertext.length; i++) {
 			temp = DGKOperations.multiply(ciphertext[i], plaintext[i], pk);
 			sum = DGKOperations.add(temp, sum, pk);
 		}

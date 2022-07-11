@@ -6,7 +6,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyPair;
 
+import security.DGK.DGKPrivateKey;
+import security.elgamal.ElGamalPrivateKey;
 import security.misc.HomomorphicException;
+import security.paillier.PaillierPrivateKey;
 import security.socialistmillionaire.bob;
 
 // Server-side
@@ -41,14 +44,22 @@ public class Bob implements Runnable
 			bob_client = bob_socket.accept();
 			andrew = new bob(bob_client, this.p, this.d, this.e);
 			
+			// Send Private Keys to alive for testing purposes.
+			PaillierPrivateKey p = (PaillierPrivateKey) this.p.getPrivate();
+			DGKPrivateKey d = (DGKPrivateKey) this.d.getPrivate();
+			ElGamalPrivateKey g = (ElGamalPrivateKey) this.e.getPrivate();
+			
+			andrew.writeObject(p);
+			andrew.writeObject(d);
+			andrew.writeObject(g);
+			
 			// Test K-Min using Protocol 4
 			// Line 99 in Alice matches to Line 158-165 in Bob
 			andrew.setDGKMode(false);
 			andrew.run();// Sort Paillier
 			andrew.setDGKMode(true);
 			andrew.run();// Sort DGK
-			if(andrew.getElGamalPublicKey().ADDITIVE)
-			{
+			if(andrew.getElGamalPublicKey().ADDITIVE) {
 				andrew.repeat_ElGamal_Protocol4();
 			}
 

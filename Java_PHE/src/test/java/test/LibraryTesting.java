@@ -54,13 +54,12 @@ public class LibraryTesting
 	private static ElGamalPrivateKey el_sk = null;
 	
 	@BeforeClass
-	public static void generate_keys() throws HomomorphicException
-	{
+	public static void generate_keys() throws HomomorphicException {
 		// Build DGK Keys
 		DGKKeyPairGenerator p = new DGKKeyPairGenerator();
 		p.initialize(KEY_SIZE, null);
-		dgk = p.generateKeyPair();
 		p.setL(20);
+		dgk = p.generateKeyPair();
 		
 		dgk_pk = (DGKPublicKey) dgk.getPublic();
 		dgk_sk = (DGKPrivateKey) dgk.getPrivate();
@@ -83,8 +82,7 @@ public class LibraryTesting
 	}
 	
 	@Test
-	public void basic_DGK() throws HomomorphicException
-	{
+	public void basic_DGK() throws HomomorphicException {
 		// Test D(E(X)) = X
 		BigInteger a = DGKOperations.encrypt(BigInteger.TEN, dgk_pk);
 		a = BigInteger.valueOf(DGKOperations.decrypt(a, dgk_sk));
@@ -104,13 +102,12 @@ public class LibraryTesting
 		assertEquals(100, DGKOperations.decrypt(a, dgk_sk));
 		
 		// Test Division, Division is failing for some reason...?
-		//a = DGKOperations.divide(a, new BigInteger("2"), pk); // 100/2
-		//assertEquals(50, DGKOperations.decrypt(a, sk));
+		a = DGKOperations.divide(a, new BigInteger("2"), dgk_pk); // 100/2
+		assertEquals(50, DGKOperations.decrypt(a, dgk_sk));
 	}
 	
 	@Test
-	public void basic_Paillier() throws HomomorphicException
-	{	
+	public void basic_Paillier() throws HomomorphicException {	
 		// Test D(E(X)) = X
 		BigInteger a = PaillierCipher.encrypt(BigInteger.TEN, pk);
 		a = PaillierCipher.decrypt(a, sk);
@@ -136,8 +133,7 @@ public class LibraryTesting
 	
 	// NOTE: THIS IS THE MULTIPLICATIVE VERSION
 	@Test
-	public void basic_ElGamal_multiply() throws HomomorphicException
-	{
+	public void basic_ElGamal_multiply() throws HomomorphicException {
 		// Build DGK Keys
 		ElGamalKeyPairGenerator p = new ElGamalKeyPairGenerator();
 		p.initialize(1024, new SecureRandom());
@@ -163,8 +159,7 @@ public class LibraryTesting
 	
 	// NOTE: THIS IS THE ADDITIVE VERSION
 	@Test
-	public void basic_ElGamal_add() throws HomomorphicException
-	{
+	public void basic_ElGamal_add() throws HomomorphicException {
 		// Test D(E(X)) = X
 		ElGamal_Ciphertext a = ElGamalCipher.encrypt(BigInteger.TEN, el_pk);
 		BigInteger alpha = ElGamalCipher.decrypt(a, el_sk);
@@ -187,8 +182,7 @@ public class LibraryTesting
 	}
 	
 	@Test
-	public void signature_test() throws HomomorphicException, InvalidKeyException, SignatureException
-	{
+	public void signature_test() throws HomomorphicException, InvalidKeyException, SignatureException {
 		byte [] signed_answer = null;
 		
 		// Paillier Signature
@@ -199,16 +193,13 @@ public class LibraryTesting
 		
 		// Test signatures
 		paillier.initVerify(pk);
-		for (int i = 0; i < 1000; i++)
-		{
+		for (int i = 0; i < 1000; i++) {
 			paillier.update(BigInteger.valueOf(i).toByteArray());
 			boolean answer = paillier.verify(signed_answer);
-			if (i == 42)
-			{
+			if (i == 42) {
 				//assertEquals(answer, true);
 			}
-			else
-			{
+			else {
 				assertEquals(answer, false);
 			}
 		}
@@ -224,12 +215,10 @@ public class LibraryTesting
 		for (int i = 0; i < 1000; i++)
 		{
 			elgamal_sign.update(BigInteger.valueOf(i).toByteArray());
-			if (i == 42)
-			{
+			if (i == 42) {
 				assertEquals(elgamal_sign.verify(signed_answer), true);
 			}
-			else
-			{
+			else {
 				assertEquals(elgamal_sign.verify(signed_answer), false);
 			}
 		}
@@ -242,15 +231,12 @@ public class LibraryTesting
 		
 		// Test signatures
 		dgk_sign.initVerify(dgk_pk);
-		for (int i = 0; i < 1000; i++)
-		{
+		for (int i = 0; i < 1000; i++) {
 			dgk_sign.update(BigInteger.valueOf(i).toByteArray());
-			if (i == 42)
-			{
+			if (i == 42) {
 				assertEquals(dgk_sign.verify(signed_answer), true);
 			}
-			else
-			{
+			else {
 				assertEquals(dgk_sign.verify(signed_answer), false);
 			}
 		}
@@ -283,13 +269,11 @@ public class LibraryTesting
 		andrew.start();
 		Thread yujia = new Thread(new Alice());
 		yujia.start();
-		try
-		{
+		try {
 			andrew.join();
 			yujia.join();
 		}
-		catch (InterruptedException e)
-		{
+		catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
