@@ -1,0 +1,24 @@
+name: Build Gradle project
+
+on:
+  push:
+
+jobs:
+  build-gradle-project:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout project sources
+      uses: actions/checkout@v2
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+    - name: Run build with Gradle Wrapper
+      run: |
+      cd Java_PHE
+      chmod +x gradlew  
+    - name: Run check with Gradle Wrapper
+    run: |
+    gradlew check 
+    - name: Obtain code coverage
+    run: |
+    gradlew jacocoTestReport
+    bash <(curl -s https://codecov.io/bash)
