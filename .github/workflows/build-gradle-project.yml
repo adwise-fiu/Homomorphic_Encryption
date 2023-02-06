@@ -14,14 +14,15 @@ jobs:
       uses: actions/checkout@v2
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
-    - name: Run build with Gradle Wrapper
-      run: |
-      cd Java_PHE
-      chmod +x gradlew  
-    - name: Run check with Gradle Wrapper
-    run: |
-    gradlew check 
-    - name: Obtain code coverage
-    run: |
-    gradlew jacocoTestReport
-    bash <(curl -s https://codecov.io/bash)
+    - name: Move into Java Folder
+      run: cd Java_PHE
+    - name: Make executable
+      run: chmod +x ./gradlew
+    - name: Run check
+      run: ./gradlew check
+    - name: Get Coverage Report
+      run: ./gradlew jacocoTestReport
+    - name: Upload Code Coverage
+      run: bash <(curl -s https://codecov.io/bash)
+
+    
