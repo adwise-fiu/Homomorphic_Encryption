@@ -1,9 +1,0 @@
-language: java
-before_install:
-- cd ./Java_PHE
-- chmod +x gradlew
-script:
-- ./gradlew check
-- ./gradlew jacocoTestReport
-after_success:
-- bash <(curl -s https://codecov.io/bash)
