@@ -1,7 +1,6 @@
 package security.elgamal;
 
 import java.math.BigInteger;
-import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;
@@ -61,6 +60,7 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 		{
 			e.printStackTrace();
 		}
+		assert digest != null;
 		this.encoded_hash = digest.digest(new byte [] { b });
 	}
 
@@ -78,6 +78,7 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 		{
 			e.printStackTrace();
 		}
+		assert digest != null;
 		this.encoded_hash = digest.digest(b);
 	}
 
@@ -146,13 +147,7 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 		
 	}
 
-	protected AlgorithmParameters engineGetParameter() 
-			throws InvalidParameterException
-	{
-		return null;
-	}
-	
-	protected Object engineGetParameter(String param) 
+	protected Object engineGetParameter(String param)
 			throws InvalidParameterException 
 	{
 		return null;
@@ -186,7 +181,7 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 	
 	/**
 	 * Sign a message with ElGamal Private Key
-	 * https://en.wikipedia.org/wiki/ElGamal_signature_scheme
+	 * <a href="https://en.wikipedia.org/wiki/ElGamal_signature_scheme">...</a>
 	 * @param message - plaintext
 	 * @param sk - ElGamal Private Key to sign
 	 * @return - signed message
@@ -216,7 +211,7 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 	
 	/**
 	 * Verify a message with ElGamal Public Key
-	 * https://en.wikipedia.org/wiki/ElGamal_signature_scheme
+	 * <a href="https://en.wikipedia.org/wiki/ElGamal_signature_scheme">...</a>
 	 * @param message - plaintext
 	 * @param signature - signed message to verify
 	 * @param pk - Used to verify signed message integrity
@@ -228,12 +223,12 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 		BigInteger s = signature.getB();
 		BigInteger check = null;
 
-		if (r.compareTo(BigInteger.ZERO) <= 0 || r.compareTo(pk.p.subtract(BigInteger.ONE)) == 1)
+		if (r.compareTo(BigInteger.ZERO) <= 0 || r.compareTo(pk.p.subtract(BigInteger.ONE)) > 0)
 		{
 			//System.err.println("(ElGamal Signature) r: " + r + " and " + pk.p.subtract(BigInteger.ONE));
 			return false;
 		}
-		if (s.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(pk.p.subtract(TWO)) == 1)
+		if (s.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(pk.p.subtract(TWO)) > 0)
 		{
 			//System.err.println("(ElGamal Signature) s: " + s + " and " + pk.p.subtract(TWO));
 			return false;
@@ -241,13 +236,6 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 		// h = y = g^x
 		check = pk.h.modPow(r, pk.p);
 		check = check.multiply(r.modPow(s, pk.p)).mod(pk.p);
-		if (check.compareTo(pk.g.modPow(message, pk.p)) == 0)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return check.compareTo(pk.g.modPow(message, pk.p)) == 0;
 	}
 }

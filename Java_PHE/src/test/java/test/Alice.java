@@ -47,6 +47,7 @@ public class Alice implements Runnable
 			Thread.sleep(2 * 1000);
 			System.out.println("Alice woke up...");
 			Niu = new alice(new Socket("127.0.0.1", 9254));
+			Niu.receivePublicKeys();
 			pk = Niu.getPaillierPublicKey();
 			pubKey = Niu.getDGKPublicKey();
 			e_pk = Niu.getElGamalPublicKey();
@@ -195,7 +196,7 @@ public class Alice implements Runnable
 			System.out.println("Modified Protocol 3, X > Y: " + !result);
 		}
 		
-		// Test Protocol 2 (Builds on Protocol 3). REMEMEBER [X >= Y]
+		// Test Protocol 2 (Builds on Protocol 3). REMEMBER [X >= Y]
 		// Paillier
 		System.out.println("Protocol 2 Tests...Paillier");
 		Niu.setDGKMode(false);

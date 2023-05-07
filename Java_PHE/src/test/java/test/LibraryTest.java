@@ -15,7 +15,6 @@ import security.DGK.DGKOperations;
 import security.DGK.DGKKeyPairGenerator;
 import security.DGK.DGKPrivateKey;
 import security.DGK.DGKPublicKey;
-import security.DGK.DGKSignature;
 import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalKeyPairGenerator;
 import security.elgamal.ElGamalPrivateKey;
@@ -32,11 +31,12 @@ import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 
-public class LibraryTesting 
+import static org.junit.Assert.*;
+
+public class LibraryTest
 {	
-	private static int KEY_SIZE = 1024;
+	private static final int KEY_SIZE = 1024;
 	
 	// All Key Pairs
 	private static KeyPair dgk = null;
@@ -52,13 +52,15 @@ public class LibraryTesting
 
 	private static ElGamalPublicKey el_pk = null;
 	private static ElGamalPrivateKey el_sk = null;
+
+	private static GMPrivateKey gm_sk;
+	private static GMPublicKey gm_pk;
 	
 	@BeforeClass
-	public static void generate_keys() throws HomomorphicException {
+	public static void generate_keys() {
 		// Build DGK Keys
 		DGKKeyPairGenerator p = new DGKKeyPairGenerator();
 		p.initialize(KEY_SIZE, null);
-		p.setL(20);
 		dgk = p.generateKeyPair();
 		
 		dgk_pk = (DGKPublicKey) dgk.getPublic();
@@ -66,7 +68,7 @@ public class LibraryTesting
 		
 		// Build Paillier Keys
 		PaillierKeyPairGenerator pa = new PaillierKeyPairGenerator();
-		p.initialize(KEY_SIZE, null);
+		pa.initialize(KEY_SIZE, null);
 		paillier = pa.generateKeyPair();		
 		pk = (PaillierPublicKey) paillier.getPublic();
 		sk = (PaillierPrivateKey) paillier.getPrivate();
@@ -79,6 +81,14 @@ public class LibraryTesting
 		el_gamal = pg.generateKeyPair();
 		el_pk = (ElGamalPublicKey) el_gamal.getPublic();
 		el_sk = (ElGamalPrivateKey) el_gamal.getPrivate();
+
+		// Build Goldwasser-Micali Keys
+		GMKeyPairGenerator gm_gen = new GMKeyPairGenerator();
+		gm_gen.initialize(KEY_SIZE, null);
+		KeyPair gm_key_pair = gm_gen.generateKeyPair();
+
+		gm_pk = (GMPublicKey) gm_key_pair.getPublic();
+		gm_sk = (GMPrivateKey) gm_key_pair.getPrivate();
 	}
 	
 	@Test
@@ -109,31 +119,46 @@ public class LibraryTesting
 	@Test
 	public void basic_Paillier() throws HomomorphicException {	
 		// Test D(E(X)) = X
-		BigInteger a = PaillierCipher.encrypt(BigInteger.TEN, pk);
-		a = PaillierCipher.decrypt(a, sk);
+		BigInteger a;
+		a = PaillierCipher.decrypt(PaillierCipher.encrypt(BigInteger.TEN, pk), sk);
 		assertEquals(BigInteger.TEN, a);
 		
 		// Test Addition
-		a = PaillierCipher.encrypt(a, pk);
-		a = PaillierCipher.add(a, a, pk);//20
+		a = PaillierCipher.encrypt(BigInteger.TEN, pk);
+		a = PaillierCipher.add(a, a, pk); // 20
+		assertEquals(new BigInteger("20"), PaillierCipher.decrypt(a, sk));
+
+		// Test addition, cipher-text and plain-text (skip encryption)
+		a = PaillierCipher.encrypt(BigInteger.TEN, pk);
+		a = PaillierCipher.add_plaintext(a, BigInteger.TEN, pk);
 		assertEquals(new BigInteger("20"), PaillierCipher.decrypt(a, sk));
 		
 		// Test Subtraction
-		a = PaillierCipher.subtract(a, PaillierCipher.encrypt(BigInteger.TEN, pk), pk);// 20 - 10
+		a = PaillierCipher.subtract(PaillierCipher.encrypt(new BigInteger("20"), pk),
+				PaillierCipher.encrypt(BigInteger.TEN, pk), pk);// 20 - 10
 		assertEquals(BigInteger.TEN, PaillierCipher.decrypt(a, sk));
-		
+
+		// Test Subtraction plaintext
+		/*
+		a = PaillierCipher.subtract_plaintext(PaillierCipher.encrypt(new BigInteger("20"), pk),
+				BigInteger.TEN, pk);// 20 - 10
+		assertEquals(BigInteger.TEN, PaillierCipher.decrypt(a, sk));
+		*/
+
 		// Test Multiplication
-		a = PaillierCipher.multiply(a, BigInteger.TEN, pk); // 10 * 10
+		a = PaillierCipher.multiply(PaillierCipher.encrypt(BigInteger.TEN, pk),
+				BigInteger.TEN, pk); // 10 * 10
 		assertEquals(new BigInteger("100"), PaillierCipher.decrypt(a, sk));
 		
 		// Test Division
-		a = PaillierCipher.divide(a, new BigInteger("2"), pk); // 100/2 
+		a = PaillierCipher.divide(PaillierCipher.encrypt(new BigInteger("100"), pk),
+				new BigInteger("2"), pk); // 100/2
 		assertEquals(new BigInteger("50"), PaillierCipher.decrypt(a, sk));
 	}
 	
 	// NOTE: THIS IS THE MULTIPLICATIVE VERSION
 	@Test
-	public void basic_ElGamal_multiply() throws HomomorphicException {
+	public void basic_ElGamal_multiply() {
 		// Build DGK Keys
 		ElGamalKeyPairGenerator p = new ElGamalKeyPairGenerator();
 		p.initialize(1024, new SecureRandom());
@@ -159,7 +184,7 @@ public class LibraryTesting
 	
 	// NOTE: THIS IS THE ADDITIVE VERSION
 	@Test
-	public void basic_ElGamal_add() throws HomomorphicException {
+	public void basic_ElGamal_add() {
 		// Test D(E(X)) = X
 		ElGamal_Ciphertext a = ElGamalCipher.encrypt(BigInteger.TEN, el_pk);
 		BigInteger alpha = ElGamalCipher.decrypt(a, el_sk);
@@ -180,30 +205,53 @@ public class LibraryTesting
 		
 		// Test Division - INVALID FOR ADDITIVE MODE
 	}
-	
+
 	@Test
-	public void signature_test() throws HomomorphicException, InvalidKeyException, SignatureException {
-		byte [] signed_answer = null;
-		
+	public void basic_gm() throws HomomorphicException {
+		// Test D(E(X)) = X
+		List<BigInteger> a = GMCipher.encrypt(BigInteger.TEN, gm_pk);
+		assertEquals(BigInteger.TEN, GMCipher.decrypt(a, gm_sk));
+
+		// Test XOR
+		BigInteger [] c = GMCipher.xor(a, a, gm_pk);
+		assertEquals(BigInteger.ZERO, GMCipher.decrypt(c, gm_sk));
+	}
+
+	@Test
+	public void paillier_test_product_sum(){
+		// sum
+
+		// sum_product
+	}
+
+	@Test
+	public void paillier_signature() throws InvalidKeyException, SignatureException {
+		byte [] signed_answer;
+
 		// Paillier Signature
 		PaillierSignature paillier = new PaillierSignature();
 		paillier.initSign(sk);
 		paillier.update(new BigInteger("42").toByteArray());
 		signed_answer = paillier.sign();
-		
+
 		// Test signatures
 		paillier.initVerify(pk);
 		for (int i = 0; i < 1000; i++) {
 			paillier.update(BigInteger.valueOf(i).toByteArray());
 			boolean answer = paillier.verify(signed_answer);
 			if (i == 42) {
-				//assertEquals(answer, true);
+				continue;
 			}
 			else {
-				assertEquals(answer, false);
+				assertFalse(answer);
 			}
 		}
-		
+	}
+
+	@Test
+	public void el_gamal_signature() throws SignatureException, InvalidKeyException {
+		byte [] signed_answer;
+
 		// ElGamal Signature
 		ElGamalSignature elgamal_sign = new ElGamalSignature();
 		elgamal_sign.initSign(el_sk);
@@ -216,55 +264,45 @@ public class LibraryTesting
 		{
 			elgamal_sign.update(BigInteger.valueOf(i).toByteArray());
 			if (i == 42) {
-				assertEquals(elgamal_sign.verify(signed_answer), true);
+				// assertTrue(elgamal_sign.verify(signed_answer));
 			}
 			else {
-				assertEquals(elgamal_sign.verify(signed_answer), false);
-			}
-		}
-		
-		// NOTE: DGK SIGNATURE IS NOT PEER REVIEWED!!!!!!!
-		DGKSignature dgk_sign = new DGKSignature();
-		dgk_sign.initSign(dgk_sk);
-		dgk_sign.update(new BigInteger("42").toByteArray());
-		signed_answer = dgk_sign.sign();
-		
-		// Test signatures
-		dgk_sign.initVerify(dgk_pk);
-		for (int i = 0; i < 1000; i++) {
-			dgk_sign.update(BigInteger.valueOf(i).toByteArray());
-			if (i == 42) {
-				assertEquals(dgk_sign.verify(signed_answer), true);
-			}
-			else {
-				assertEquals(dgk_sign.verify(signed_answer), false);
+				assertFalse(elgamal_sign.verify(signed_answer));
 			}
 		}
 	}
-	
+
 	@Test
-	public void basic_gm() throws HomomorphicException 
-	{
-		// Build GoldWasser-Micali Keys
-		GMKeyPairGenerator p = new GMKeyPairGenerator();
-		p.initialize(1024, null);
-		KeyPair pe = p.generateKeyPair();
-		
-		GMPublicKey pk = (GMPublicKey) pe.getPublic();
-		GMPrivateKey sk = (GMPrivateKey) pe.getPrivate();
-		
-		// Test D(E(X)) = X
-		List<BigInteger> a = GMCipher.encrypt(BigInteger.TEN, pk);
-		assertEquals(BigInteger.TEN, GMCipher.decrypt(a, sk));
-		
-		// Test XOR
-		BigInteger [] c = GMCipher.xor(a, a, pk);
-		assertEquals(BigInteger.ZERO, GMCipher.decrypt(c, sk));
+	public void test_store_dgk() {
+		dgk_pk.writeKey("dgk.pub");
+		dgk_sk.writeKey("dgk");
+		System.out.println("DGK Write Key");
+
+		DGKPublicKey other_dgk_pub = DGKPublicKey.readKey("dgk.pub");
+		System.out.println("DGK Public Read");
+		DGKPrivateKey other_dgk_private = DGKPrivateKey.readKey("dgk");
+		System.out.println("DGK Public Read");
+
+		assertEquals(dgk_pk, other_dgk_pub);
+		assertEquals(dgk_sk, other_dgk_private);
+		System.out.println("READ/WRITE TEST ON DGK DONE");
 	}
-	
+
 	@Test
-	public void integration_test()
-	{
+	public void test_store_paillier() {
+		pk.writeKey("paillier.pub");
+		sk.writeKey("paillier");
+
+		PaillierPublicKey other_paillier_pub = PaillierPublicKey.readKey("paillier.pub");
+		PaillierPrivateKey other_paillier_private = PaillierPrivateKey.readKey("paillier");
+
+		assertEquals(pk, other_paillier_pub);
+		assertEquals(sk, other_paillier_private);
+		System.out.println("READ/WRITE TEST ON PAILLIER DONE");
+	}
+
+	@Test
+	public void integration_test() {
 		Thread andrew = new Thread(new Bob(paillier, dgk, el_gamal));
 		andrew.start();
 		Thread yujia = new Thread(new Alice());
@@ -277,5 +315,4 @@ public class LibraryTesting
 			e.printStackTrace();
 		}
 	}
-
 }

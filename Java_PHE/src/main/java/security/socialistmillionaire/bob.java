@@ -30,7 +30,7 @@ public final class bob extends socialist_millionaires implements Runnable
 	 * @param b - 
 	 * @throws IOException
 	 * @throws IllegalArgumentException
-	 * If a is not a Pailler Keypair or b is not a DGK key pair
+	 * If a is not a Paillier Keypair or b is not a DGK key pair
 	 */
 	public bob (Socket clientSocket,
 			KeyPair a, KeyPair b) throws IOException, IllegalArgumentException {
@@ -46,15 +46,15 @@ public final class bob extends socialist_millionaires implements Runnable
 	 * @param c 
 	 * @throws IOException
 	 * @throws IllegalArgumentException
-	 * If a is not a Pailler Keypair or b is not a DGK key pair or c is not ElGamal Keypair
+	 * If a is not a Paillier Keypair or b is not a DGK key pair or c is not ElGamal Keypair
 	 */
 	public bob (Socket clientSocket,
 			KeyPair a, KeyPair b, KeyPair c) 
 					throws IOException, IllegalArgumentException
 	{
 		if(clientSocket != null) {
-			this.fromAlice = new ObjectInputStream(clientSocket.getInputStream());
 			this.toAlice = new ObjectOutputStream(clientSocket.getOutputStream());
+			this.fromAlice = new ObjectInputStream(clientSocket.getInputStream());
 		}
 		else {
 			throw new NullPointerException("Client Socket is null!");
@@ -93,7 +93,6 @@ public final class bob extends socialist_millionaires implements Runnable
 			}
 		}
 
-		this.sendPublicKeys();
 		this.isDGK = false;
 		powL = TWO.pow(pubKey.getL());
 	}
@@ -471,7 +470,7 @@ public final class bob extends socialist_millionaires implements Runnable
 
 		// Step E: Alice Computes alpha_hat and w_bits
 
-		// Step F: Alice Exponentiates w_bits
+		// Step F: Alice Exponent w_bits
 
 		// Step G: Alice picks Delta A
 
@@ -524,7 +523,7 @@ public final class bob extends socialist_millionaires implements Runnable
 			throws IOException, ClassNotFoundException, HomomorphicException
 	{
 		// Constraint for Paillier
-		if(!isDGK && pubKey.getL() + 2 >= pk.keysize)
+		if(!isDGK && pubKey.getL() + 2 >= pk.key_size)
 		{
 			throw new IllegalArgumentException("Constraint violated: l + 2 < log_2(N)");
 		}
@@ -570,7 +569,7 @@ public final class bob extends socialist_millionaires implements Runnable
 			Protocol3(beta);
 		}
 		
-		//Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already..
+		//Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already
 		if(isDGK) {
 			zeta_one = DGKOperations.encrypt(z.divide(powL), pubKey);
 			if(z.compareTo(pubKey.getU().subtract(BigInteger.ONE).divide(TWO)) == -1) {
@@ -665,7 +664,7 @@ public final class bob extends socialist_millionaires implements Runnable
 			Protocol3(beta);
 		}
 		
-		//Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already..
+		//Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already
 		zeta_one = ElGamalCipher.encrypt(z.divide(powL), e_pk);
 		if(z.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) == -1) {
 			zeta_two = ElGamalCipher.encrypt(z.add(N).divide(powL), e_pk);
@@ -745,7 +744,7 @@ public final class bob extends socialist_millionaires implements Runnable
 			enc_z = (ElGamal_Ciphertext) alice;
 		}
 		else {
-			throw new IllegalArgumentException("Divison: No ElGamal Ciphertext found! " + alice.getClass().getName());
+			throw new IllegalArgumentException("Division: No ElGamal Ciphertext found! " + alice.getClass().getName());
 		}
 	
 		z = ElGamalCipher.decrypt(enc_z, e_sk);
@@ -801,9 +800,9 @@ public final class bob extends socialist_millionaires implements Runnable
 	public void multiplication() 
 			throws IOException, ClassNotFoundException, HomomorphicException
 	{
-		Object in = null;
-		BigInteger x_prime = null;
-		BigInteger y_prime = null;
+		Object in;
+		BigInteger x_prime;
+		BigInteger y_prime;
 		
 		// Step 2
 		in = fromAlice.readObject();
@@ -841,14 +840,14 @@ public final class bob extends socialist_millionaires implements Runnable
 	public void division(long divisor) 
 			throws ClassNotFoundException, IOException, HomomorphicException
 	{
-		BigInteger c = null;
-		BigInteger z = null;
+		BigInteger c;
+		BigInteger z;
 		Object alice = fromAlice.readObject();
 		if(alice instanceof BigInteger)	{
 			z = (BigInteger) alice;
 		}
 		else {
-			throw new IllegalArgumentException("Divison: No BigInteger found: " + alice.getClass().getName());
+			throw new IllegalArgumentException("Division: No BigInteger found: " + alice.getClass().getName());
 		}
 		
 		if(isDGK) {
@@ -881,7 +880,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		 */
 	}
 	
-	protected void sendPublicKeys() throws IOException
+	public void sendPublicKeys() throws IOException
 	{
 		if(pubKey != null) {
 			toAlice.writeObject(pubKey);

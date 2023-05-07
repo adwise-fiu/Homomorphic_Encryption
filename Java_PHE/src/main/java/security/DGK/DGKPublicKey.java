@@ -1,9 +1,6 @@
 package security.DGK;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.util.HashMap;
@@ -22,8 +19,8 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 	protected final BigInteger h;
 	protected final long u;
 	protected final BigInteger bigU;
-	protected final HashMap <Long, BigInteger> gLUT = new HashMap<Long, BigInteger>();
-	protected final HashMap <Long, BigInteger> hLUT = new HashMap<Long, BigInteger>();
+	protected final HashMap <Long, BigInteger> gLUT = new HashMap<>();
+	protected final HashMap <Long, BigInteger> hLUT = new HashMap<>();
 	
 	// Key Parameters
 	protected final int l;
@@ -42,14 +39,25 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		this.t = t;
 		this.k = k;
 	}
-		
-	private void readObject(ObjectInputStream aInputStream)
-			throws ClassNotFoundException,IOException {
-		aInputStream.defaultReadObject();
+
+	public void writeKey(String dgk_public_key_file) {
+		// Write the key to a file
+		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dgk_public_key_file))) {
+			oos.writeObject(this);
+			oos.flush();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	private void writeObject(ObjectOutputStream aOutputStream) throws IOException {
-		aOutputStream.defaultWriteObject();
+	public static DGKPublicKey readKey(String dgk_public_key) {
+		DGKPublicKey pk;
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dgk_public_key))) {
+			pk = (DGKPublicKey) ois.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+		return pk;
 	}
 
 	public BigInteger ZERO() {
@@ -126,5 +134,16 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 
 	public int getL() {
 		return this.l;
+	}
+
+	public boolean equals (Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		DGKPublicKey that = (DGKPublicKey) o;
+		return this.toString().equals(that.toString());
 	}
 }

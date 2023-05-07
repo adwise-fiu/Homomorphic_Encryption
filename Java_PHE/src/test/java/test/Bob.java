@@ -43,7 +43,8 @@ public class Bob implements Runnable
 			System.out.println("Bob is ready...");
 			bob_client = bob_socket.accept();
 			andrew = new bob(bob_client, this.p, this.d, this.e);
-			
+			andrew.sendPublicKeys();
+
 			// Send Private Keys to alive for testing purposes.
 			PaillierPrivateKey p = (PaillierPrivateKey) this.p.getPrivate();
 			DGKPrivateKey d = (DGKPrivateKey) this.d.getPrivate();
@@ -67,16 +68,9 @@ public class Bob implements Runnable
 			bob_demo();
 			bob_demo_ElGamal();
 		}
-		catch (IOException | ClassNotFoundException x)
+		catch (IOException | ClassNotFoundException | HomomorphicException | IllegalArgumentException x)
 		{
 			x.printStackTrace();
-		}
-		catch(IllegalArgumentException o)
-		{
-			o.printStackTrace();
-		} 
-		catch (HomomorphicException e) {
-			e.printStackTrace();
 		}
 		finally
 		{

@@ -15,9 +15,29 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	private int l = 16;
 	private int t = 160;
 	private int k = 1024;
-	private boolean no_skip_public_key_maps = true;
 	private SecureRandom rnd = null;
-	
+
+	public static void main(String []  args) {
+		System.out.println("Creating DGK Key pair");
+		String dgk_private_key_file = "dgk";
+		String dgk_public_key_file = "dgk.pub";
+		int KEY_SIZE = 1024;
+		KeyPair dgk;
+		DGKPublicKey pk;
+		DGKPrivateKey sk;
+
+		// Create the Key
+		DGKKeyPairGenerator pa = new DGKKeyPairGenerator();
+		pa.initialize(KEY_SIZE, null);
+		dgk = pa.generateKeyPair();
+		pk = (DGKPublicKey) dgk.getPublic();
+		sk = (DGKPrivateKey) dgk.getPrivate();
+
+		// Write the key to a file
+		pk.writeKey(dgk_public_key_file);
+		sk.writeKey(dgk_private_key_file);
+	}
+
 	public DGKKeyPairGenerator()
 	{
 		this.initialize(this.k, null);
@@ -122,30 +142,17 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	
 	public void setK(int k) throws HomomorphicException
 	{
-		if (this.l > this.t || this.t > k)
-		{
+		if (this.l > this.t || this.t > k) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: we must have l < k < t");
 		}
 
-		if (k/2 < this.t + this.l + 1)
-		{
+		if (k/2 < this.t + this.l + 1) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: we must have k > k/2 < t + l");
 		}
 		this.k = k;
 	}
-	
-	public void setSkip(boolean no_skip_public_key_maps)
-	{
-		this.no_skip_public_key_maps = no_skip_public_key_maps;
-	}
-	
-	public boolean getSkip()
-	{
-		return no_skip_public_key_maps;
-	}
 
-	public void initialize(int k, SecureRandom random)
-	{
+	public void initialize(int k, SecureRandom random) {
 		this.k = k;
 		this.rnd = random;
 	}
@@ -153,16 +160,15 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	/**
 	 * @return DGK Key Pair
 	 */
-	public KeyPair generateKeyPair() 
-	{
+	public KeyPair generateKeyPair() {
 		long start_time = System.nanoTime();
 		if(this.rnd == null)
 		{
 			this.rnd = new SecureRandom();
 		}
 		
-		DGKPublicKey pubKey = null;
-		DGKPrivateKey privkey = null;
+		DGKPublicKey pubKey;
+		DGKPrivateKey privkey;
 		
 		System.out.println("Generating Keys...");
 
@@ -182,15 +188,15 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 			vpvq = vp.multiply(vq);
 			tmp = u.multiply(vp);
 			System.out.println("Completed generating vp, vq");
-			
+
 			int needed_bits = this.k/2 - (tmp.bitLength());
-			
+
 			// Generate rp until p is prime such that u * vp divides p-1
 			do
 			{
 				rp = new BigInteger(needed_bits, rnd);
 				rp = rp.setBit(needed_bits - 1);
-				
+
 				/*
 				 * p = rp * u * vp + 1
 				 * u | p - 1
@@ -199,7 +205,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 				p = rp.multiply(tmp).add(BigInteger.ONE);
 			}
 			while(!p.isProbablePrime(CERTAINTY));
-			
+
 			tmp = u.multiply(vq);
 			needed_bits = this.k/2 - (tmp.bitLength());
 			do
@@ -208,7 +214,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 				rq = new BigInteger(needed_bits, rnd);
 				rq = rq.setBit(needed_bits -1);
 				q = rq.multiply(tmp).add(BigInteger.ONE); // q = rq*(vq*u) + 1
-				
+
 				/*
 				 * q - 1 | rq * vq * u
 				 * Therefore,
@@ -218,12 +224,12 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 			}
 			while(!q.isProbablePrime(CERTAINTY));
 			//Thus we ensure that q is a prime, with p-1 divides the prime numbers vq and u
-			if(!NTL.POSMOD(rq, u).equals(BigInteger.ZERO) && 
+			if(!NTL.POSMOD(rq, u).equals(BigInteger.ZERO) &&
 					!NTL.POSMOD(rp, u).equals(BigInteger.ZERO))
 			{
 				break;
 			}
-			
+
 		}
 	
 		n = p.multiply(q);
@@ -359,6 +365,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 		System.out.println("Generating hashmaps...");
 		pubKey =  new DGKPublicKey(n, g, h, u, this.l, this.t, this.k);
 		privkey = new DGKPrivateKey(p, q, vp, vq, pubKey);
+		boolean no_skip_public_key_maps = true;
 		if(no_skip_public_key_maps)
 		{
 			pubKey.run();
@@ -367,8 +374,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 		return new KeyPair(pubKey, privkey);
 	}
 
-	public String toString()
-	{
+	public String toString() {
 		String s = "";
 		s += "l = " + l;
 		s += "t = " + t;

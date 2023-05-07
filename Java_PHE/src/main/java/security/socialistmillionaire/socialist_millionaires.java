@@ -44,80 +44,48 @@ public abstract class socialist_millionaires
 	protected ObjectInputStream fromBob = null;
 	protected ObjectOutputStream toAlice = null;
 	protected ObjectInputStream fromAlice = null;
-	
-	// Set Methods
-	public void setProtocol2(boolean isProtocol2)
-	{
-		this.USE_PROTOCOL_2 = isProtocol2;
-	}
 
-	public void setFastDivide(boolean FAST_DIVIDE)
-	{
-		this.FAST_DIVIDE = FAST_DIVIDE;
-	}
-
-	public void setDGKMode(boolean isDGK)
-	{
+	public void setDGKMode(boolean isDGK) {
 		this.isDGK = isDGK;
 	}
 
-	// Get Methods
-	public boolean getProtocol2()
-	{
-		return USE_PROTOCOL_2;
-	}
-
-	public boolean getFastDivide()
-	{
-		return FAST_DIVIDE;
-	}
-
-	public boolean isDGK()
-	{
+	public boolean isDGK() {
 		return isDGK;
 	}
 
+	// Set Public Key
+	public void setPaillierPublicKey(PaillierPublicKey pk) {
+		this.pk = pk;
+	}
+
+	public void setDGKPublicKey(DGKPublicKey pubKey) {
+		this.pubKey = pubKey;
+	}
+
+	public void setElGamalPublicKey(ElGamalPublicKey e_pk) {
+		this.e_pk = e_pk;
+	}
+
 	// Get PublicKey
-	public PaillierPublicKey getPaillierPublicKey()
-	{
+	public PaillierPublicKey getPaillierPublicKey() {
 		return pk;
 	}
 
-	public DGKPublicKey getDGKPublicKey()
-	{
+	public DGKPublicKey getDGKPublicKey() {
 		return pubKey;
 	}
 
-	public ElGamalPublicKey getElGamalPublicKey()
-	{
+	public ElGamalPublicKey getElGamalPublicKey() {
 		return e_pk;
-	}
-	
-	// Get Private Key
-	public PaillierPrivateKey getPaillierPrivateKey()
-	{
-		return sk;
-	}
-	
-	public DGKPrivateKey getDGKPrivateKey()
-	{
-		return privKey;
-	}
-	
-	public ElGamalPrivateKey getElGamalPrivateKey()
-	{
-		return e_sk;
 	}
 	
 	public void writeObject(Object o) throws IOException
 	{
-		if(toBob != null)
-		{
+		if(toBob != null) {
 			toBob.writeObject(o);
 			toBob.flush();
 		}
-		else
-		{
+		else {
 			toAlice.writeObject(o);
 			toAlice.flush();	
 		}
@@ -125,12 +93,10 @@ public abstract class socialist_millionaires
 	
 	public Object readObject() throws ClassNotFoundException, IOException
 	{
-		if (fromBob != null)
-		{
+		if (fromBob != null) {
 			return fromBob.readObject();	
 		}
-		else
-		{
+		else {
 			return fromAlice.readObject();
 		}
 	}
@@ -139,26 +105,20 @@ public abstract class socialist_millionaires
 	 * Create deep copy of BigInteger array
 	 * @param input
 	 */
-	protected BigInteger [] deep_copy(BigInteger [] input)
-	{
+	protected BigInteger [] deep_copy(BigInteger [] input) {
 		BigInteger [] copy = new BigInteger[input.length];
-		for(int i = 0; i < input.length;i++)
-		{
-			copy[i] = input[i];
-		}
+		System.arraycopy(input, 0, copy, 0, input.length);
 		return copy;
 	}
 	
 	/**
 	 *  Used to shuffle the encrypted bits.
 	 *  Note: IT DOES NOT CREATE A NEW ARRAY.
-	 * @param array 
+	 * @param array
 	 * @return - shuffled array
 	 */
-	protected BigInteger[] shuffle_bits(BigInteger[] array) 
-	{
-		for (int i = 0; i < array.length; i++)
-		{
+	protected BigInteger[] shuffle_bits(BigInteger[] array) {
+		for (int i = 0; i < array.length; i++) {
 			int randomPosition = rnd.nextInt(array.length);
 			BigInteger temp = array[i];
 			array[i] = array[randomPosition];

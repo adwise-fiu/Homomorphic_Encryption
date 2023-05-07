@@ -55,23 +55,8 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		this.isDGK = false;
 		this.algo = Algorithm.BUBBLE_SORT;
-
-		this.receivePublicKeys();
-		this.powL = TWO.pow(pubKey.getL());
 	}
 
-	public void setSorting(List<BigInteger> toSort) {
-		this.toSort = toSort.toArray(new BigInteger[toSort.size()]);
-	}
-
-	public void setSorting(BigInteger [] toSort) {
-		this.toSort = toSort;
-	}
-
-	public BigInteger [] getSortedArray() {
-		return sortedArray;
-	}
-	
 	/**
 	 * Please see Protocol 1 with Bob which has parameter y
 	 * Computes the truth value of X <= Y
@@ -145,12 +130,6 @@ public final class alice extends socialist_millionaires implements Runnable
 			C[i] = DGKOperations.add_plaintext(C[i], 1 - 2 * deltaA, pubKey);
 			C[i] = DGKOperations.subtract(C[i], Encrypted_Y[i], pubKey);
 			C[i] = DGKOperations.add_plaintext(C[i], NTL.bit(x, i), pubKey);
-			/*
-			if(x.testBit(i))
-			{
-				C[i] = DGKOperations.add_plaintext(pubKey, C[i], 1);
-			}
-			*/
 		}
 
 		//This is c_{-1}
@@ -222,7 +201,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		else
 		{
 			// Generate Random Number with l + 1 + sigma bits
-			if (pubKey.getL() + SIGMA + 2 < pk.keysize) {
+			if (pubKey.getL() + SIGMA + 2 < pk.key_size) {
 				r = NTL.generateXBitRandom(pubKey.getL() + 1 + SIGMA);
 			}
 			else {
@@ -971,10 +950,10 @@ public final class alice extends socialist_millionaires implements Runnable
 	 * @return Encrypted Pailier value [x/d] or Encrypted DGK value [x/d]
 	 * @throws IOException - Any socket errors
 	 * @throws ClassNotFoundException
-	 * @throws HomomorphicException 
+	 * @throws HomomorphicException
 	 * Constraints: 0 <= x <= N * 2^{-sigma} and 0 <= d < N
 	 */
-	public BigInteger division(BigInteger x, long d) 
+	public BigInteger division(BigInteger x, long d)
 			throws IOException, ClassNotFoundException,  HomomorphicException
 	{
 		/*
@@ -1016,7 +995,7 @@ public final class alice extends socialist_millionaires implements Runnable
 			//N = pubKey.bigU;
 		}
 		else {
-			r = NTL.generateXBitRandom(pk.keysize - 1).mod(pk.getN());
+			r = NTL.generateXBitRandom(pk.key_size - 1).mod(pk.getN());
 			z = PaillierCipher.add_plaintext(x, r, pk);
 			//N = pk.n;
 		}
@@ -1590,10 +1569,10 @@ public final class alice extends socialist_millionaires implements Runnable
 		toBob.flush();
 	}
 
-	protected void receivePublicKeys() 
+	public void receivePublicKeys()
 			throws IOException, ClassNotFoundException
 	{
-		Object x = null;
+		Object x;
 		x = fromBob.readObject();
 		if (x instanceof DGKPublicKey) {
 			System.out.println("Alice Received DGK Public key from Bob");
@@ -1620,6 +1599,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		else {
 			e_pk = null;
 		}
+		this.powL = TWO.pow(pubKey.getL());
 	}
 	
 	// Below are all supported sorting techniques!    
@@ -1908,7 +1888,7 @@ public final class alice extends socialist_millionaires implements Runnable
 	private void mergeParts(int lowerIndex, int middle, int higherIndex)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
-		boolean activation = false;
+		boolean activation;
 		int i = lowerIndex;
 		int j = middle + 1;
 		int k = lowerIndex;

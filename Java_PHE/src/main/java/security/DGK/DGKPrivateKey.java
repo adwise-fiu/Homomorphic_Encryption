@@ -1,9 +1,6 @@
 package security.DGK;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.util.HashMap;
@@ -38,8 +35,7 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 	public final BigInteger v;
 
 	public DGKPrivateKey (BigInteger p, BigInteger q, BigInteger vp,
-			BigInteger vq, DGKPublicKey pubKey)
-	{
+			BigInteger vq, DGKPublicKey pubKey) {
 		this.p = p;
 		this.q = q;
 		this.vp = vp;
@@ -59,25 +55,32 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 		this.k = pubKey.k;
 
 		// I already know the size of my map, so just initialize the size now to avoid memory waste!
-		this.LUT = new HashMap<BigInteger, Long>((int) this.u, (float) 1.0);
+		this.LUT = new HashMap<>((int) this.u, (float) 1.0);
 
 		// Now that I have public key parameters, build LUT!
 		this.generategLUT();
 	}
 
-	private void readObject(ObjectInputStream aInputStream)
-			throws ClassNotFoundException,IOException
-	{
-		aInputStream.defaultReadObject();
+	public void writeKey(String dgk_private_key_file) {
+		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dgk_private_key_file))) {
+			oos.writeObject(this);
+			oos.flush();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	private void writeObject(ObjectOutputStream aOutputStream) throws IOException
-	{
-		aOutputStream.defaultWriteObject();
+	public static DGKPrivateKey readKey(String dgk_private_key) {
+		DGKPrivateKey sk;
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dgk_private_key))) {
+			sk = (DGKPrivateKey) ois.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+		return sk;
 	}
 
-	private void generategLUT()
-	{
+	private void generategLUT() {
 		BigInteger gvp = NTL.POSMOD(this.g.modPow(this.vp, this.p), this.p);
 		for (long i = 0; i < this.u; ++i)
 		{
@@ -87,8 +90,7 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 	}
 
 	// Not going to print private key parameters...
-	public String toString()
-	{
+	public String toString() {
 		String answer = "";
 		answer += "n: " + this.n + '\n';
 		answer += "g: " + this.g + '\n';
@@ -101,33 +103,38 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 		return answer;
 	}
 
-	public BigInteger getU() 
-	{
+	public BigInteger getU() {
 		return this.bigU;
 	}
 
-	public BigInteger getN() 
-	{
+	public BigInteger getN() {
 		return this.n;
 	}
 
-	public int getL()
-	{
+	public int getL() {
 		return this.l;
 	}
 
-	public String getAlgorithm() 
-	{
+	public String getAlgorithm() {
 		return "DGK";
 	}
 
-	public String getFormat() 
-	{
+	public String getFormat() {
 		return "PKCS#8";
 	}
 
-	public byte[] getEncoded() 
-	{
+	public byte[] getEncoded() {
 		return null;
+	}
+
+	public boolean equals (Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		DGKPrivateKey that = (DGKPrivateKey) o;
+		return this.toString().equals(that.toString());
 	}
 }

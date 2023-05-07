@@ -1,7 +1,6 @@
 package security.paillier;
 
 import java.math.BigInteger;
-import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;
@@ -23,11 +22,8 @@ public class PaillierSignature extends SignatureSpi
 	private PaillierPublicKey pk;
 	private boolean VERIFY_MODE;
 	private byte [] encoded_hash;
-	
-	// For Paillier Verify
-	private List<BigInteger> sigma = null;
-	
-	protected void engineInitVerify(PublicKey publicKey) 
+
+	protected void engineInitVerify(PublicKey publicKey)
 			throws InvalidKeyException 
 	{
 		if(!(publicKey instanceof PaillierPublicKey))
@@ -52,9 +48,7 @@ public class PaillierSignature extends SignatureSpi
 	}
 
 	// Input 1:
-	protected void engineUpdate(byte b) 
-			throws SignatureException 
-	{
+	protected void engineUpdate(byte b) {
 		// Since I am using SHA-256, that is 256 bits or 256/8 bytes long!
 		MessageDigest digest = null;
 		try 
@@ -65,13 +59,12 @@ public class PaillierSignature extends SignatureSpi
 		{
 			e.printStackTrace();
 		}
-		this.encoded_hash = digest.digest(new byte [] { b });		
+		assert digest != null;
+		this.encoded_hash = digest.digest(new byte [] { b });
 	}
 
 	// Input 2: Prepare bytes to sign or verify!
-	protected void engineUpdate(byte [] b, int off, int len) 
-			throws SignatureException 
-	{
+	protected void engineUpdate(byte [] b, int off, int len) {
 		// Since I am using SHA-256, that is 256 bits or 256/8 bytes long!
 		MessageDigest digest = null;
 		try 
@@ -82,22 +75,24 @@ public class PaillierSignature extends SignatureSpi
 		{
 			e.printStackTrace();
 		}
+		assert digest != null;
 		this.encoded_hash = digest.digest(b);
 	}
 
 	protected byte[] engineSign()
 			throws SignatureException 
 	{
-		byte [] s = null;
-		byte [] s_1 = null;
-		byte [] s_2 = null;
+		byte [] s;
+		byte [] s_1;
+		byte [] s_2;
 		if(VERIFY_MODE)
 		{
 			throw new SignatureException("Did not Initialize SignInit!");
 		}
 		else
 		{
-			sigma = sign(new BigInteger(encoded_hash), sk);
+			// For Paillier Verify
+			List<BigInteger> sigma = sign(new BigInteger(encoded_hash), sk);
 			s_1 = sigma.get(0).toByteArray();
 			s_2 = sigma.get(1).toByteArray();
 			// Concat both BigIntegers!
@@ -140,13 +135,7 @@ public class PaillierSignature extends SignatureSpi
 
 	}
 
-	protected AlgorithmParameters engineGetParameter() 
-			throws InvalidParameterException
-	{
-		return null;
-	}
-
-	protected Object engineGetParameter(String param) 
+	protected Object engineGetParameter(String param)
 			throws InvalidParameterException
 	{
 		return null;
@@ -163,8 +152,7 @@ public class PaillierSignature extends SignatureSpi
 		engineInitVerify(pk);
 	}
 	
-	public void update(byte [] b) throws SignatureException
-	{
+	public void update(byte [] b) {
 		engineUpdate(b, 0, b.length);
 	}
 	
@@ -186,7 +174,7 @@ public class PaillierSignature extends SignatureSpi
 	 */
 	public static List<BigInteger> sign(BigInteger message, PaillierPrivateKey sk)
 	{
-		List<BigInteger> tuple = new ArrayList<BigInteger>();
+		List<BigInteger> tuple = new ArrayList<>();
 		BigInteger sigma_one = PaillierCipher.L(message.modPow(sk.lambda, sk.modulus), sk.n);
 		sigma_one = sigma_one.multiply(sk.rho);
 		
@@ -210,13 +198,6 @@ public class PaillierSignature extends SignatureSpi
 	{
 		BigInteger first_part = pk.g.modPow(sigma_one, pk.modulus);
 		BigInteger second_part = sigma_two.modPow(pk.n, pk.modulus);
-		if (message.compareTo(first_part.multiply(second_part).mod(pk.modulus)) == 0)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return message.compareTo(first_part.multiply(second_part).mod(pk.modulus)) == 0;
 	}
 }
