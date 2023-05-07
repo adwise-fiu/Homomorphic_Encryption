@@ -19,10 +19,7 @@ jobs:
     - name: Run check with Gradle Wrapper
       run: sh gradlew build
 
-    - name: Upload coverage reports to Codecov
-      run: |
-        # Replace `linux` below with the appropriate OS
-        # Options are `alpine`, `linux`, `macos`, `windows`
-        curl -Os https://uploader.codecov.io/latest/linux/codecov
-        chmod +x codecov
-        ./codecov -f build/reports/jacoco/test/html/index.html -t ${CODECOV_TOKEN}
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
