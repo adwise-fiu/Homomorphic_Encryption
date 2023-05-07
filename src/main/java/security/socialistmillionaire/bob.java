@@ -536,7 +536,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		BigInteger zeta_two = null;
 		
 		//Step 1: get [[z]] from Alice
-		x = fromAlice.readObject();;
+		x = fromAlice.readObject();
 		if (x instanceof BigInteger)
 		{
 			z = (BigInteger) x;

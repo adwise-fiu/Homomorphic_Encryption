@@ -4,6 +4,6 @@ import java.math.BigInteger;
 
 public interface PaillierKey 
 {
-	public BigInteger getN();
-	public BigInteger getModulus();
+	BigInteger getN();
+	BigInteger getModulus();
 }

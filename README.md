@@ -20,11 +20,27 @@ Please retrieve the JAR file from [here](https://github.com/AndrewQuijano/Homomo
 As this library uses Java 8, the JAR file can be imported into an Android project.
 If you want to review/edit the library, import the JAVA_PHE directory into a Eclipse project and edit as necessary. The Main.java folder only exists for testing and provide examples of how to use the library.
 
+## Generate Keys
+To create the keys, run the following commands:
+```bash
+gradle -g gradle_user_home run -PchooseRole=security.paillier.PaillierKeyPairGenerator
+gradle -g gradle_user_home run -PchooseRole=security.DGK.DGKKeyPairGenerator
+```
+This will create the key files on the current working directory. It will also
+
+## Create JAR file to import into another project
+To create the JAR file to import into another project, run the following:
+```bash
+./gradlew build
+./gradlew jar
+```
+You will find a `crypto.jar` file in the `build/libs/` directory.
+
 ## Usage
 Import the packages as necessary. For basic usage please check Server.java in the test package for basic usage of these cryptography libraries.
 Please view Client.java and Server.java for an example how to compare encrypted numbers, secure multiplication, secure division, etc. 
 
-# security.socialistmillionaire.alice
+### security.socialistmillionaire.alice
 **Initialize**
 ```java
 alice Niu = new alice(new Socket("192.168.1.208", 9254));
@@ -84,7 +100,7 @@ See Protocol 3 in "Correct to 'Improving the DGK comparison protocol'" in Alice 
 BigInteger x = new BigInteger("50");
 BigInteger y = new BigInteger("51");
 
-// Note: Assume bob is sharing y = new BigIntger("55");
+// Note: Assume bob is sharing y = new BigInteger("55");
 Niu.Protocol1(x); // TRUE, X <= Y
 Niu.Protocol3(x);// TRUE X <= Y
 Niu.Modified_Protocol3(x); // TRUE X <= Y
@@ -141,7 +157,7 @@ Please review Protocol 2 in the "Encrypted Integer Division" paper by Thjis Veug
 * Raises (**HomomorphicException**)
     * N/A
 
-# security.socialistmillionaire.bob
+### security.socialistmillionaire.bob
 **Initialize**
 ```java
 ServerSocket bob_socket = null;
@@ -233,7 +249,8 @@ Please review 'Correction of a Secure Comparison Protocol for Encrypted Integers
     * N/A
 * Raises (**HomomorphicException**)
     * Constraints: 0 <= x <= N * 2^{-sigma} and 0 <= d < N
-# security.DGK
+
+### security.DGK
 **Generate DGK Keys**
 ```java
 int KEY_SIZE = 1024; //number of bits
@@ -345,7 +362,7 @@ Multiply the encrypted value in the ciphertext with the plaintext
     * plaintext (**BigInteger**) - a plaintext BigInteger
     * pk (**DGKPublicKey**)
 * Returns
-    * ciphertext (**BigInteger**) - This ciphertext is the encrypted multilpication of ciphertext and plaintext.
+    * ciphertext (**BigInteger**) - This ciphertext is the encrypted multiplication of ciphertext and plaintext.
 * Raises (**HomomorphicException**)
     * N/A
 * Warning:
@@ -362,10 +379,9 @@ Divide the encrypted value in the ciphertext with the plaintext
 * Raises (**HomomorphicException**)
     * N/A
 * Warning:
-    * If you do this, you need to make sure that the plaintext divides the value encrypted in the ciphertext! Otherwise you will get a horribly wrong answer! You should use the Division Protocol if you can't make this gurantee on the Sociallist Millionaire's package!
+    * If you do this, you need to make sure that the plaintext divides the value encrypted in the ciphertext! Otherwise, you will get a horribly wrong answer! You should use the Division Protocol if you can't make this guarantee on the Socialist Millionaire's package!
 
-
-# security.elgamal
+### security.elgamal
 **Generate ElGamal Keys**
 ```java
 int KEY_SIZE = 1024; //number of bits
@@ -477,7 +493,7 @@ Multiply the encrypted value in the ciphertext with the plaintext
     * plaintext (**BigInteger**) - a plaintext BigInteger
     * pk (**ElGamalPublicKey**)
 * Returns
-    * ciphertext (**ElGamal_ciphertext**) - This ciphertext is the encrypted multilpication of ciphertext and plaintext.
+    * ciphertext (**ElGamal_ciphertext**) - This ciphertext is the encrypted multiplication of ciphertext and plaintext.
 * Raises (**HomomorphicException**)
     * N/A
 * Warning:
@@ -494,8 +510,9 @@ Divide the encrypted value in the ciphertext with the plaintext
 * Raises (**HomomorphicException**)
     * N/A
 * Warning:
-    * If you do this, you need to make sure that the plaintext divides the value encrypted in the ciphertext! Otherwise you will get a horribly wrong answer! You should use the Division Protocol if you can't make this gurantee on the Sociallist Millionaire's package!
-# security.gm
+    * If you do this, you need to make sure that the plaintext divides the value encrypted in the ciphertext! Otherwise, you will get a horribly wrong answer! You should use the Division Protocol if you can't make this guarantee on the Socialist Millionaire's package!
+
+### security.gm
 **Generate Goldwasser-Micali Keys**
 ```java
 GMKeyPairGenerator gmg = new GMKeyPairGenerator();
@@ -538,10 +555,10 @@ XOR both ciphertexts.
 * Returns
     * ciphertext (**List<BigInteger>**) - This ciphertext is the encrypted xor of both ciphertexts    
 * Raises (**HomomorphicException**)
-    * If both ciphertexts dont have the same number of bits, an exception will be thrown.
+    * If both ciphertexts don't have the same number of bits, an exception will be thrown.
 **
 
-# security.paillier
+### security.paillier
 
 **Generate Paillier Keys**
 ```java
@@ -654,7 +671,7 @@ Multiply the encrypted value in the ciphertext with the plaintext
     * plaintext (**BigInteger**) - a plaintext BigInteger
     * pk (**PaillierPublicKey**)
 * Returns
-    * ciphertext (**BigInteger**) - This ciphertext is the encrypted multilpication of ciphertext and plaintext.
+    * ciphertext (**BigInteger**) - This ciphertext is the encrypted multiplication of ciphertext and plaintext.
 * Raises (**HomomorphicException**)
     * N/A
 * Warning:
@@ -671,7 +688,7 @@ Divide the encrypted value in the ciphertext with the plaintext
 * Raises (**HomomorphicException**)
     * N/A
 * Warning:
-    * If you do this, you need to make sure that the plaintext divides the value encrypted in the ciphertext! Otherwise you will get a horribly wrong answer! You should use the Division Protocol if you can't make this gurantee on the Sociallist Millionaire's package!
+    * If you do this, you need to make sure that the plaintext divides the value encrypted in the ciphertext! Otherwise, you will get a horribly wrong answer! You should use the Division Protocol if you can't make this guarantee on the Socialist Millionaire's package!
 
 **sum(ciphertext, pk)**
 Compute the sum of all ciphertexts
@@ -718,7 +735,7 @@ Sign the plaintext using a Paillier Private Key.
 **verify(plaintext, signature, pk)**
 Verify the signature using the Paillier Public Key
 * Parameters
-    * plaintext (**BigInteger**) - plaintext that is suppossedly signed
+    * plaintext (**BigInteger**) - plaintext that is supposedly signed
     * signature (**BigInteger**) - signed bytes with its corresponding PaillierPrivateKey
     * pk (**PaillierPublicKey**) - used to verify the signature
 * Returns
@@ -750,4 +767,5 @@ The work to create this repository was initially funded by the US NSF REU Site a
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Project status
-The project is currently fully tested. To see an example how to use it, unzip the example.zip file and play the video. Currently, the strech goal is to implement certificates using the Bouncy Castle API for these homomorphic encryption systems.
+The project is currently fully tested.
+Currently, the stretch goal is to implement certificates using the Bouncy Castle API for these homomorphic encryption systems.

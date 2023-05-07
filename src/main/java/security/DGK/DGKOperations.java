@@ -28,17 +28,17 @@ import java.util.List;
 
 public final class DGKOperations extends CipherSpi implements CipherConstants
 {
-	protected int stateMode;
-	protected Key keyDGK;
-	protected SecureRandom SECURE_RANDOM;
-	protected int plaintextSize;
-	protected int ciphertextSize;
+	private int stateMode;
+	private Key keyDGK;
+	private SecureRandom SECURE_RANDOM;
+	private int plaintextSize;
+	private int ciphertextSize;
 	
 	/**
 	 * This class support no modes, so engineSetMode() throw exception when
 	 * called.
 	 */
-	protected final void engineSetMode(String mode)
+	protected void engineSetMode(String mode)
 			throws NoSuchAlgorithmException 
 	{
 		throw new NoSuchAlgorithmException("DGK supports no modes.");
@@ -48,7 +48,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 * This class support no padding, so engineSetPadding() throw exception when
 	 * called.
 	 */
-	protected final void engineSetPadding(String padding)
+	protected void engineSetPadding(String padding)
 			throws NoSuchPaddingException 
 	{
 		throw new NoSuchPaddingException("DGK supports no padding.");
@@ -72,8 +72,8 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 * @throws Exception
 	 *             throws if Plaintext m is not in Z_n , m should be less then n
 	 */
-	protected final int encrypt(byte[] input, int inputOffset, int inputLenth,
-			byte[] output, int outputOffset) throws Exception
+	private int encrypt(byte[] input, int inputOffset, int inputLenth,
+						byte[] output, int outputOffset) throws Exception
 	{
 		BigInteger m = new BigInteger(input);
 
@@ -99,8 +99,8 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 *            - the offset in output where the result is stored
 	 * @return the number of bytes stored in output
 	 */
-	protected final int decrypt(byte[] input, int inputOffset, int inputLenth,
-			byte[] output, int outputOffset)
+	private int decrypt(byte[] input, int inputOffset, int inputLenth,
+						byte[] output, int outputOffset)
 	{
 		// extract c
 		byte[] cBytes = new byte[input.length];
@@ -130,15 +130,15 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 *      java.security.SecureRandom)
 	 */
 
-	protected final void engineInit(int opmode, Key key,
-			AlgorithmParameterSpec params, SecureRandom random)
+	protected void engineInit(int opmode, Key key,
+							  AlgorithmParameterSpec params, SecureRandom random)
 			throws InvalidKeyException, InvalidAlgorithmParameterException
 	{
 		engineInit(opmode, key, random);
 	}
 
-	protected final void engineInit(int opmode, Key key, AlgorithmParameters params,
-			SecureRandom random) throws InvalidKeyException, InvalidAlgorithmParameterException 
+	protected void engineInit(int opmode, Key key, AlgorithmParameters params,
+							  SecureRandom random) throws InvalidKeyException, InvalidAlgorithmParameterException
 	{
 		engineInit(opmode, key, random);
 	}
@@ -148,7 +148,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 * 
 	 * @return the result from encryption or decryption
 	 */
-	protected final byte[] engineUpdate(byte[] input, int inputOffset, int inputLen) 
+	protected byte[] engineUpdate(byte[] input, int inputOffset, int inputLen)
 	{
 		byte[] out = new byte[engineGetOutputSize(inputLen)];
 		try 
@@ -180,8 +180,8 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 *            - the offset in output where the result is stored
 	 * @return the number of bytes stored in output
 	 */
-	protected final int engineUpdate(byte[] input, int inputOffset, int inputLen,
-			byte[] output, int outputOffset) throws ShortBufferException 
+	protected int engineUpdate(byte[] input, int inputOffset, int inputLen,
+							   byte[] output, int outputOffset) throws ShortBufferException
 	{
 		if (stateMode == Cipher.ENCRYPT_MODE)
 		{
@@ -207,7 +207,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 * 
 	 * @return returns the result from encryption or decryption
 	 */
-	protected final byte[] engineDoFinal(byte[] input, int inputOffset, int inputLen)
+	protected byte[] engineDoFinal(byte[] input, int inputOffset, int inputLen)
 			throws IllegalBlockSizeException, BadPaddingException
 	{
 
@@ -240,8 +240,8 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 *            - the offset in output where the result is stored
 	 * @return the number of bytes stored in output
 	 */
-	protected final int engineDoFinal(byte[] input, int inputOffset, int inputLen,
-			byte[] output, int outputOffset)
+	protected int engineDoFinal(byte[] input, int inputOffset, int inputLen,
+								byte[] output, int outputOffset)
 					throws ShortBufferException, IllegalBlockSizeException, BadPaddingException
 	{
 		// Create a single array of input data
@@ -273,7 +273,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 * 
 	 * @return BlockSize - the block size(in bytes).
 	 */
-	protected final int engineGetBlockSize() 
+	protected int engineGetBlockSize()
 	{
 		if (stateMode == Cipher.DECRYPT_MODE)
 		{
@@ -288,7 +288,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	/**
 	 * This method returns null.
 	 */
-	protected final byte[] engineGetIV()
+	protected byte[] engineGetIV()
 	{
 		return null;
 	}
@@ -300,7 +300,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 *            the input length (in bytes)
 	 * @return outLength - the required output size (in bytes)
 	 */
-	protected final int engineGetOutputSize(int inputLen)
+	protected int engineGetOutputSize(int inputLen)
 	{
 		if (stateMode == Cipher.ENCRYPT_MODE) 
 		{
@@ -313,7 +313,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 
 	}
 
-	protected final AlgorithmParameters engineGetParameters() 
+	protected AlgorithmParameters engineGetParameters()
 	{
 		return null;
 	}
@@ -321,7 +321,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	/**
 	 * Initialises this cipher with key and a source of randomness
 	 */
-	protected final void engineInit(int mode, Key key, SecureRandom random)
+	protected void engineInit(int mode, Key key, SecureRandom random)
 			throws InvalidKeyException 
 	{
 		if (mode == Cipher.ENCRYPT_MODE)
@@ -363,7 +363,7 @@ public final class DGKOperations extends CipherSpi implements CipherConstants
 	 * @param modulusLength
 	 *            - n = p*q
 	 */
-	protected final void calculateBlockSizes(int modulusLength)
+	private void calculateBlockSizes(int modulusLength)
 	{
 		plaintextSize = ((modulusLength + 8) / 8);
 		ciphertextSize = (((modulusLength + 12) / 8) * 2) - 1;

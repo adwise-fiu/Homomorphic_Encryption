@@ -205,8 +205,7 @@ public final class PaillierCipher implements CipherConstants {
 	 * @throws HomomorphicException
 	 */
 	public static BigInteger sum(BigInteger [] values, PaillierPublicKey pk)
-			throws HomomorphicException
-	{
+			throws HomomorphicException {
 		BigInteger sum = PaillierCipher.encrypt(BigInteger.ZERO, pk);
 		for (BigInteger value : values) {
 			sum = PaillierCipher.add(sum, value, pk);

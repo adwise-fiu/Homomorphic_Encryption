@@ -34,9 +34,9 @@ public class Alice implements Runnable
 	private static ElGamalPrivateKey e_sk;
 	
 	// Get your test data...
-	private static BigInteger [] low = StressTest.generate_low();
-	private static BigInteger [] mid = StressTest.generate_mid();
-	private static BigInteger [] high = StressTest.generate_high();
+	private static final BigInteger [] low = StressTest.generate_low();
+	private static final BigInteger [] mid = StressTest.generate_mid();
+	private static final BigInteger [] high = StressTest.generate_high();
 	
 	// This would have been in Alice's (Client) Main Function
 	public void run() {

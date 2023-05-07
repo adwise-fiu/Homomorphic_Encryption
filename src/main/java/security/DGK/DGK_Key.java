@@ -4,7 +4,7 @@ import java.math.BigInteger;
 
 public interface DGK_Key 
 {
-	public BigInteger getU();
-	public BigInteger getN();
-	public int getL();
+	BigInteger getU();
+	BigInteger getN();
+	int getL();
 }

@@ -13,23 +13,23 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 	private static final long serialVersionUID = 4574519230502483629L;
 
 	// Private Key Parameters
-	protected final BigInteger p;
-	protected final BigInteger q;
-	protected final BigInteger vp;
-	protected final BigInteger vq;
-	protected final Map <BigInteger, Long> LUT;
+	final BigInteger p;
+	private final BigInteger q;
+	final BigInteger vp;
+	private final BigInteger vq;
+	final Map <BigInteger, Long> LUT;
 
 	// Public key parameters
-	protected final BigInteger n;
-	protected final BigInteger g;
-	protected final BigInteger h;
-	protected final long u;
-	protected final BigInteger bigU;
+	final BigInteger n;
+	final BigInteger g;
+	private final BigInteger h;
+	private final long u;
+	private final BigInteger bigU;
 
 	// Key Parameters
-	protected final int l;
-	protected final int t;
-	protected final int k;
+	private final int l;
+	private final int t;
+	private final int k;
 
 	// Signature
 	public final BigInteger v;

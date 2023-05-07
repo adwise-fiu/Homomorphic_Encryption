@@ -21,12 +21,12 @@ public class Bob implements Runnable
 	private static bob andrew = null;
 	
 	// Get your test data...
-	private static BigInteger [] low = StressTest.generate_low();
-	private static BigInteger [] mid = StressTest.generate_mid();
+	private static final BigInteger [] low = StressTest.generate_low();
+	private static final BigInteger [] mid = StressTest.generate_mid();
 	
-	private KeyPair p;
-	private KeyPair d;
-	private KeyPair e;
+	private final KeyPair p;
+	private final KeyPair d;
+	private final KeyPair e;
 	
 	public Bob(KeyPair paillier, KeyPair dgk, KeyPair elgamal)
 	{

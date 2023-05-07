@@ -14,14 +14,14 @@ import security.misc.CipherConstants;
 public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, PrivateKey, Runnable, CipherConstants
 {
 	//Private Key parameters
-	protected final BigInteger x;
-	protected final Map <BigInteger, BigInteger> LUT;
+	final BigInteger x;
+	final Map <BigInteger, BigInteger> LUT;
 
 	// Taken from ElGamal Public Key
-	protected final BigInteger p;
-	protected final BigInteger g;
-	protected final BigInteger h;
-	protected boolean ADDITIVE;
+	final BigInteger p;
+	final BigInteger g;
+	private final BigInteger h;
+	boolean ADDITIVE;
 
 	private static final long serialVersionUID = 9160045368787508459L;
 

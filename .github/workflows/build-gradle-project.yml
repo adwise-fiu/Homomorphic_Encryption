@@ -6,10 +6,23 @@ on:
 jobs:
   build-gradle-project:
     runs-on: ubuntu-latest
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
     steps:
     - name: Checkout project sources
       uses: actions/checkout@v2
+
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
+
     - name: Run check with Gradle Wrapper
-      run: cd Java_PHE && ./gradlew build && bash <(curl -s https://codecov.io/bash)
+      run: ./gradlew build
+
+    - name: Upload coverage reports to Codecov
+      run: |
+        # Replace `linux` below with the appropriate OS
+        # Options are `alpine`, `linux`, `macos`, `windows`
+        curl -Os https://uploader.codecov.io/latest/linux/codecov
+        chmod +x codecov
+        ./codecov -f build/reports/jacoco/test/html/index.html -t ${CODECOV_TOKEN}

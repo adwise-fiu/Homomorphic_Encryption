@@ -60,6 +60,7 @@ public abstract class socialist_millionaires
 
 	public void setDGKPublicKey(DGKPublicKey pubKey) {
 		this.pubKey = pubKey;
+		this.powL = TWO.pow(this.pubKey.getL());
 	}
 
 	public void setElGamalPublicKey(ElGamalPublicKey e_pk) {

@@ -10,9 +10,9 @@ import java.security.PublicKey;
 public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_Key
 {
 	private static final long serialVersionUID = -6796919675914392847L;
-	protected final BigInteger p;
-	protected final BigInteger g;
-	protected final BigInteger h;
+	final BigInteger p;
+	final BigInteger g;
+	final BigInteger h;
 	public boolean ADDITIVE;
 
 	public ElGamalPublicKey(BigInteger p, BigInteger g, BigInteger h, boolean ADDITIVE)

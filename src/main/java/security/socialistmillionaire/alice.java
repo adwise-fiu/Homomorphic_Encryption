@@ -19,30 +19,15 @@ import security.misc.NTL;
 import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;
 
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-
-enum Algorithm
-{
-	INSERT_SORT, MERGE_SORT, QUICK_SORT, BUBBLE_SORT;
-}
 
 public final class alice extends socialist_millionaires implements Runnable
 {
-	private class Pair 
-	{
-		BigInteger min;
-		BigInteger max;
-	}
+
 	// Needed for comparison
-	private BigInteger [] toSort = null;
+	private final BigInteger [] toSort = null;
 	private BigInteger [] sortedArray = null;
 	private BigInteger [] tempBigMerg = null;
-
-	// Current Algorithm to Sort with
-	private Algorithm algo;
 
 	public alice (Socket clientSocket) throws IOException, ClassNotFoundException
 	{
@@ -54,7 +39,6 @@ public final class alice extends socialist_millionaires implements Runnable
 			throw new NullPointerException("Client Socket is null!");
 		}
 		this.isDGK = false;
-		this.algo = Algorithm.BUBBLE_SORT;
 	}
 
 	/**
@@ -76,13 +60,13 @@ public final class alice extends socialist_millionaires implements Runnable
 			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, x is: " + x.bitLength() + " bits");
 		}
 
-		int answer = -1;
-		int deltaB = -1;
+		int answer;
+		int deltaB ;
 		int deltaA = rnd.nextInt(2);
-		Object in = null;
-		BigInteger [] Encrypted_Y = null;
-		BigInteger [] C = null;
-		BigInteger [] XOR = null;
+		Object in;
+		BigInteger [] Encrypted_Y;
+		BigInteger [] C;
+		BigInteger [] XOR;
 
 		// Step 1: Get Y bits from Bob
 		in = fromBob.readObject();
@@ -159,7 +143,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 
 		/*
-		 * Step 8: Bob has the Private key anyways...
+		 * Step 8: Bob has the Private key anyways
 		 * Send him the encrypted answer!
 		 * Alice and Bob know now without revealing x or y!
 		 */
@@ -277,7 +261,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		toBob.writeObject(result);
 		toBob.flush();
 		comparison = fromBob.readInt();// x <= y
-		// IF SOMETHING HAPPENS...GET POST MORTERM HERE
+		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
 		if (comparison != 0 && comparison != 1) {
 			throw new IllegalArgumentException("Invalid Comparison output! --> " + comparison);
 		}
@@ -302,9 +286,9 @@ public final class alice extends socialist_millionaires implements Runnable
 			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, x is: " + x.bitLength() + " bits");
 		}
 		
-		Object in = null;
-		BigInteger [] XOR = null;
-		BigInteger [] C = null;
+		Object in;
+		BigInteger [] XOR;
+		BigInteger [] C;
 		BigInteger [] Encrypted_Y = null;
 		int deltaB = -1;
 		int answer = -1;
@@ -448,7 +432,7 @@ public final class alice extends socialist_millionaires implements Runnable
 	public boolean Modified_Protocol3(BigInteger r)
 			throws ClassNotFoundException, IOException, HomomorphicException
 	{
-		BigInteger alpha = null;
+		BigInteger alpha;
 		boolean answer;
 		// Constraint...
 		if(r.bitLength() > pubKey.getL()) {
@@ -470,15 +454,15 @@ public final class alice extends socialist_millionaires implements Runnable
 	private boolean Modified_Protocol3(BigInteger alpha, BigInteger r, int deltaA) 
 			throws ClassNotFoundException, IOException, HomomorphicException
 	{
-		int answer = -1;
-		Object in = null;
-		BigInteger [] beta_bits = null;
-		BigInteger [] encAlphaXORBeta = null;
-		BigInteger [] w = null;
-		BigInteger [] C = null;
-		BigInteger alpha_hat = null;
-		BigInteger d = null;
-		BigInteger N = null;
+		int answer;
+		Object in;
+		BigInteger [] beta_bits;
+		BigInteger [] encAlphaXORBeta;
+		BigInteger [] w;
+		BigInteger [] C;
+		BigInteger alpha_hat;
+		BigInteger d;
+		BigInteger N;
 		long exponent;
 		
 		// Get N from size of Plain-text space
@@ -613,8 +597,6 @@ public final class alice extends socialist_millionaires implements Runnable
 		C = new BigInteger[beta_bits.length + 1];
 
 		for (int i = 0; i < beta_bits.length;i++) {
-			//alpha_bit = alpha.testBit(i)  ? 1 : 0;;
-			//alpha_hat_bit = alpha_hat.testBit(i) ? 1 : 0;;
 			if(deltaA != NTL.bit(alpha, i) && deltaA != NTL.bit(alpha_hat, i)) {
 				C[i] = pubKey.ONE();
 			}
@@ -628,7 +610,7 @@ public final class alice extends socialist_millionaires implements Runnable
 				}
 				exponent = NTL.bit(alpha_hat, i) - NTL.bit(alpha, i);
 				C[i] = DGKOperations.multiply(DGKOperations.sum(w, pubKey, i), 3, pubKey);
-				C[i] = DGKOperations.add_plaintext(C[i], 1 - (2* deltaA), pubKey);
+				C[i] = DGKOperations.add_plaintext(C[i], 1 - (2L * deltaA), pubKey);
 				C[i] = DGKOperations.add(C[i], DGKOperations.multiply(d, exponent, pubKey), pubKey);
 				C[i] = DGKOperations.subtract(C[i], beta_bits[i], pubKey);
 				C[i] = DGKOperations.add_plaintext(C[i], NTL.bit(alpha, i), pubKey);
@@ -814,7 +796,7 @@ public final class alice extends socialist_millionaires implements Runnable
 
 		toBob.writeObject(result);
 		comparison = fromBob.readInt();// x <= y
-		// IF SOMETHING HAPPENS...GET POST MORTERM HERE
+		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
 		if (comparison != 0 && comparison != 1) {
 			throw new IllegalArgumentException("Invalid Comparison result --> " + comparison);
 		}
@@ -935,7 +917,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		toBob.writeObject(result);
 		toBob.flush();
 		comparison = fromBob.readInt();
-		// IF SOMETHING HAPPENS...GET POST MORTERM HERE
+		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
 		if (comparison != 0 && comparison != 1) {
 			throw new IllegalArgumentException("Invalid Comparison result --> " + comparison);
 		}
@@ -947,7 +929,7 @@ public final class alice extends socialist_millionaires implements Runnable
 	 * Please review Protocol 2 in the "Encrypted Integer Division" paper by Thjis Veugen
 	 * @param x - Encrypted Paillier value or Encrypted DGK value
 	 * @param d - plaintext divisor
-	 * @return Encrypted Pailier value [x/d] or Encrypted DGK value [x/d]
+	 * @return Encrypted Paillier value [x/d] or Encrypted DGK value [x/d]
 	 * @throws IOException - Any socket errors
 	 * @throws ClassNotFoundException
 	 * @throws HomomorphicException
@@ -1198,11 +1180,11 @@ public final class alice extends socialist_millionaires implements Runnable
 			return ElGamalCipher.multiply(x, y, e_pk);
 		}
 		Object in = null;
-		ElGamal_Ciphertext result = null;
-		ElGamal_Ciphertext x_prime = null;
-		ElGamal_Ciphertext y_prime = null;
-		BigInteger a = null;
-		BigInteger b = null;
+		ElGamal_Ciphertext result;
+		ElGamal_Ciphertext x_prime;
+		ElGamal_Ciphertext y_prime;
+		BigInteger a;
+		BigInteger b;
 		BigInteger N = CipherConstants.FIELD_SIZE;
 		
 		// Step 1
@@ -1232,346 +1214,8 @@ public final class alice extends socialist_millionaires implements Runnable
 		return result;
 	}
 
-	/*
-	 * Purpose of Method: 
-	 * Input:
-	 * An Array list of Encrypted Paillier Values and Socket to Bob (KeyMaster)
-	 * 
-	 * What it does:
-	 * It will find the index of the smallest encrypted value.
-	 * This is to avoid having to consistently make deep copies/keep track of index...
-	 * It will be assumed Alice can build a new sorted array list with the index.
-	 * 
-	 * This will use Protocol 2/Protocol 3
-	 */
-	
-	// https://www.geeksforgeeks.org/maximum-and-minimum-in-an-array/
-	// NOTE: THIS DOES NOT TURN OFF BOB!!!
-	private Pair getMinMax(List<BigInteger> arr) 
-			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
-	{
-		boolean activation = false;
-		Pair results = new Pair();   
-		int i;
-
-		/* If array has even number of elements then 
-		 * initialize the first two elements as minimum and 
-		 * maximum */
-
-		if (arr.size() % 2 == 0) {
-			toBob.writeBoolean(true);
-			toBob.flush();
-			if(USE_PROTOCOL_2) {
-				activation = Protocol2(arr.get(0), arr.get(1));	
-			}
-			else {
-				activation = Protocol4(arr.get(0), arr.get(1));
-			}
-			
-			if (activation) {
-				results.max = arr.get(0);
-				results.min = arr.get(1);
-			}
-			else {
-				results.min = arr.get(0);
-				results.max = arr.get(1);
-			}
-			i = 2;  /* set the starting index for loop */
-		}
-
-		/* If array has odd number of elements then 
-			    initialize the first element as minimum and 
-			    maximum */
-		else {
-			results.min = arr.get(0);
-			results.max = arr.get(0);
-			i = 1;  /* set the starting index for loop */
-		}
-
-		/* In the while loop, pick elements in pair and 
-			     compare the pair with max and min so far */
-		while (i < arr.size() - 1) {
-			toBob.writeBoolean(true);
-			toBob.flush();
-			if(USE_PROTOCOL_2) {
-				activation = Protocol2(arr.get(i), arr.get(i + 1));
-			}
-			else {
-				activation = Protocol4(arr.get(i), arr.get(i + 1));
-			}
-			if (activation) {
-				toBob.writeBoolean(true);
-				toBob.flush();
-				if(USE_PROTOCOL_2) {
-					activation = Protocol2(arr.get(i), results.max);
-				}
-				else {
-					activation = Protocol4(arr.get(i), results.max);
-				}
-				if(activation) {
-					results.max = arr.get(i);
-				}
-				toBob.writeBoolean(true);
-				toBob.flush();
-				if(USE_PROTOCOL_2) {
-					activation = Protocol2(arr.get(i + 1), results.min);
-				}
-				else {
-					activation = Protocol4(arr.get(i + 1), results.min);
-				}
-				if(!activation) {
-					results.min = arr.get(i + 1);
-				}
-			}
-			else        
-			{
-				toBob.writeBoolean(true);
-				toBob.flush();
-				if(USE_PROTOCOL_2) {
-					activation = Protocol2(arr.get(i + 1), results.max);
-				}
-				else {
-					activation = Protocol4(arr.get(i + 1), results.max);
-				}
-				if (activation)  {
-					results.max = arr.get(i + 1);
-				}
-				toBob.writeBoolean(true);
-				toBob.flush();
-				if(USE_PROTOCOL_2)
-				{
-					activation = Protocol2(arr.get(i), results.min);
-				}
-				else
-				{
-					activation = Protocol4(arr.get(i), results.min);
-				}
-				if (!activation)
-				{
-					results.min = arr.get(i);
-				}
-			}
-			i += 2; /* Increment the index by 2 as two elements are processed in loop */
-		}
-		return results;
-	}
-
-	// https://www.geeksforgeeks.org/maximum-and-minimum-in-an-array/
-	// NOTE; THIS DOES NOT TURN OF BOB!!!
-	private Pair getMinMax(BigInteger [] arr) 
-			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
-	{
-		Pair results = new Pair();   
-		int i;
-		boolean activation = false;
-
-		/* If array has even number of elements then 
-		 * initialize the first two elements as minimum and 
-		 * maximum */
-		if (arr.length % 2 == 0)
-		{
-			toBob.writeBoolean(true);
-			toBob.flush();
-			if(USE_PROTOCOL_2)
-			{
-				activation = Protocol2(arr[0], arr[1]);	
-			}
-			else
-			{
-				activation = Protocol4(arr[0], arr[1]);
-			}
-			if (activation)     
-			{
-				results.max = arr[0];
-				results.min = arr[1];
-			}
-			else
-			{
-				results.min = arr[0];
-				results.max = arr[1];
-			}
-			i = 2;  /* set the starting index for loop */
-		}
-
-		/* If array has odd number of elements then 
-		    initialize the first element as minimum and 
-		    maximum */
-		else
-		{
-			results.min = arr[0];
-			results.max = arr[0];
-			i = 1;  /* set the starting index for loop */
-		}
-
-		/* In the while loop, pick elements in pair and 
-		     compare the pair with max and min so far */
-	
-		while (i < arr.length - 1)
-		{
-			toBob.writeBoolean(true);
-			toBob.flush();
-			if(USE_PROTOCOL_2)
-			{
-				activation = Protocol2(arr[i], arr[i + 1]);
-			}
-			else
-			{
-				activation = Protocol4(arr[i], arr[i + 1]);
-			}
-			if (activation)
-			{
-				toBob.writeBoolean(true);
-				toBob.flush();
-				if(USE_PROTOCOL_2)
-				{
-					activation = Protocol2(arr[i], results.max);
-				}
-				else
-				{
-					activation = Protocol4(arr[i], results.max);
-				}
-				if(activation)
-				{
-					results.max = arr[i];
-				}
-				toBob.writeBoolean(true);
-				toBob.flush();
-				if(USE_PROTOCOL_2)
-				{
-					activation = Protocol2(arr[i + 1], results.min);
-				}
-				else
-				{
-					activation = Protocol4(arr[i + 1], results.min);
-				}
-				if(!activation)
-				{
-					results.min = arr[i + 1];
-				}
-			} 
-			else        
-			{
-				toBob.writeBoolean(true);
-				toBob.flush();
-				if(USE_PROTOCOL_2)
-				{
-					activation = Protocol2(arr[i + 1], results.max);
-				}
-				else
-				{
-					activation = Protocol4(arr[i + 1], results.max);
-				}
-				if (activation) 
-				{
-					results.max = arr[i + 1];
-				}
-				toBob.writeBoolean(true);
-				toBob.flush();
-				if(USE_PROTOCOL_2)
-				{
-					activation = Protocol2(arr[i], results.min);
-				}
-				else
-				{
-					activation = Protocol4(arr[i], results.min);
-				}
-				if (!activation)
-				{
-					results.min = arr[i];
-				}
-			}
-			i += 2; /* Increment the index by 2 as two elements are processed in loop */
-		}      
-		return results;
-	}
-
-	// To sort an array of encrypted numbers
-	public void sortArray() 
-			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
-	{
-		Pair res;
-		
-		System.out.println("Sorting Initialized!");
-		if(toSort == null) {
-			sortedArray = null;
-			return;
-		}
-		if(toSort.length == 1 || toSort.length == 0) {
-			sortedArray = deep_copy(toSort);
-			return;
-		}
-		// deep copy already taken care of
-		else if (toSort.length == 2)
-		{
-			res = getMinMax(toSort);
-			sortedArray = new BigInteger[2];
-			sortedArray[0] = res.min;
-			sortedArray[1] = res.max;
-			toBob.writeBoolean(false);
-			toBob.flush();
-			return;
-		}
-		
-		switch(algo)
-		{
-			case INSERT_SORT:
-				List<BigInteger> Sort = new ArrayList<BigInteger>(Arrays.asList(toSort));
-				Deque<BigInteger> minSorted = new LinkedList<>();
-				Deque<BigInteger> maxSorted = new LinkedList<>();
-			
-				// Since I am getting two a time...be careful
-				// of odd sized arrays!
-				if(Sort.size() % 2 == 1)
-				{
-					BigInteger min = getMinMax(Sort).min;
-					minSorted.addFirst(min);
-					Sort.remove(min);
-				}
-				
-				while(!Sort.isEmpty())
-				{
-					res = getMinMax(Sort);
-					minSorted.addLast(res.min);
-					maxSorted.addLast(res.max);
-					Sort.remove(res.max);
-					Sort.remove(res.min);
-				}
-				
-				// Merge both dequeues!
-				for(Iterator<BigInteger> itr = maxSorted.descendingIterator();itr.hasNext();)
-				{
-					minSorted.addLast(itr.next());
-				}
-				sortedArray = minSorted.toArray(new BigInteger[minSorted.size()]);
-				break;
-				
-			case MERGE_SORT:
-				sortedArray = deep_copy(toSort);
-				this.doMergeSort(0, sortedArray.length - 1);
-				break;
-		        
-			case QUICK_SORT:	
-				sortedArray = deep_copy(toSort);
-				this.sort(sortedArray, 0, sortedArray.length - 1);
-				break;
-				
-			case BUBBLE_SORT:
-				sortedArray = deep_copy(toSort);
-				this.bubbleSort(sortedArray);
-				break;
-			
-			default:
-				System.out.println("NO SORTING ALGORITHM SELECTED!");
-				break;
-		}
-		// Time to end Bob's while loop for Protocol2()
-		toBob.writeBoolean(false);
-		toBob.flush();
-	}
-
 	public void receivePublicKeys()
-			throws IOException, ClassNotFoundException
-	{
+			throws IOException, ClassNotFoundException {
 		Object x;
 		x = fromBob.readObject();
 		if (x instanceof DGKPublicKey) {
@@ -1607,9 +1251,8 @@ public final class alice extends socialist_millionaires implements Runnable
 	// ---------------We also use this to obtain K-Min/K-max items----
 	
 	private void bubbleSort(BigInteger [] arr)
-			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
-	{
-		boolean activation = false;
+			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
+		boolean activation;
 		for (int i = 0; i < arr.length - 1; i++) {
 			for (int j = 0; j < arr.length - i - 1; j++) {
 				toBob.writeBoolean(true);
@@ -1635,8 +1278,7 @@ public final class alice extends socialist_millionaires implements Runnable
 	public BigInteger[] getKMax(BigInteger [] input, int k) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
 	{
-		if(k > input.length || k <= 0)
-		{
+		if(k > input.length || k <= 0) {
 			throw new IllegalArgumentException("Invalid k value! " + k);
 		}
 		BigInteger [] arr = deep_copy(input);
@@ -1767,14 +1409,11 @@ public final class alice extends socialist_millionaires implements Runnable
 			throw new IllegalArgumentException("Invalid k value!");
 		}
 		// deep copy
-		List<BigInteger> arr = new ArrayList<BigInteger>();
-		for(BigInteger p : input) {
-		    arr.add(p);
-		}
+		List<BigInteger> arr = new ArrayList<>(input);
 		
 		BigInteger [] min = new BigInteger[k];
 		
-		boolean activation = false;
+		boolean activation;
 		for (int i = 0; i < k; i++) {
 			for (int j = 0; j < arr.size() - i - 1; j++) {
 				toBob.writeBoolean(true);
@@ -1815,7 +1454,7 @@ public final class alice extends socialist_millionaires implements Runnable
 	    smaller (smaller than pivot) to left of
 	    pivot and all greater elements to right
 	    of pivot */
-	private int partition(BigInteger arr[], int low, int high)
+	private int partition(BigInteger[] arr, int low, int high)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		boolean activation = false;
@@ -1855,7 +1494,7 @@ public final class alice extends socialist_millionaires implements Runnable
 	 * low  --> Starting index,
 	 * high  --> Ending index 
 	 */
-	private void sort(BigInteger arr[], int low, int high)
+	private void sort(BigInteger[] arr, int low, int high)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		if (low < high) {
@@ -1924,11 +1563,12 @@ public final class alice extends socialist_millionaires implements Runnable
 	public void run() 
 	{
 		try {
-			sortArray();
+			this.bubbleSort(sortedArray);
+			toBob.writeBoolean(false);
+			toBob.flush();
 		}
 		catch (ClassNotFoundException | IOException | IllegalArgumentException | HomomorphicException e) {
 			e.printStackTrace();
 		}
 	}
-
 }

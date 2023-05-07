@@ -4,5 +4,5 @@ import java.math.BigInteger;
 
 public interface GMKey 
 {
-	public BigInteger getN();
+	BigInteger getN();
 }

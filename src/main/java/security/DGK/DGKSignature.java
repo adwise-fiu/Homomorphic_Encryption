@@ -177,13 +177,6 @@ public class DGKSignature extends SignatureSpi
 	{
 		BigInteger challenge = signature.modPow(pk.bigU, pk.n);
 		// g^{v} * {m} (mod n) --> g^{v * u} * { m } (mod n) --> m^{u} (mod n)
-		if (message.modPow(pk.bigU, pk.n).compareTo(challenge) == 0)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return message.modPow(pk.bigU, pk.n).compareTo(challenge) == 0;
 	}
 }
