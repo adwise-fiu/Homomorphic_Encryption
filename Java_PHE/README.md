@@ -34,7 +34,7 @@ To create the JAR file to import into another project, run the following:
 ./gradlew build
 ./gradlew jar
 ```
-Use this JAR file to import into other projects.
+You will find a `crypto.jar` file in the `build/libs/` directory.
 
 ## Usage
 Import the packages as necessary. For basic usage please check Server.java in the test package for basic usage of these cryptography libraries.

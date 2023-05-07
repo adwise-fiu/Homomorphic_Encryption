@@ -54,34 +54,29 @@ public class StressTest
 		
 		// MULTIPLICATION
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.multiplication(x, y);
 		}
 		System.out.println("Multiplication, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// DIVISION
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.division(x, 1600);
 		}
 		System.out.println("Division, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// PROTOCOL 1
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Protocol1(a);
 		}
 		System.out.println("Protocol 1, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// PROTOCOL 2
-		if(!Niu.isDGK())
-		{
+		if(!Niu.isDGK()) {
 			start = System.nanoTime();
-			for(int i = 0; i < TEST; i++)
-			{
+			for(int i = 0; i < TEST; i++) {
 				Niu.Protocol2(x, y);
 			}
 			System.out.println("Protocol 2, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");	
@@ -89,24 +84,21 @@ public class StressTest
 		
 		// PROTOCOL 3
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Protocol3(a);
 		}
 		System.out.println("Protocol 3, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// Modified Protocol 3
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Modified_Protocol3(a);
 		}
 		System.out.println("Modified Protocol 3, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// PROTOCOL 4
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Protocol4(x, y);
 		}
 		System.out.println("Protocol 4, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
@@ -130,62 +122,53 @@ public class StressTest
 		
 		// MULTIPLICATION
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.multiplication(x, y);
 		}
 		System.out.println("Multiplication, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// DIVISION
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.division(x, 1600);
 		}
 		System.out.println("Division, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// PROTOCOL 1
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Protocol1(a);
 		}
 		System.out.println("Protocol 1, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// PROTOCOL 2
-		if(!Niu.isDGK())
-		{
+		if(!Niu.isDGK()) {
 			start = System.nanoTime();
-			for(int i = 0; i < TEST; i++)
-			{
+			for(int i = 0; i < TEST; i++) {
 				Niu.Protocol2(x, y);
 			}
 			System.out.println("Protocol 2, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		}
-		else
-		{
+		else {
 			System.out.println("Protocol 2, does not work for comparing two DGK encrypted values!");
 		}
 		
 		// PROTOCOL 3
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Protocol3(a);
 		}
 		System.out.println("Protocol 3, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Modified_Protocol3(a);
 		}
 		System.out.println("Modified Protocol 3, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// PROTOCOL 4
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Protocol4(x, y);
 		}
 		System.out.println("Protocol 4, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
@@ -206,11 +189,9 @@ public class StressTest
 		ElGamal_Ciphertext x = ElGamalCipher.encrypt(_x, Niu.getElGamalPublicKey());
 		ElGamal_Ciphertext y = ElGamalCipher.encrypt(_y, Niu.getElGamalPublicKey());
 		
-		if(!Niu.getElGamalPublicKey().ADDITIVE)
-		{
+		if(!Niu.getElGamalPublicKey().ADDITIVE) {
 			start = System.nanoTime();
-			for(int i = 0; i < TEST; i++)
-			{
+			for(int i = 0; i < TEST; i++) {
 				Niu.addition(x, y);
 			}
 			System.out.println("Addition, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
@@ -218,24 +199,21 @@ public class StressTest
 		}
 		// MULTIPLICATION
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.multiplication(x, y);
 		}
 		System.out.println("Multiplication, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 
 		// DIVISION
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.division(x, 100);
 		}
 		System.out.println("Division, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// PROTOCOL 1
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Protocol1(a);
 		}
 		System.out.println("Protocol 1, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
@@ -245,24 +223,21 @@ public class StressTest
 		
 		// PROTOCOL 3
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Protocol3(a);
 		}
 		System.out.println("Protocol 3, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// PROTOCOL 3
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Modified_Protocol3(a);
 		}
 		System.out.println("Modified Protocol 3, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
 		
 		// PROTOCOL 4
 		start = System.nanoTime();
-		for(int i = 0; i < TEST; i++)
-		{
+		for(int i = 0; i < TEST; i++) {
 			Niu.Protocol4(x, y);
 		}
 		System.out.println("Protocol 4, Time to complete " + TEST + " tests: " + (System.nanoTime() - start)/BILLION + " seconds");
@@ -271,8 +246,7 @@ public class StressTest
 	// ------------------Stress Test Protocols bob----------------------------------------------
 
 	public static void bob(bob andrew) 
-			throws ClassNotFoundException, IOException, HomomorphicException
-	{
+			throws ClassNotFoundException, IOException, HomomorphicException {
 		BigInteger b = NTL.generateXBitRandom(15);
 		System.out.println("b: " + b);
 		// Test Code
@@ -316,9 +290,7 @@ public class StressTest
 	}
 	
 	public static void bob_ElGamal(bob andrew) 
-			throws ClassNotFoundException, IOException
-	{
-		
+			throws ClassNotFoundException, IOException {
 		BigInteger b = NTL.generateXBitRandom(15);
 		System.out.println("b: " + b);
 		

@@ -54,6 +54,8 @@ application {
 
 // To create the JAR file with 'gradlew jar'
 tasks.named('jar') {
+    archiveFileName = "crypto.jar"
+
     manifest {
         attributes(
                 'Implementation-Title': project.name,

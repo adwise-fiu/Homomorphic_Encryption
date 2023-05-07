@@ -14,18 +14,18 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 	 */
 	private static final long serialVersionUID = -1613333167285302035L;
 	
-	protected final BigInteger n;
-	protected final BigInteger g;
-	protected final BigInteger h;
-	protected final long u;
-	protected final BigInteger bigU;
-	protected final HashMap <Long, BigInteger> gLUT = new HashMap<>();
-	protected final HashMap <Long, BigInteger> hLUT = new HashMap<>();
+	final BigInteger n;
+	final BigInteger g;
+	final BigInteger h;
+	final long u;
+	final BigInteger bigU;
+	final HashMap <Long, BigInteger> gLUT = new HashMap<>();
+	private final HashMap <Long, BigInteger> hLUT = new HashMap<>();
 	
 	// Key Parameters
-	protected final int l;
-	protected final int t;
-	protected final int k;
+	final int l;
+	final int t;
+	final int k;
 
 	//DGK Constructor with ALL parameters
 	public DGKPublicKey(BigInteger n, BigInteger g, BigInteger h, BigInteger u,
@@ -41,7 +41,9 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 	}
 
 	public void writeKey(String dgk_public_key_file) {
-		// Write the key to a file
+		// clear hashmaps
+		hLUT.clear();
+		gLUT.clear();
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dgk_public_key_file))) {
 			oos.writeObject(this);
 			oos.flush();
@@ -57,6 +59,8 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		} catch (IOException | ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
+		pk.generategLUT();
+		pk.generatehLUT();
 		return pk;
 	}
 
@@ -104,7 +108,7 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 	}
 
 	private void generatehLUT() {		
-		for (long i = 0; i < 2 * t; ++i) {
+		for (long i = 0; i < 2L * t; ++i) {
 			// e = 2^i (mod n)
 			// h^{2^i (mod n)} (mod n)
 			// f(i) = h^{2^i}(mod n)
