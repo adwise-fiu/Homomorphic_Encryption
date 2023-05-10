@@ -6,8 +6,6 @@ on:
 jobs:
   build-gradle-project:
     runs-on: ubuntu-latest
-    env:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
     - name: Checkout project sources
