@@ -25,7 +25,6 @@ public class alice extends socialist_millionaires implements Runnable
 {
 
 	// Needed for comparison
-	private final BigInteger [] toSort = null;
 	private final BigInteger [] sortedArray = null;
 	private BigInteger [] tempBigMerg = null;
 
@@ -736,7 +735,7 @@ public class alice extends socialist_millionaires implements Runnable
 			}
 
 			// Step 7: Compute [[x >= y]]
-			if(r.compareTo(pk.getN().subtract(BigInteger.ONE).divide(TWO)) == -1) {
+			if(r.compareTo(pk.getN().subtract(BigInteger.ONE).divide(TWO)) < 0) {
 				result = PaillierCipher.subtract(zeta_one, PaillierCipher.encrypt(r.divide(powL), pk), pk);
 			}
 			else {
@@ -857,7 +856,7 @@ public class alice extends socialist_millionaires implements Runnable
 		}
 
 		// Step 7: Compute [[x <= y]]
-		if(r.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) == -1) {
+		if(r.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) < 0) {
 			result = ElGamalCipher.subtract(zeta_one, ElGamalCipher.encrypt(r.divide(powL), e_pk), e_pk);
 		}
 		else {
@@ -890,7 +889,6 @@ public class alice extends socialist_millionaires implements Runnable
 	 * @param x - Encrypted Paillier value or Encrypted DGK value
 	 * @param d - plaintext divisor
 	 * @throws IOException            - Any socket errors
-	 * @throws ClassNotFoundException
 	 * @throws HomomorphicException   Constraints: 0 <= x <= N * 2^{-sigma} and 0 <= d < N
 	 */
 	public void division(BigInteger x, long d)
@@ -1252,10 +1250,10 @@ public class alice extends socialist_millionaires implements Runnable
 			throw new IllegalArgumentException("Invalid k value! " + k);
 		}
 		// deep copy
-		List<ElGamal_Ciphertext> arr = new ArrayList<ElGamal_Ciphertext>(input);
+		List<ElGamal_Ciphertext> arr = new ArrayList<>(input);
 		
 		ElGamal_Ciphertext temp;
-		List<ElGamal_Ciphertext> min = new ArrayList<ElGamal_Ciphertext>();
+		List<ElGamal_Ciphertext> min = new ArrayList<>();
 		
 		for (int i = 0; i < k; i++) {
 			for (int j = 0; j < arr.size() - i - 1; j++) {

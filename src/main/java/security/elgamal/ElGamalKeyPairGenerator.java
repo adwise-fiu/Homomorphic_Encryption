@@ -15,17 +15,14 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 	private SecureRandom random = null;
 	private boolean ADDITIVE = false;
 	
-	public void initialize(int key_size, SecureRandom random)
-	{
+	public void initialize(int key_size, SecureRandom random) {
 		this.key_size = key_size;
 		this.random = random;
 	}
 
-	public KeyPair generateKeyPair() 
-	{
+	public KeyPair generateKeyPair() {
 		long start_time;
-		if(this.random == null)
-		{
+		if(this.random == null) {
 			random = new SecureRandom();
 			this.ADDITIVE = true;
 		}
@@ -40,33 +37,28 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 		BigInteger q = p.subtract(BigInteger.ONE).divide(TWO);
 
 		start_time = System.nanoTime();
-		while (true) 
-		{
+		while (true) {
 			g = NTL.RandomBnd(p);
 			g = g.modPow(TWO, p);
 			
-			if(g.equals(BigInteger.ONE))
-			{
+			if(g.equals(BigInteger.ONE)) {
 				continue;
 			}
 			
-			if(g.equals(TWO))
-			{
+			if(g.equals(TWO)) {
 				continue;
 			}
 			
 			// Discard g if it divides p-1 because of the attack described
 		    // in Note 11.67 (iii) in HAC
-			if(p.subtract(BigInteger.ONE).mod(g).equals(BigInteger.ZERO))
-			{
+			if(p.subtract(BigInteger.ONE).mod(g).equals(BigInteger.ZERO)) {
 				continue;
 			}
 			
 			// g^{-1} must not divide p-1 because of Khadir's attack
 			// described in "Conditions of the generator for forging ElGamal
 			// signature", 2011
-			if(!p.subtract(BigInteger.ONE).mod(g.modInverse(p)).equals(BigInteger.ZERO))
-			{
+			if(!p.subtract(BigInteger.ONE).mod(g.modInverse(p)).equals(BigInteger.ZERO)) {
 				break;
 			}
 		}
@@ -79,12 +71,10 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 		// secret key is (p, x) and public key is (p, g, h)
 		ElGamalPrivateKey sk = new ElGamalPrivateKey(p, x, g, h, ADDITIVE);
 		ElGamalPublicKey pk = new ElGamalPublicKey(p, g, h, ADDITIVE);
-		if (ADDITIVE)
-		{
+		if (ADDITIVE) {
 			System.out.println("El-Gamal Key pair generated! (Supports Addition over Ciphertext/Scalar Multiplication");
 		}
-		else
-		{
+		else {
 			System.out.println("El-Gamal Key pair generated! (Supports Multiplication over Ciphertext)");
 		}
 		return new KeyPair(pk, sk);
@@ -97,8 +87,7 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 	 * @param prg       random
 	 * @return p
 	 */
-	public static BigInteger getPrime(int nb_bits, Random prg) 
-	{
+	public static BigInteger getPrime(int nb_bits, Random prg) {
 		BigInteger pPrime = new BigInteger(nb_bits, CERTAINTY, prg);
 		// p = 2 * pPrime + 1
 		BigInteger p = pPrime.multiply(TWO).add(BigInteger.ONE);

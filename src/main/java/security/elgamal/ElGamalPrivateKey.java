@@ -22,8 +22,7 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 
 	private static final long serialVersionUID = 9160045368787508459L;
 
-	public ElGamalPrivateKey(BigInteger p, BigInteger x, BigInteger g, BigInteger h, boolean ADDITIVE)
-	{
+	public ElGamalPrivateKey(BigInteger p, BigInteger x, BigInteger g, BigInteger h, boolean ADDITIVE) {
 		this.p = p;
 		this.x = x;
 		this.g = g;
@@ -33,8 +32,7 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 			this.LUT = new HashMap<>(FIELD_SIZE.intValue(), (float) 1.0);
 			this.decrypt_table();
 		}
-		else
-		{
+		else {
 			this.LUT = null;
 		}
 	}
@@ -55,16 +53,14 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 	}
 
 	// Generate Lookup Table, plain text space is [0, p - 1)
-	private void decrypt_table() 
-	{
+	private void decrypt_table() {
 		// Get maximum size of x - y + r + 2^l
 		// Assume maximum value is u: biggest value in DGK which is the closest prime from 2^l l = 16 default.
 		BigInteger decrypt_size = FIELD_SIZE.add(FIELD_SIZE).subtract(TWO).add(TWO.pow(16));
 		long start_time = System.nanoTime();
 		System.out.println("Building Lookup Table g^m --> m for ElGamal");
 		BigInteger message = BigInteger.ZERO;
-		while (!message.equals(decrypt_size))
-		{
+		while (!message.equals(decrypt_size)) {
 			BigInteger gm = this.g.modPow(message, this.p);
 			this.LUT.put(gm, message);
 			message = message.add(BigInteger.ONE);
@@ -72,8 +68,7 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 
 		// For negative numbers, go from p - 2 and go down a bit
 		message = this.p.subtract(TWO);
-		while (!message.equals(this.p.subtract(BigInteger.TEN)))
-		{
+		while (!message.equals(this.p.subtract(BigInteger.TEN))) {
 			BigInteger gm = this.g.modPow(message, this.p);
 			this.LUT.put(gm, message);
 			message = message.subtract(BigInteger.ONE);
@@ -87,8 +82,7 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 		decrypt_table();
 	}
 
-	public String toString()
-	{
+	public String toString() {
 		String answer = "";
 		answer += "p=" + this.p + '\n';
 		answer += "g=" + this.g + '\n';

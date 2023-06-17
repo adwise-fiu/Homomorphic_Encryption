@@ -23,10 +23,8 @@ import security.elgamal.ElGamalSignature;
 import security.elgamal.ElGamal_Ciphertext;
 
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
-import java.security.SignatureException;
 import java.util.List;
 
 import org.junit.BeforeClass;
@@ -55,7 +53,95 @@ public class LibraryTest
 
 	private static GMPrivateKey gm_sk;
 	private static GMPublicKey gm_pk;
-	
+
+	public static BigInteger [] generate_low()
+	{
+		BigInteger [] test_set = new BigInteger[16];
+		test_set[0] = new BigInteger("1");
+		test_set[1] = new BigInteger("2");
+		test_set[2] = new BigInteger("4");
+		test_set[3] = new BigInteger("8");
+		test_set[4] = new BigInteger("16");
+		test_set[5] = new BigInteger("32");
+		test_set[6] = new BigInteger("64");
+		test_set[7] = new BigInteger("128");
+		test_set[8] = new BigInteger("256");
+		test_set[9] = new BigInteger("512");
+
+		test_set[10] = new BigInteger("1024");
+		test_set[11] = new BigInteger("2048");
+		test_set[12] = new BigInteger("4096");
+		test_set[13] = new BigInteger("8192");
+		test_set[14] = new BigInteger("16384");
+		test_set[15] = new BigInteger("32768");
+
+		BigInteger t = BigInteger.ZERO;
+		for (int i = 0; i < test_set.length;i++)
+		{
+			test_set[i] = test_set[i].add(t);
+		}
+		return test_set;
+	}
+
+	public static BigInteger[] generate_mid()
+	{
+		BigInteger [] test_set = new BigInteger[16];
+		test_set[0] = new BigInteger("1");
+		test_set[1] = new BigInteger("2");
+		test_set[2] = new BigInteger("4");
+		test_set[3] = new BigInteger("8");
+		test_set[4] = new BigInteger("16");
+		test_set[5] = new BigInteger("32");
+		test_set[6] = new BigInteger("64");
+		test_set[7] = new BigInteger("128");
+		test_set[8] = new BigInteger("256");
+		test_set[9] = new BigInteger("512");
+
+		test_set[10] = new BigInteger("1024");
+		test_set[11] = new BigInteger("2048");
+		test_set[12] = new BigInteger("4096");
+		test_set[13] = new BigInteger("8192");
+		test_set[14] = new BigInteger("16384");
+		test_set[15] = new BigInteger("32768");
+
+		BigInteger t = new BigInteger("5");
+		for (int i = 0; i < test_set.length; i++)
+		{
+			test_set[i] = test_set[i].add(t);
+		}
+		return test_set;
+	}
+
+	public static BigInteger[] generate_high()
+	{
+		BigInteger [] test_set = new BigInteger[16];
+
+		test_set[0] = new BigInteger("1");
+		test_set[1] = new BigInteger("2");
+		test_set[2] = new BigInteger("4");
+		test_set[3] = new BigInteger("8");
+		test_set[4] = new BigInteger("16");
+		test_set[5] = new BigInteger("32");
+		test_set[6] = new BigInteger("64");
+		test_set[7] = new BigInteger("128");
+		test_set[8] = new BigInteger("256");
+		test_set[9] = new BigInteger("512");
+
+		test_set[10] = new BigInteger("1024");
+		test_set[11] = new BigInteger("2048");
+		test_set[12] = new BigInteger("4096");
+		test_set[13] = new BigInteger("8192");
+		test_set[14] = new BigInteger("16384");
+		test_set[15] = new BigInteger("32768");
+
+		BigInteger t = new BigInteger("10");
+		for (int i = 0; i < test_set.length; i++)
+		{
+			test_set[i] = test_set[i].add(t);
+		}
+		return test_set;
+	}
+
 	@BeforeClass
 	public static void generate_keys() {
 		// Build DGK Keys
@@ -225,22 +311,16 @@ public class LibraryTest
 	}
 
 	@Test
-	public void paillier_signature() throws InvalidKeyException, SignatureException {
-		byte [] signed_answer;
+	public void paillier_signature() {
 
 		// Paillier Signature
-		PaillierSignature paillier = new PaillierSignature();
-		paillier.initSign(sk);
-		paillier.update(new BigInteger("42").toByteArray());
-		signed_answer = paillier.sign();
+		List<BigInteger> signed_answer = PaillierSignature.sign(BigInteger.valueOf(42), sk);
 
 		// Test signatures
-		paillier.initVerify(pk);
 		for (int i = 0; i < 1000; i++) {
-			paillier.update(BigInteger.valueOf(i).toByteArray());
-			boolean answer = paillier.verify(signed_answer);
+			boolean answer = PaillierSignature.verify(BigInteger.valueOf(i), signed_answer, pk);
 			if (i == 42) {
-				continue;
+				assertTrue(answer);
 			}
 			else {
 				assertFalse(answer);
@@ -249,25 +329,17 @@ public class LibraryTest
 	}
 
 	@Test
-	public void el_gamal_signature() throws SignatureException, InvalidKeyException {
-		byte [] signed_answer;
-
+	public void el_gamal_signature() {
 		// ElGamal Signature
-		ElGamalSignature elgamal_sign = new ElGamalSignature();
-		elgamal_sign.initSign(el_sk);
-		elgamal_sign.update(new BigInteger("42").toByteArray());
-		signed_answer = elgamal_sign.sign();
-		
-		// Test signatures
-		elgamal_sign.initVerify(el_pk);
-		for (int i = 0; i < 1000; i++)
-		{
-			elgamal_sign.update(BigInteger.valueOf(i).toByteArray());
+		ElGamal_Ciphertext signed = ElGamalSignature.sign(new BigInteger("42"), el_sk);
+
+		for (int i = 0; i < 1000; i++) {
+			boolean answer = ElGamalSignature.verify(BigInteger.valueOf(i), signed, el_pk);
 			if (i == 42) {
-				// assertTrue(elgamal_sign.verify(signed_answer));
+				assertTrue(answer);
 			}
 			else {
-				assertFalse(elgamal_sign.verify(signed_answer));
+				assertFalse(answer);
 			}
 		}
 	}

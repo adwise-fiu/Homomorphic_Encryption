@@ -1,178 +1,19 @@
 package security.paillier;
 
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.InvalidParameterException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.SignatureSpi;
-import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 // A guide
 //https://github.com/bcgit/bc-java/blob/master/prov/src/main/java/org/bouncycastle/jcajce/provider/asymmetric/rsa/DigestSignatureSpi.java
-public class PaillierSignature extends SignatureSpi
-{
-	private PaillierPrivateKey sk;
-	private PaillierPublicKey pk;
-	private boolean VERIFY_MODE;
-	private byte [] encoded_hash;
-
-	protected void engineInitVerify(PublicKey publicKey)
-			throws InvalidKeyException 
-	{
-		if(!(publicKey instanceof PaillierPublicKey))
-		{
-			throw new InvalidKeyException("Didn't receive Paillier Public Key!");
-		}
-		pk = (PaillierPublicKey) publicKey;
-		sk = null;
-		VERIFY_MODE = true;
-	}
-
-	protected void engineInitSign(PrivateKey privateKey) 
-			throws InvalidKeyException 
-	{
-		if(!(privateKey instanceof PaillierPrivateKey))
-		{
-			throw new InvalidKeyException("Didn't receive Paillier Private Key!");
-		}
-		pk = null;
-		sk = (PaillierPrivateKey) privateKey;
-		VERIFY_MODE = false;
-	}
-
-	// Input 1:
-	protected void engineUpdate(byte b) {
-		// Since I am using SHA-256, that is 256 bits or 256/8 bytes long!
-		MessageDigest digest = null;
-		try 
-		{
-			digest = MessageDigest.getInstance("SHA-256");
-		}
-		catch (NoSuchAlgorithmException e)
-		{
-			e.printStackTrace();
-		}
-		assert digest != null;
-		this.encoded_hash = digest.digest(new byte [] { b });
-	}
-
-	// Input 2: Prepare bytes to sign or verify!
-	protected void engineUpdate(byte [] b, int off, int len) {
-		// Since I am using SHA-256, that is 256 bits or 256/8 bytes long!
-		MessageDigest digest = null;
-		try 
-		{
-			digest = MessageDigest.getInstance("SHA-256");
-		}
-		catch (NoSuchAlgorithmException e)
-		{
-			e.printStackTrace();
-		}
-		assert digest != null;
-		this.encoded_hash = digest.digest(b);
-	}
-
-	protected byte[] engineSign()
-			throws SignatureException 
-	{
-		byte [] s;
-		byte [] s_1;
-		byte [] s_2;
-		if(VERIFY_MODE)
-		{
-			throw new SignatureException("Did not Initialize SignInit!");
-		}
-		else
-		{
-			// For Paillier Verify
-			List<BigInteger> sigma = sign(new BigInteger(encoded_hash), sk);
-			s_1 = sigma.get(0).toByteArray();
-			s_2 = sigma.get(1).toByteArray();
-			// Concat both BigIntegers!
-			s = new byte[s_1.length + s_2.length];
-			System.arraycopy(s_1, 0, s, 0, s_1.length);
-			System.arraycopy(s_2, 0, s, s_1.length, s_2.length);
-		}
-		return s;
-	}
-
-	protected boolean engineVerify(byte[] sigBytes) 
-			throws SignatureException 
-	{
-		if(VERIFY_MODE)
-		{
-			// Split sigBytes into Sigma_1 and Sigma_2!
-			// sigma 1 seems to consistently be 384 bytes long
-			// sigma 2 seems to be consistently 128 or 129 bytes long
-			BigInteger sigma_one = new BigInteger(Arrays.copyOfRange(sigBytes, 0, 384));
-			BigInteger sigma_two = new BigInteger(Arrays.copyOfRange(sigBytes, 384, sigBytes.length));
-			
-			// arg1 = message, arg2 & arg3 = signed hash
-			return verify(new BigInteger(encoded_hash), sigma_one, sigma_two, pk);			
-		}
-		else
-		{
-			throw new SignatureException("Didn't Initialize Engine Verify Mode!");
-		}
-	}
-	
-	protected void engineSetParameter(AlgorithmParameterSpec param) 
-			throws InvalidParameterException 
-	{
-
-	}
-
-	protected void engineSetParameter(String param, Object value) 
-			throws InvalidParameterException 
-	{
-
-	}
-
-	protected Object engineGetParameter(String param)
-			throws InvalidParameterException
-	{
-		return null;
-	}
-	
-	// PUBLIC FACING FUNCTIONS
-	public void initSign(PaillierPrivateKey sk) throws InvalidKeyException
-	{
-		engineInitSign(sk);
-	}
-	
-	public void initVerify(PaillierPublicKey pk) throws InvalidKeyException
-	{
-		engineInitVerify(pk);
-	}
-	
-	public void update(byte [] b) {
-		engineUpdate(b, 0, b.length);
-	}
-	
-	public byte [] sign() throws SignatureException
-	{
-		return engineSign();
-	}
-	
-	public boolean verify(byte [] signature) throws SignatureException
-	{
-		return engineVerify(signature);
-	}
+public class PaillierSignature {
 	
 	/**
 	 * Please refer to "Public-Key Cryptosystems Based on Composite Degree Residuosity Classes"
 	 * @param message to sign
 	 * @param sk - used to sign message
 	 */
-	public static List<BigInteger> sign(BigInteger message, PaillierPrivateKey sk)
-	{
+	public static List<BigInteger> sign(BigInteger message, PaillierPrivateKey sk) {
 		List<BigInteger> tuple = new ArrayList<>();
 		BigInteger sigma_one = PaillierCipher.L(message.modPow(sk.lambda, sk.modulus), sk.n);
 		sigma_one = sigma_one.multiply(sk.rho);
@@ -184,6 +25,13 @@ public class PaillierSignature extends SignatureSpi
 		tuple.add(sigma_two);
 		return tuple;
 	}
+
+	public static boolean verify(BigInteger message, List<BigInteger> signed_message, PaillierPublicKey pk) {
+		assert signed_message.size() == 2;
+		BigInteger sigma_one = signed_message.get(0);
+		BigInteger sigma_two = signed_message.get(1);
+		return verify(message, sigma_one, sigma_two, pk);
+	}
 	
 	/**
 	 * Verify a Paillier signature
@@ -193,8 +41,7 @@ public class PaillierSignature extends SignatureSpi
 	 * @param pk - Used to verify signature
 	 * @return - true - valid, false - invalid
 	 */
-	public static boolean verify(BigInteger message, BigInteger sigma_one, BigInteger sigma_two, PaillierPublicKey pk)
-	{
+	public static boolean verify(BigInteger message, BigInteger sigma_one, BigInteger sigma_two, PaillierPublicKey pk) {
 		BigInteger first_part = pk.g.modPow(sigma_one, pk.modulus);
 		BigInteger second_part = sigma_two.modPow(pk.n, pk.modulus);
 		return message.compareTo(first_part.multiply(second_part).mod(pk.modulus)) == 0;

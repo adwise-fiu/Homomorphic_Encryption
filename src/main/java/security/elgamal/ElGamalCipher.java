@@ -1,385 +1,37 @@
 package security.elgamal;
 
 import java.math.BigInteger;
-import java.security.AlgorithmParameters;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.Arrays;
 import java.util.List;
-
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.CipherSpi;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import security.misc.CipherConstants;
 import security.misc.NTL;
 
 // Reference
 // https://github.com/dlitz/pycrypto/blob/master/lib/Crypto/PublicKey/ElGamal.py
-public class ElGamalCipher extends CipherSpi
+public class ElGamalCipher
 {
-	protected int stateMode;
-	protected Key keyElGamal;
-	protected SecureRandom SECURE_RANDOM;
-	protected int plaintextSize;
-	protected int ciphertextSize;
-
-	protected byte [] hrgm;
-	protected byte [] gr;
-	protected byte [] plaintext;
-
-	protected int engineGetOutputSize(int inputLen) 
-	{
-		if (stateMode == Cipher.ENCRYPT_MODE) 
-		{
-			return ciphertextSize;
-		} 
-		else 
-		{
-			return plaintextSize;
-		}
-	}
-
-	protected final void calculateBlockSizes(int modulusLength)
-	{
-		plaintextSize = ((modulusLength + 8) / 8);
-		ciphertextSize = (((modulusLength + 12) / 8) * 2);
-	}
-	
-	/**
-	 * This class support no modes, so engineSetMode() throw exception when
-	 * called.
-	 */
-	protected final void engineSetMode(String mode)
-			throws NoSuchAlgorithmException 
-	{
-		throw new NoSuchAlgorithmException("ElGamal supports no modes.");
-	}
-
-	/**
-	 * This class support no padding, so engineSetPadding() throw exception when
-	 * called.
-	 */
-	protected final void engineSetPadding(String padding)
-			throws NoSuchPaddingException 
-	{
-		throw new NoSuchPaddingException("ElGamal supports no padding.");
-	}
-
-	/**
-	 * Perform actual encryption ,creates single array and updates the result
-	 * after the encryption.
-	 * 
-	 * @param input
-	 *            - the input in bytes
-	 * @param inputOffset
-	 *            - the offset in input where the input starts always zero
-	 * @param inputLenth
-	 *            - the input length
-	 * @param output
-	 *            - the buffer for the result
-	 * @param outputOffset
-	 *            - the offset in output where the result is stored
-	 * @return the number of bytes stored in output
-	 */
-	protected final int encrypt(byte[] input, int inputOffset, int inputLenth,
-			byte[] output, int outputOffset) {
-		BigInteger m = new BigInteger(input);
-
-		// get the public key in order to encrypt
-		ElGamal_Ciphertext c = encrypt(m, (ElGamalPublicKey) keyElGamal);
-
-		// Convert to bytes!
-		gr = c.gr.toByteArray();
-		hrgm = c.hrgm.toByteArray();
-		// MAX 129 each size
-		System.arraycopy(gr, 0, output, ciphertextSize - ciphertextSize/2 - gr.length, gr.length);
-		System.arraycopy(hrgm, 0, output, ciphertextSize - hrgm.length, hrgm.length);
-
-		plaintextSize = input.length;
-		ciphertextSize = gr.length + hrgm.length;
-		return ciphertextSize;
-	}
-
-	/**
-	 * Perform actual decryption ,creates single array for the output and updates
-	 * the result after the decryption.
-	 * 
-	 * @param input
-	 *            - the input in bytes
-	 * @param inputOffset
-	 *            - the offset in input where the input starts always zero
-	 * @param inputLenth
-	 *            - the input length
-	 * @param output
-	 *            - the buffer for the result
-	 * @param outputOffset
-	 *            - the offset in output where the result is stored
-	 * @return the number of bytes stored in output
-	 */
-	protected final int decrypt(byte[] input, int inputOffset, int inputLenth,
-			byte[] output, int outputOffset)
-	{
-		// extract gr and hrgm
-		BigInteger gr;
-		BigInteger hrgm;
-		gr = new BigInteger(Arrays.copyOfRange(input, 0, 129));
-		hrgm = new BigInteger(Arrays.copyOfRange(input, 129, input.length));
-
-		// calculate the message
-		byte [] messageBytes = decrypt(new ElGamal_Ciphertext(gr, hrgm), (ElGamalPrivateKey) keyElGamal).toByteArray();
-		int gatedLength = Math.min(messageBytes.length, plaintextSize);
-		System.arraycopy(messageBytes, 0, output, plaintextSize - gatedLength, gatedLength);
-		return plaintextSize;
-	}
-
-	/**
-	 * El-Gamal HomomorphicCipher doesn't recognise any algorithm - specific initialisations
-	 * so the algorithm specific engineInit() just calls the previous overloaded
-	 * version of engineInit()
-	 * 
-	 * @param opmode
-	 *            -cipher mode
-	 * @param key
-	 *            - Key
-	 * @param params
-	 *            - AlgorithmParameterSpec
-	 * @see javax.crypto.CipherSpi#engineInit(int, java.security.Key,
-	 *      java.security.spec.AlgorithmParameterSpec,
-	 *      java.security.SecureRandom)
-	 */
-
-	protected final void engineInit(int opmode, Key key,
-			AlgorithmParameterSpec params, SecureRandom random)
-					throws InvalidKeyException {
-		engineInit(opmode, key, random);
-	}
-
-	protected final void engineInit(int opmode, Key key, AlgorithmParameters params,
-			SecureRandom random) throws InvalidKeyException {
-		engineInit(opmode, key, random);
-	}
-
-	/**
-	 * Calls the second overloaded version of the same method.
-	 * 
-	 * @return the result from encryption or decryption
-	 */
-	protected final byte[] engineUpdate(byte[] input, int inputOffset, int inputLen) 
-	{
-		byte[] out = new byte[engineGetOutputSize(inputLen)];
-		engineUpdate(input, inputOffset, inputLen, out, 0);
-		return out;
-	}
-
-	/**
-	 * Creates a single input array from the buffered data and supplied input
-	 * data. Calculates the location and the length of the last fractional block
-	 * in the input data. Transforms all full blocks in the input data. Save the
-	 * last fractional block in the internal buffer.
-	 * 
-	 * @param input
-	 *            - the input in bytes
-	 * @param inputOffset
-	 *            - the offset in input where the input starts always zero
-	 * @param inputLen
-	 *            - the input length
-	 * @param output
-	 *            - the buffer for the result
-	 * @param outputOffset
-	 *            - the offset in output where the result is stored
-	 * @return the number of bytes stored in output
-	 */
-	protected final int engineUpdate(byte[] input, int inputOffset, int inputLen,
-			byte[] output, int outputOffset) {
-		int size;
-		if (stateMode == Cipher.ENCRYPT_MODE)
-		{
-			try
-			{
-				size = encrypt(input, inputOffset, inputLen, output, outputOffset);
-				return size;
-			} 
-			catch (Exception e) 
-			{
-				e.printStackTrace();
-			}
-		}
-		else if (stateMode == Cipher.DECRYPT_MODE)
-		{
-			size = decrypt(input, inputOffset, inputLen, output, outputOffset);
-			return size;
-		}
-		return 0;
-	}
-
-	/**
-	 * Calls the second overloaded version of the same method,
-	 * to perform the required operation based on the state of the cipher.
-	 * 
-	 * @return returns the result from encryption or decryption
-	 */
-	protected final byte[] engineDoFinal(byte[] input, int inputOffset, int inputLen) {
-		byte[] out = new byte[engineGetOutputSize(inputLen)];
-		engineDoFinal(input, inputOffset, inputLen, out, 0);
-		return out;
-	}
-
-	/**
-	 * Calls encrypt or decrypt based on the state of the cipher. Creates a
-	 * single input array from the supplied input data. And returns number of
-	 * bytes stored in output.
-	 * 
-	 * @param input
-	 *            - the input buffer
-	 * @param inputOffset
-	 *            - the offset in input where the input starts always zero
-	 * @param inputLen
-	 *            - the input length
-	 * @param output
-	 *            - the buffer for the result
-	 * @param outputOffset
-	 *            - the offset in output where the result is stored
-	 * @return the number of bytes stored in output
-	 */
-	protected final int engineDoFinal(byte[] input, int inputOffset, int inputLen,
-			byte[] output, int outputOffset) {
-		// Create a single array of input data
-		byte[] totalInput = new byte[inputLen];
-		if (inputLen > 0)
-		{
-			System.arraycopy(input, inputOffset, totalInput, 0, inputLen);
-		}
-		if (stateMode == Cipher.ENCRYPT_MODE)
-		{
-			try 
-			{
-				return encrypt(input, inputOffset, inputLen, output, outputOffset);
-			}
-			catch (Exception e) 
-			{
-				e.printStackTrace();
-			}
-		}
-		else if (stateMode == Cipher.DECRYPT_MODE)
-		{
-			return decrypt(input, inputOffset, inputLen, output, outputOffset);
-		}
-		return 0;
-	}
-
-	/**
-	 * This method returns the appropriate block size , based on cipher.
-	 * 
-	 * @return BlockSize - the block size(in bytes).
-	 */
-	protected final int engineGetBlockSize() 
-	{
-		if (stateMode == Cipher.DECRYPT_MODE)
-		{
-			return ciphertextSize;
-		}
-		else
-		{
-			return plaintextSize;
-		}
-	}
-
-	/**
-	 * This method returns null.
-	 */
-	protected final byte[] engineGetIV()
-	{
-		return null;
-	}
-
-	protected final AlgorithmParameters engineGetParameters() 
-	{
-		return null;
-	}
-
-	/**
-	 * Initialises this cipher with key and a source of randomness
-	 */
-	protected final void engineInit(int mode, Key key, SecureRandom random)
-			throws InvalidKeyException 
-	{
-		if (mode == Cipher.ENCRYPT_MODE)
-		{
-			if (!(key instanceof ElGamalPublicKey))
-			{
-				throw new InvalidKeyException("I didn't get a ElGamalPublicKey!");
-			}
-		}
-		else if (mode == Cipher.DECRYPT_MODE)
-		{
-			if (!(key instanceof ElGamalPrivateKey))
-			{
-				throw new InvalidKeyException("I didn't get a ElGamalPrivateKey!");
-			}
-		}		
-		else
-		{
-			throw new IllegalArgumentException("Bad mode: " + mode);
-		}
-		this.stateMode = mode;
-		this.keyElGamal = key;
-		this.SECURE_RANDOM = random;
-		int modulusLength = ((ElGamal_Key) key).getP().bitLength();
-		calculateBlockSizes(modulusLength);
-	}
-	
-	// ------------------------PUBLIC FACING METHODS---------------------------------------------------
-	public void init(int encryptMode, ElGamalPublicKey pk) 
-			throws InvalidKeyException {
-		engineInit(encryptMode, pk, new SecureRandom());
-	}
-
-	public void init(int decryptMode, ElGamalPrivateKey sk)
-			throws InvalidKeyException {
-		engineInit(decryptMode, sk, new SecureRandom());
-	}
-
-	public byte[] doFinal(byte[] bytes) 
-			throws BadPaddingException, IllegalBlockSizeException 
-	{
-		byte [] answer = engineDoFinal(bytes, 0, bytes.length);
-		return answer;
-	}
-
 	// --------------------------BigInteger ElGamal---------------------------------------
 	public static ElGamal_Ciphertext encrypt(BigInteger plaintext, ElGamalPublicKey pk)
 	{
-		if(pk.ADDITIVE)
-		{
+		if(pk.ADDITIVE) {
 			return Encrypt_Homomorph(plaintext, pk);
 		}
-		else
-		{
+		else {
 			return Encrypt(plaintext, pk);
 		}
 	}
 
-	public static ElGamal_Ciphertext encrypt(long plaintext, ElGamalPublicKey pk)
-	{
+	public static ElGamal_Ciphertext encrypt(long plaintext, ElGamalPublicKey pk) {
 		BigInteger message = BigInteger.valueOf(plaintext);
 		return encrypt(message, pk);
 	}
 
 	public static BigInteger decrypt(ElGamal_Ciphertext ciphertext, ElGamalPrivateKey sk)
 	{
-		if(sk.ADDITIVE)
-		{
+		if(sk.ADDITIVE) {
 			return Decrypt_Homomorph(ciphertext, sk);	
 		}
-		else
-		{
+		else {
 			return Decrypt(ciphertext, sk);	
 		}
 	}
@@ -402,7 +54,7 @@ public class ElGamalCipher extends CipherSpi
 	 * Encrypt ElGamal homomorphic
 	 *
 	 * @param (p, g, h) public key
-	 * @param message message
+	 * @param message
 	 */
 	private static ElGamal_Ciphertext Encrypt_Homomorph(BigInteger plaintext, ElGamalPublicKey pk) 
 	{
@@ -446,7 +98,7 @@ public class ElGamalCipher extends CipherSpi
 			if(m.compareTo(sk.p.subtract(BigInteger.ONE)) >= 0)
 			{
 				m = m.mod(sk.p.subtract(BigInteger.ONE));
-				if (m.compareTo(CipherConstants.FIELD_SIZE) == 1)
+				if (m.compareTo(CipherConstants.FIELD_SIZE) > 0)
 				{
 					m = m.mod(CipherConstants.FIELD_SIZE);	
 				}

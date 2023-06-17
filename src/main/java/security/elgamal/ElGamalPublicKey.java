@@ -1,8 +1,5 @@
 package security.elgamal;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.PublicKey;
@@ -43,8 +40,7 @@ public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_
 		return this.p;
 	}
 
-	public String toString()
-	{
+	public String toString() {
 		String answer = "";
 		answer += "p=" + this.p + '\n';
 		answer += "g=" + this.g + '\n';
