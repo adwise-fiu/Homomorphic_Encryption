@@ -170,7 +170,6 @@ public class PaillierSignature extends SignatureSpi
 	 * Please refer to "Public-Key Cryptosystems Based on Composite Degree Residuosity Classes"
 	 * @param message to sign
 	 * @param sk - used to sign message
-	 * @return
 	 */
 	public static List<BigInteger> sign(BigInteger message, PaillierPrivateKey sk)
 	{

@@ -7,9 +7,9 @@ import java.math.BigInteger;
 import java.net.Socket;
 import java.security.KeyPair;
 
-import security.DGK.DGKOperations;
-import security.DGK.DGKPrivateKey;
-import security.DGK.DGKPublicKey;
+import security.dgk.DGKOperations;
+import security.dgk.DGKPrivateKey;
+import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
@@ -20,15 +20,13 @@ import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;
 import security.paillier.PaillierPrivateKey;
 
-public final class bob extends socialist_millionaires implements Runnable
+public class bob extends socialist_millionaires implements Runnable
 {
 	/**
 	 * Create a bob instance for running extending protocols such as comparing 
 	 * encrypted numbers
-	 * @param clientSocket
-	 * @param a - 
+	 * @param a -
 	 * @param b - 
-	 * @throws IOException
 	 * @throws IllegalArgumentException
 	 * If a is not a Paillier Keypair or b is not a DGK key pair
 	 */
@@ -40,11 +38,6 @@ public final class bob extends socialist_millionaires implements Runnable
 	/**
 	 * Create a bob instance for running extending protocols such as comparing 
 	 * encrypted numbers
-	 * @param clientSocket
-	 * @param a 
-	 * @param b 
-	 * @param c 
-	 * @throws IOException
 	 * @throws IllegalArgumentException
 	 * If a is not a Paillier Keypair or b is not a DGK key pair or c is not ElGamal Keypair
 	 */
@@ -153,13 +146,13 @@ public final class bob extends socialist_millionaires implements Runnable
 	
 	/**
 	 * Please review "Improving the DGK comparison protocol" - Protocol 1
+	 *
 	 * @param y - plaintext value
-	 * @return X <= Y
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 * @throws IllegalArgumentException - if y has more bits than is supported by provided DGK keys
 	 */
-	public boolean Protocol1(BigInteger y) 
+	public void Protocol1(BigInteger y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		// Constraint...
@@ -167,10 +160,10 @@ public final class bob extends socialist_millionaires implements Runnable
 			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
 		}
 
-		Object in = null;
+		Object in;
 		int deltaB = 0;
 		BigInteger deltaA = null;
-		BigInteger [] C = null;
+		BigInteger [] C;
 
 		//Step 1: Bob sends encrypted bits to Alice
 		BigInteger [] EncY = new BigInteger[y.bitLength()];
@@ -191,7 +184,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		}
 		else if (in instanceof BigInteger) {
 			deltaA = (BigInteger) in;
-			return deltaA.intValue() == 1;
+			return;
 		}
 		else {
 			throw new IllegalArgumentException("Protocol 1, Step 6: Invalid object: " + in.getClass().getName());
@@ -214,7 +207,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		// This is best used in situations like an auction where Bob needs to know
 		in = fromAlice.readObject();
 		if (in instanceof BigInteger) {
-			return DGKOperations.decrypt((BigInteger) in, privKey) == 1;
+			DGKOperations.decrypt((BigInteger) in, privKey);
 		}
 		else {
 			throw new IllegalArgumentException("Invalid response from Alice in Step 8: " + in.getClass().getName());
@@ -225,24 +218,24 @@ public final class bob extends socialist_millionaires implements Runnable
 	 * Please review "Improving the DGK comparison protocol" - Protocol 1
 	 * NOTE: The paper has a typo!
 	 * This protocol computes X >= Y NOT X <= Y
-	 * @return
+	 *
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 * @throws HomomorphicException
 	 */
 	
-	public boolean Protocol2() 
+	public void Protocol2()
 			throws ClassNotFoundException, IOException, HomomorphicException {
 		// Step 1: Receive z from Alice
 		// Get the input and output streams
-		int answer = -1;
-		Object x = null;
-		BigInteger beta = null;
-		BigInteger z = null;
+		int answer;
+		Object x;
+		BigInteger beta;
+		BigInteger z;
 		
 		if(isDGK) {
 			System.err.println("COMPARING ENCRYPTED DGK VALUES WITH PROTOCOL 2 IS NOT ALLOWED, PLEASE USE PROTOCOL 4!");
-			return answer == 1;
+			return;
 		}
 
 		//Step 1: get [[z]] from Alice
@@ -276,7 +269,6 @@ public final class bob extends socialist_millionaires implements Runnable
 			answer = PaillierCipher.decrypt((BigInteger) x, sk).intValue();
 			toAlice.writeInt(answer);
 			toAlice.flush();
-			return answer == 1;
 		}
 		else {
 			throw new IllegalArgumentException("Invalid response from Alice in Step 8! " + x.getClass().getName());
@@ -286,22 +278,22 @@ public final class bob extends socialist_millionaires implements Runnable
 	/**
 	 * Please review "Improving the DGK comparison protocol" - Protocol 3
 	 * Note: Bob already has the private keys upon initialization
+	 *
 	 * @param y - plaintext value
-	 * @return
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 * @throws IllegalArgumentException
 	 */
 
-	public boolean Protocol3(BigInteger y)
+	public void Protocol3(BigInteger y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		// Constraint...
 		if(y.bitLength() > pubKey.getL()) {
 			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
 		}
-		Object x = null;
-		BigInteger [] C = null;
+		Object x;
+		BigInteger [] C;
 		int deltaB = 0;
 		BigInteger deltaA = null;
 
@@ -375,7 +367,7 @@ public final class bob extends socialist_millionaires implements Runnable
 			// Case 2, delta B is 0
 			// 0 XOR 0 = 0
 			// x <= y -> 0 (false)
-			return deltaA.intValue() == 1;
+			return;
 		}
 		else {
 			throw new IllegalArgumentException("Protocol 3, Step 4: Invalid object! " + x.getClass().getName());
@@ -390,7 +382,7 @@ public final class bob extends socialist_millionaires implements Runnable
 		// This is best used in situations like an auction where Bob needs to know
 		x = fromAlice.readObject();
 		if (x instanceof BigInteger) {
-			return DGKOperations.decrypt((BigInteger) x, privKey) == 1;
+			DGKOperations.decrypt((BigInteger) x, privKey);
 		}
 		else {
 			throw new IllegalArgumentException("Invalid response from Alice in Step 8! " + x.getClass().getName());
@@ -398,10 +390,10 @@ public final class bob extends socialist_millionaires implements Runnable
 	}
 	
 	// Used for Regular Modified Protocol 3 ONLY 
-	public boolean Modified_Protocol3(BigInteger z) 
+	public void Modified_Protocol3(BigInteger z)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
-		BigInteger beta = null;
+		BigInteger beta;
 		boolean answer;
 		
 		// Constraint...
@@ -418,20 +410,19 @@ public final class bob extends socialist_millionaires implements Runnable
 			answer = Modified_Protocol3(beta, z);
 			isDGK = false;
 		}
-		return answer;
 	}
 
 	// Use this for Using Modified Protocol3 within Protocol 4
 	private boolean Modified_Protocol3(BigInteger beta, BigInteger z) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
-		Object in = null;
-		BigInteger [] C = null;
+		Object in;
+		BigInteger [] C;
 		BigInteger [] beta_bits = new BigInteger[beta.bitLength()];
-		BigInteger deltaA = null;
-		BigInteger d = null;
-		BigInteger N = null;
-		int answer = -1;
+		BigInteger deltaA;
+		BigInteger d;
+		BigInteger N;
+		int answer;
 		int deltaB = 0;
 		
 		if(isDGK) {
@@ -514,12 +505,12 @@ public final class bob extends socialist_millionaires implements Runnable
 	
 	/**
 	 * Please review Correction to Improving the DGK comparison protocol - Protocol 3
-	 * @return
+	 *
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 * @throws HomomorphicException
 	 */
-	public boolean Protocol4() 
+	public void Protocol4()
 			throws IOException, ClassNotFoundException, HomomorphicException
 	{
 		// Constraint for Paillier
@@ -529,11 +520,11 @@ public final class bob extends socialist_millionaires implements Runnable
 		}
 		
 		int answer = -1;
-		Object x = null;
-		BigInteger beta = null;
-		BigInteger z = null;
-		BigInteger zeta_one = null;
-		BigInteger zeta_two = null;
+		Object x;
+		BigInteger beta;
+		BigInteger z;
+		BigInteger zeta_one;
+		BigInteger zeta_two;
 		
 		//Step 1: get [[z]] from Alice
 		x = fromAlice.readObject();
@@ -625,19 +616,18 @@ public final class bob extends socialist_millionaires implements Runnable
 		if (answer != 0 && answer != 1) {
 			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
 		}
-		return answer == 1;
 	}
 	
-	public boolean ElGamal_Protocol4() 
+	public void ElGamal_Protocol4()
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
-		int answer = -1;
-		Object x = null;
-		BigInteger beta = null;
-		BigInteger z = null;
-		ElGamal_Ciphertext enc_z = null;
-		ElGamal_Ciphertext zeta_one = null;
-		ElGamal_Ciphertext zeta_two = null;
+		int answer;
+		Object x;
+		BigInteger beta;
+		BigInteger z;
+		ElGamal_Ciphertext enc_z;
+		ElGamal_Ciphertext zeta_one;
+		ElGamal_Ciphertext zeta_two;
 		BigInteger N = e_pk.getP().subtract(BigInteger.ONE);
 		
 		//Step 1: get [[z]] from Alice
@@ -691,18 +681,17 @@ public final class bob extends socialist_millionaires implements Runnable
 		if (answer != 0 && answer != 1) {
 			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
 		}
-		return answer == 1;
 	}
 
 	// Support addition and subtraction
 	public void addition(boolean addition) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
-		Object in = null;
-		ElGamal_Ciphertext enc_x_prime = null;
-		ElGamal_Ciphertext enc_y_prime = null;
-		BigInteger x_prime = null;
-		BigInteger y_prime = null;
+		Object in;
+		ElGamal_Ciphertext enc_x_prime;
+		ElGamal_Ciphertext enc_y_prime;
+		BigInteger x_prime;
+		BigInteger y_prime;
 		
 		// Step 2
 		in = fromAlice.readObject();
@@ -736,9 +725,9 @@ public final class bob extends socialist_millionaires implements Runnable
 	public void ElGamal_division(long divisor) 
 			throws ClassNotFoundException, IOException, IllegalArgumentException
 	{
-		BigInteger c = null;
-		BigInteger z = null;
-		ElGamal_Ciphertext enc_z = null;
+		BigInteger c;
+		BigInteger z;
+		ElGamal_Ciphertext enc_z;
 		Object alice = fromAlice.readObject();
 		if(alice instanceof ElGamal_Ciphertext) {
 			enc_z = (ElGamal_Ciphertext) alice;
@@ -767,11 +756,11 @@ public final class bob extends socialist_millionaires implements Runnable
 	public void ElGamal_multiplication() 
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
-		Object in = null;
-		ElGamal_Ciphertext enc_x_prime = null;
-		ElGamal_Ciphertext enc_y_prime = null;
-		BigInteger x_prime = null;
-		BigInteger y_prime = null;
+		Object in;
+		ElGamal_Ciphertext enc_x_prime;
+		ElGamal_Ciphertext enc_y_prime;
+		BigInteger x_prime;
+		BigInteger y_prime;
 		
 		// Step 2
 		in = fromAlice.readObject();

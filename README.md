@@ -18,13 +18,13 @@ As the partially homomorphic encryption systems only support addition with two c
 Please retrieve the JAR file from [here](https://github.com/AndrewQuijano/Homomorphic_Encryption/tags)
 
 As this library uses Java 8, the JAR file can be imported into an Android project.
-If you want to review/edit the library, import the JAVA_PHE directory into a Eclipse project and edit as necessary. The Main.java folder only exists for testing and provide examples of how to use the library.
+If you want to review/edit the library, import the JAVA_PHE directory into an Eclipse project and edit as necessary. The Main.java folder only exists for testing and provide examples of how to use the library.
 
 ## Generate Keys
 To create the keys, run the following commands:
 ```bash
 gradle -g gradle_user_home run -PchooseRole=security.paillier.PaillierKeyPairGenerator
-gradle -g gradle_user_home run -PchooseRole=security.DGK.DGKKeyPairGenerator
+gradle -g gradle_user_home run -PchooseRole=security.dgk.DGKKeyPairGenerator
 ```
 This will create the key files on the current working directory. It will also
 
@@ -43,11 +43,15 @@ Please view Client.java and Server.java for an example how to compare encrypted 
 ### security.socialistmillionaire.alice
 **Initialize**
 ```java
-alice Niu = new alice(new Socket("192.168.1.208", 9254));
-// These Public Keys are made by Bob and automatically sent to Alice.
-PaillierPublicKey pk = Niu.getPaillierPublicKey();
-DGKPublicKey pubKey = Niu.getDGKPublicKey();
-ElGamalPublicKey e_pk = Niu.getElGamalPublicKey();
+public class demo {
+    public static void main(String[] args) {
+        alice Niu = new alice(new Socket("192.168.1.208", 9254));
+        // These Public Keys are made by Bob and automatically sent to Alice.
+        PaillierPublicKey pk = Niu.getPaillierPublicKey();
+        DGKPublicKey pubKey = Niu.getDGKPublicKey();
+        ElGamalPublicKey e_pk = Niu.getElGamalPublicKey();
+    }
+}
 ```
 **Protocol1(x)**
 See Protocol 1 in "Improving the DGK comparison protocol" in Alice section.
@@ -250,7 +254,7 @@ Please review 'Correction of a Secure Comparison Protocol for Encrypted Integers
 * Raises (**HomomorphicException**)
     * Constraints: 0 <= x <= N * 2^{-sigma} and 0 <= d < N
 
-### security.DGK
+### security.dgk
 **Generate DGK Keys**
 ```java
 int KEY_SIZE = 1024; //number of bits

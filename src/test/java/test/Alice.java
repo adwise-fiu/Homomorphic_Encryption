@@ -6,9 +6,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import security.DGK.DGKOperations;
-import security.DGK.DGKPrivateKey;
-import security.DGK.DGKPublicKey;
+import security.dgk.DGKOperations;
+import security.dgk.DGKPrivateKey;
+import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
@@ -116,9 +116,9 @@ public class Alice implements Runnable
 	}
 
 	public static void alice_demo() throws ClassNotFoundException, IOException, HomomorphicException {
-		boolean result = false;
+		boolean result;
 		System.out.println("Please note all printed values should return true...");
-		BigInteger temp = null;
+		BigInteger temp;
 		long temp_value;
 		
 		// Check the multiplication, DGK

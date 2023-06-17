@@ -6,10 +6,9 @@ import java.security.InvalidKeyException;
 import java.security.SignatureException;
 import java.util.List;
 
-import security.DGK.DGKOperations;
-import security.DGK.DGKPrivateKey;
-import security.DGK.DGKPublicKey;
-import security.DGK.DGKSignature;
+import security.dgk.DGKOperations;
+import security.dgk.DGKPrivateKey;
+import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
@@ -341,7 +340,7 @@ public class StressTest
 	public static void Paillier_Test(PaillierPublicKey pk, PaillierPrivateKey sk) throws InvalidKeyException, SignatureException, HomomorphicException
 	{
 		System.out.println("-----------PAILLIER TEST x" + SIZE + "--------------KEY: " + KEY_SIZE + "-----------");
-		long start = 0;
+		long start;
 		
 		PaillierSignature sig = new PaillierSignature();
 		sig.initSign(sk);
@@ -407,58 +406,36 @@ public class StressTest
 		System.out.println("-----------DGK TEST x" + SIZE + "--------------KEY: " + KEY_SIZE + "-----------");
 		BigInteger base = DGKOperations.encrypt(NTL.generateXBitRandom(15), pubKey);
 		BigInteger t = NTL.generateXBitRandom(15);
-		long start = 0;
-		
-		DGKSignature sig = new DGKSignature();
-		sig.initSign(privKey);
-		sig.update(new BigInteger("42").toByteArray());
-		byte [] cert = sig.sign();
+		long start;
 
 		start = System.nanoTime();
-		for(int i = 0; i < SIZE;i++)
-		{
-			sig.initVerify(pubKey);
-			sig.update(BigInteger.valueOf(i).toByteArray());
-			if(sig.verify(cert))
-			{
-				System.out.println("DGK VALID AT: " + i);
-			}
-		}
-		System.out.println("Time to complete signature: " + ((System.nanoTime() - start)/BILLION) + " seconds");
-			
-		start = System.nanoTime();
-		for(int i = 0; i < SIZE; i++)
-		{
+		for(int i = 0; i < SIZE; i++) {
 			DGKOperations.encrypt(t, pubKey);
 		}
 		System.out.println("Time to complete encryption: " + ((System.nanoTime() - start)/BILLION) + " seconds");
 	
 		t = DGKOperations.encrypt(t, pubKey);
 		start = System.nanoTime();
-		for(int i = 0; i < SIZE; i++)
-		{
+		for(int i = 0; i < SIZE; i++) {
 			DGKOperations.decrypt(t, privKey);
 		}
 		System.out.println("Time to complete decryption: " + ((System.nanoTime() - start)/BILLION) + " seconds");
 		
 		start = System.nanoTime();
-		for(int i = 0; i < SIZE; i++)
-		{
+		for(int i = 0; i < SIZE; i++) {
 			DGKOperations.add(base, t, pubKey);
 		}
 		System.out.println("Time to complete addition: " + ((System.nanoTime() - start)/BILLION) + " seconds");
 	
 		long exp =  NTL.generateXBitRandom(15).longValue();
 		start = System.nanoTime();
-		for(int i = 0; i < SIZE; i++)
-		{
+		for(int i = 0; i < SIZE; i++) {
 			DGKOperations.multiply(base, exp, pubKey);
 		}
 		System.out.println("Time to complete multiplication: " + ((System.nanoTime() - start)/BILLION) + " seconds");
 
 		start = System.nanoTime();
-		for(int i = 0; i < SIZE; i++)
-		{
+		for(int i = 0; i < SIZE; i++) {
 			DGKOperations.add_plaintext(base, exp, pubKey);
 		}
 		System.out.println("Time to complete addition (plaintext): " + ((System.nanoTime() - start)/BILLION) + " seconds");
@@ -473,7 +450,7 @@ public class StressTest
 		BigInteger t = NTL.generateXBitRandom(15);
 		ElGamal_Ciphertext temp = ElGamalCipher.encrypt(t, e_pk);
 		
-		long start = 0;
+		long start;
 		
 		ElGamalSignature sig = new ElGamalSignature();
 		sig.initSign(e_sk);
@@ -481,12 +458,10 @@ public class StressTest
 		byte [] cert = sig.sign();
 
 		start = System.nanoTime();
-		for(int i = 0; i < SIZE;i++)
-		{
+		for(int i = 0; i < SIZE;i++) {
 			sig.initVerify(e_pk);
 			sig.update(BigInteger.valueOf(i).toByteArray());
-			if(sig.verify(cert))
-			{
+			if(sig.verify(cert)) {
 				System.out.println("ElGamal VALID AT: " + i);
 			}
 		}
@@ -528,7 +503,7 @@ public class StressTest
 		BigInteger t = NTL.generateXBitRandom(15);
 		List<BigInteger> enc_t = GMCipher.encrypt(t, gm_pk);
 		List<BigInteger> enc_z = GMCipher.encrypt(t, gm_pk);
-		long start = 0;
+		long start;
 		
 		start = System.nanoTime();
 		for(int i = 0; i < SIZE; i++)

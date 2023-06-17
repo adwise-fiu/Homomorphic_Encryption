@@ -1,4 +1,4 @@
-package security.DGK;
+package security.dgk;
 
 import java.math.BigInteger;
 

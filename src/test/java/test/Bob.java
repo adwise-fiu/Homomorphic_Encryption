@@ -6,7 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyPair;
 
-import security.DGK.DGKPrivateKey;
+import security.dgk.DGKPrivateKey;
 import security.elgamal.ElGamalPrivateKey;
 import security.misc.HomomorphicException;
 import security.paillier.PaillierPrivateKey;

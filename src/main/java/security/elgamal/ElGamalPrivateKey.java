@@ -1,8 +1,5 @@
 package security.elgamal;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.PrivateKey;
@@ -32,9 +29,8 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 		this.g = g;
 		this.h = h;
 		this.ADDITIVE = ADDITIVE;
-		if(ADDITIVE)
-		{
-			this.LUT = new HashMap<BigInteger, BigInteger>(FIELD_SIZE.intValue(), (float) 1.0);
+		if(ADDITIVE) {
+			this.LUT = new HashMap<>(FIELD_SIZE.intValue(), (float) 1.0);
 			this.decrypt_table();
 		}
 		else
@@ -58,22 +54,11 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 		return null;
 	}
 
-	private void readObject(ObjectInputStream aInputStream)
-			throws ClassNotFoundException,IOException
-	{
-		aInputStream.defaultReadObject();
-	}
-
-	private void writeObject(ObjectOutputStream aOutputStream) throws IOException
-	{
-		aOutputStream.defaultWriteObject();
-	}
-
 	// Generate Lookup Table, plain text space is [0, p - 1)
 	private void decrypt_table() 
 	{
 		// Get maximum size of x - y + r + 2^l
-		// Assume maximum value is u: biggest value in DGK which is closest prime from 2^l l = 16 default.
+		// Assume maximum value is u: biggest value in DGK which is the closest prime from 2^l l = 16 default.
 		BigInteger decrypt_size = FIELD_SIZE.add(FIELD_SIZE).subtract(TWO).add(TWO.pow(16));
 		long start_time = System.nanoTime();
 		System.out.println("Building Lookup Table g^m --> m for ElGamal");

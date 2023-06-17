@@ -21,7 +21,7 @@ public interface CipherConstants
     BigInteger THREE = new BigInteger("3");
 	BigInteger FOUR = new BigInteger("4");
 	BigInteger FIVE = new BigInteger("5");
-	BigInteger SEVEN = new BigInteger("7");
+
 	BigInteger EIGHT = new BigInteger("8");
 
 	// Misc

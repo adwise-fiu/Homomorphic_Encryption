@@ -8,8 +8,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import security.DGK.DGKOperations;
-import security.DGK.DGKPublicKey;
+import security.dgk.DGKOperations;
+import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalPublicKey;
 import security.elgamal.ElGamal_Ciphertext;
@@ -21,16 +21,15 @@ import security.paillier.PaillierPublicKey;
 
 import java.util.List;
 
-public final class alice extends socialist_millionaires implements Runnable
+public class alice extends socialist_millionaires implements Runnable
 {
 
 	// Needed for comparison
 	private final BigInteger [] toSort = null;
-	private BigInteger [] sortedArray = null;
+	private final BigInteger [] sortedArray = null;
 	private BigInteger [] tempBigMerg = null;
 
-	public alice (Socket clientSocket) throws IOException, ClassNotFoundException
-	{
+	public alice (Socket clientSocket) throws IOException {
 		if(clientSocket != null) {
 			toBob = new ObjectOutputStream(clientSocket.getOutputStream());
 			fromBob = new ObjectInputStream(clientSocket.getInputStream());
@@ -50,7 +49,6 @@ public final class alice extends socialist_millionaires implements Runnable
 	 * @throws ClassNotFoundException - Required for casting objects
 	 * @throws IllegalArgumentException - If x or y have more bits 
 	 * than that is supported by the DGK Keys provided
-	 * @throws HomomorphicException 
 	 */
 	public boolean Protocol1(BigInteger x) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
@@ -88,7 +86,7 @@ public final class alice extends socialist_millionaires implements Runnable
 			return false;
 		}
 
-		// Otherwise, if bit size is equal, proceed!
+		// Otherwise, if the bit size is equal, proceed!
 		// Step 2: compute Encrypted X XOR Y
 		XOR = new BigInteger[Encrypted_Y.length];
 		for (int i = 0; i < Encrypted_Y.length; i++)
@@ -143,7 +141,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 
 		/*
-		 * Step 8: Bob has the Private key anyways
+		 * Step 8: Bob has the Private key anyway
 		 * Send him the encrypted answer!
 		 * Alice and Bob know now without revealing x or y!
 		 */
@@ -157,24 +155,21 @@ public final class alice extends socialist_millionaires implements Runnable
 	 * @param x - Encrypted Paillier value OR Encrypted DGK value
 	 * @param y - Encrypted Paillier value OR Encrypted DGK value
 	 * @return X >= Y
-	 * @throws IOException
-	 * @throws ClassNotFoundException
-	 * @throws HomomorphicException
 	 */
 	public boolean Protocol2(BigInteger x, BigInteger y) 
 			throws IOException, ClassNotFoundException, HomomorphicException
 	{
-		Object bob = null;
-		int deltaB = -1;
+		Object bob;
+		int deltaB;
 		int deltaA = rnd.nextInt(2);
-		int x_leq_y = -1;
-		int comparison = -1;
-		BigInteger alpha_lt_beta = null;
-		BigInteger z = null;
-		BigInteger zdiv2L =  null;
-		BigInteger result = null;
-		BigInteger r = null;
-		BigInteger alpha = null;
+		int x_leq_y;
+		int comparison;
+		BigInteger alpha_lt_beta;
+		BigInteger z;
+		BigInteger zdiv2L;
+		BigInteger result;
+		BigInteger r;
+		BigInteger alpha;
 
 		// Step 1: 0 <= r < N
 		// Pick Number of l + 1 + sigma bits
@@ -272,9 +267,6 @@ public final class alice extends socialist_millionaires implements Runnable
 	 * Please review the bob 
 	 * @param x - plaintext value
 	 * @return X <= Y
-	 * @throws ClassNotFoundException
-	 * @throws IOException
-	 * @throws HomomorphicException 
 	 */
 	public boolean Protocol3(BigInteger x) throws ClassNotFoundException, IOException, HomomorphicException {
 		return Protocol3(x, rnd.nextInt(2));
@@ -289,9 +281,9 @@ public final class alice extends socialist_millionaires implements Runnable
 		Object in;
 		BigInteger [] XOR;
 		BigInteger [] C;
-		BigInteger [] Encrypted_Y = null;
-		int deltaB = -1;
-		int answer = -1;
+		BigInteger [] Encrypted_Y;
+		int deltaB;
+		int answer;
 
 		//Step 1: Receive y_i bits from Bob
 		in = fromBob.readObject();
@@ -382,7 +374,7 @@ public final class alice extends socialist_millionaires implements Runnable
 
 		// Step 5: Apply the Blinding to C_i and send it to Bob
 		for (int i = 0; i < Encrypted_Y.length; i++) {
-			// if i is NOT in L, just place a random NON-ZERO
+			// if index i is NOT in L, just place a random NON-ZERO
 			// int bit = x.testBit(i) ? 1 : 0;
 			int bit = NTL.bit(x, i);
 			if(bit != deltaA) {
@@ -410,7 +402,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 
 		/*
-		 * Step 8: Bob has the Private key anyways...
+		 * Step 8: Bob has the Private key anyway...
 		 * Send him the encrypted answer!
 		 * Alice and Bob know now without revealing x or y!
 		 */
@@ -422,12 +414,6 @@ public final class alice extends socialist_millionaires implements Runnable
 	
 	/**
 	 * Primarily used in Protocol 4.
-	 * @param r 
-	 * @return
-	 * @throws ClassNotFoundException
-	 * @throws IOException
-	 * @throws IllegalArgumentException
-	 * @throws HomomorphicException 
 	 */
 	public boolean Modified_Protocol3(BigInteger r)
 			throws ClassNotFoundException, IOException, HomomorphicException
@@ -527,7 +513,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		}
 		
 		// Step C: Alice corrects d...
-		if(r.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) == -1) {
+		if(r.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) < 0) {
 			d = DGKOperations.encrypt(BigInteger.ZERO, pubKey);
 		}
 		
@@ -540,15 +526,6 @@ public final class alice extends socialist_millionaires implements Runnable
 			else {
 				encAlphaXORBeta[i] = beta_bits[i];
 			}
-			/*
-			if(alpha.testBit(i))
-			{
-				encAlphaXORBeta[i] = DGKOperations.subtract(pubKey, pubKey.ONE(), beta_bits[i]);
-			}
-			else
-			{
-				encAlphaXORBeta[i] = beta_bits[i];	
-			}*/
 		}
 		
 		// Step E: Compute Alpha Hat
@@ -562,25 +539,12 @@ public final class alice extends socialist_millionaires implements Runnable
 			else {
 				w[i] = DGKOperations.subtract(encAlphaXORBeta[i], d, pubKey);
 			}
-			/*
-			if(alpha_hat.testBit(i) == alpha.testBit(i)) {
-				w[i] = encAlphaXORBeta[i];
-			}
-			else {
-				w[i] = DGKOperations.subtract(pubKey, encAlphaXORBeta[i], d);	
-			}
-			*/
 		}
 		
 		// Step F: See Optimization 1
 		for (int i = 0; i < beta_bits.length;i++) {
 			// If it is 16 or 32 bits...
 			if(pubKey.getL() % 16 == 0) {
-				/*
-				if(alpha_hat.testBit(i) == alpha.testBit(i)) {
-					w[i] = DGKOperations.multiply(pubKey, w[i], pubKey.getL());
-				}
-				*/
 				if(NTL.bit(alpha_hat, i) != NTL.bit(alpha, i)) {
 					w[i] = DGKOperations.multiply(w[i], pubKey.getL(), pubKey);	
 				}
@@ -646,27 +610,24 @@ public final class alice extends socialist_millionaires implements Runnable
 	 * 
 	 * @param x - Encrypted Paillier value OR Encrypted DGK value
 	 * @param y - Encrypted Paillier value OR Encrypted DGK value
-	 * @return
 	 * @throws IOException - socket errors
-	 * @throws ClassNotFoundException
-	 * @throws HomomorphicException
 	 */
 	public boolean Protocol4(BigInteger x, BigInteger y) 
 			throws IOException, ClassNotFoundException, HomomorphicException
 	{
-		int deltaB = -1;
-		int x_leq_y = -1;
-		int comparison = -1;
+		int deltaB;
+		int x_leq_y;
+		int comparison;
 		int deltaA = rnd.nextInt(2);
-		Object bob = null;
-		BigInteger alpha_lt_beta = null;
-		BigInteger z = null;
-		BigInteger zeta_one = null;
-		BigInteger zeta_two = null;
-		BigInteger result = null;
-		BigInteger r = null;
-		BigInteger alpha = null;
-		BigInteger N = null;
+		Object bob;
+		BigInteger alpha_lt_beta;
+		BigInteger z;
+		BigInteger zeta_one;
+		BigInteger zeta_two;
+		BigInteger result;
+		BigInteger r;
+		BigInteger alpha;
+		BigInteger N;
 		
 		/*
 		 * Step 1: 0 <= r < N
@@ -701,7 +662,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		// Step 4: Modified Protocol 3 or Protocol 3
 		
 		// See Optimization 3: true --> Use Modified Protocol 3 	
-		if(r.add(TWO.pow(pubKey.getL() + 1)).compareTo(N) == -1) {
+		if(r.add(TWO.pow(pubKey.getL() + 1)).compareTo(N) < 0) {
 			toBob.writeBoolean(false);
 			toBob.flush();
 			if(Protocol3(alpha, deltaA)) {
@@ -757,14 +718,13 @@ public final class alice extends socialist_millionaires implements Runnable
 			}
 			
 			// Step 7: Compute [[x > y]]
-			if(r.compareTo(pubKey.getU().subtract(BigInteger.ONE).divide(TWO)) == -1) {
+			if(r.compareTo(pubKey.getU().subtract(BigInteger.ONE).divide(TWO)) < 0) {
 				result = DGKOperations.subtract(zeta_one, DGKOperations.encrypt(r.divide(powL), pubKey), pubKey);
-				result = DGKOperations.subtract(result, alpha_lt_beta, pubKey);
 			}
 			else {
 				result = DGKOperations.subtract(zeta_two, DGKOperations.encrypt(r.divide(powL), pubKey), pubKey);
-				result = DGKOperations.subtract(result, alpha_lt_beta, pubKey);
-			}	
+			}
+			result = DGKOperations.subtract(result, alpha_lt_beta, pubKey);
 		}
 		else
 		{
@@ -778,12 +738,11 @@ public final class alice extends socialist_millionaires implements Runnable
 			// Step 7: Compute [[x >= y]]
 			if(r.compareTo(pk.getN().subtract(BigInteger.ONE).divide(TWO)) == -1) {
 				result = PaillierCipher.subtract(zeta_one, PaillierCipher.encrypt(r.divide(powL), pk), pk);
-				result = PaillierCipher.subtract(result, alpha_lt_beta, pk);
 			}
 			else {
 				result = PaillierCipher.subtract(zeta_two, PaillierCipher.encrypt(r.divide(powL), pk), pk);
-				result = PaillierCipher.subtract(result, alpha_lt_beta, pk);
 			}
+			result = PaillierCipher.subtract(result, alpha_lt_beta, pk);
 		}
 		
 		/*
@@ -806,18 +765,18 @@ public final class alice extends socialist_millionaires implements Runnable
 	public boolean Protocol4(ElGamal_Ciphertext x, ElGamal_Ciphertext y) 
 			throws IOException, ClassNotFoundException, HomomorphicException
 	{
-		int deltaB = -1;
-		int x_leq_y = -1;
-		int comparison = -1;
+		int deltaB;
+		int x_leq_y;
+		int comparison;
 		int deltaA = rnd.nextInt(2);
-		Object bob = null;
-		ElGamal_Ciphertext alpha_lt_beta = null;
-		ElGamal_Ciphertext z = null;
-		ElGamal_Ciphertext zeta_one = null;
-		ElGamal_Ciphertext zeta_two = null;
-		ElGamal_Ciphertext result = null;
-		BigInteger r = null;
-		BigInteger alpha = null;
+		Object bob;
+		ElGamal_Ciphertext alpha_lt_beta;
+		ElGamal_Ciphertext z;
+		ElGamal_Ciphertext zeta_one;
+		ElGamal_Ciphertext zeta_two;
+		ElGamal_Ciphertext result;
+		BigInteger r;
+		BigInteger alpha;
 		BigInteger N = e_pk.getP().subtract(BigInteger.ONE);
 		
 		// Step 1: 0 <= r < N
@@ -842,7 +801,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		// Step 4: Modified Protocol 3 or Protocol 3
 		
 		// See Optimization 3: true --> Use Modified Protocol 3 	
-		if(r.add(TWO.pow(pubKey.getL() + 1)).compareTo(N) == -1) {
+		if(r.add(TWO.pow(pubKey.getL() + 1)).compareTo(N) < 0) {
 			toBob.writeBoolean(false);
 			toBob.flush();
 			if(Protocol3(alpha, deltaA)) {
@@ -927,46 +886,20 @@ public final class alice extends socialist_millionaires implements Runnable
 	
 	/**
 	 * Please review Protocol 2 in the "Encrypted Integer Division" paper by Thjis Veugen
+	 *
 	 * @param x - Encrypted Paillier value or Encrypted DGK value
 	 * @param d - plaintext divisor
-	 * @return Encrypted Paillier value [x/d] or Encrypted DGK value [x/d]
-	 * @throws IOException - Any socket errors
+	 * @throws IOException            - Any socket errors
 	 * @throws ClassNotFoundException
-	 * @throws HomomorphicException
-	 * Constraints: 0 <= x <= N * 2^{-sigma} and 0 <= d < N
+	 * @throws HomomorphicException   Constraints: 0 <= x <= N * 2^{-sigma} and 0 <= d < N
 	 */
-	public BigInteger division(BigInteger x, long d)
-			throws IOException, ClassNotFoundException,  HomomorphicException
-	{
-		/*
-		if(isDGK)
-		{
-			if(x.signum() == -1)
-			{
-				throw new IllegalArgumentException("Constrain violated: 0 <= x < N * 2^{-sigma}");
-			}
-			if(BigInteger.valueOf(d).compareTo(pubKey.bigU) >= 0 || d == 0)
-			{
-				throw new IllegalArgumentException("Constraint violated: 0 < d < N");
-			}
-		}
-		else
-		{
-			if(x.signum() == -1 || x.compareTo(pk.n.divide(TWO.pow(SIGMA))) >= 0)
-			{
-				throw new IllegalArgumentException("Constrain violated: 0 <= x < N * 2^{-sigma}");
-			}
-			if(BigInteger.valueOf(d).compareTo(pk.n) >= 0 || d == 0)
-			{
-				throw new IllegalArgumentException("Constraint violated: 0 < d < N");
-			}
-		}
-		*/
-		Object in = null;
-		BigInteger answer = null;
-		BigInteger c = null;
-		BigInteger z = null;
-		BigInteger r = null;
+	public void division(BigInteger x, long d)
+			throws IOException, ClassNotFoundException,  HomomorphicException {
+		Object in;
+		BigInteger answer;
+		BigInteger c;
+		BigInteger z;
+		BigInteger r;
 
 		int t = 0;
 		
@@ -988,11 +921,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		
 		// Step 3: Compute secure comparison Protocol
 		if(!FAST_DIVIDE) {
-			//FLIP IT
-			if(Protocol3(r.mod(BigInteger.valueOf(d)))) {
-				t = 0;
-			}
-			else {
+			if (!Protocol3(r.mod(BigInteger.valueOf(d)))) {
 				t = 1;
 			}
 		}
@@ -1025,23 +954,23 @@ public final class alice extends socialist_millionaires implements Runnable
 				answer = PaillierCipher.subtract(answer, PaillierCipher.encrypt(BigInteger.valueOf(t), pk), pk);
 			}
 		}
-		return answer;
 	}
 	
 	// What to do if you want to subtract two El-Gamal texts?
-	public ElGamal_Ciphertext addition(ElGamal_Ciphertext x, ElGamal_Ciphertext y) 
+	public void addition(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		if(e_pk.ADDITIVE) {
 			//throw new IllegalArgumentException("ElGamal is NOT additive mode");
-			return ElGamalCipher.add(x, y, e_pk);
+			ElGamalCipher.add(x, y, e_pk);
+			return;
 		}
-		Object in = null;
-		ElGamal_Ciphertext x_prime = null;
-		ElGamal_Ciphertext y_prime = null;
+		Object in;
+		ElGamal_Ciphertext x_prime;
+		ElGamal_Ciphertext y_prime;
 		BigInteger plain_a = NTL.RandomBnd(pubKey.getU());
 		ElGamal_Ciphertext a = ElGamalCipher.encrypt(plain_a, e_pk);
-		ElGamal_Ciphertext result = null;
+		ElGamal_Ciphertext result;
 
 		// Step 1
 		x_prime = ElGamalCipher.multiply(x, a, e_pk);
@@ -1064,18 +993,17 @@ public final class alice extends socialist_millionaires implements Runnable
 		else {
 			throw new IllegalArgumentException("Didn't get [[x' * y']] from Bob: " + in.getClass().getName());
 		}
-		return result;
 	}
 
 	public BigInteger multiplication(BigInteger x, BigInteger y) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
 	{
-		Object in = null;
-		BigInteger x_prime = null;
-		BigInteger y_prime = null;
-		BigInteger a = null;
-		BigInteger b = null;
-		BigInteger result = null;
+		Object in;
+		BigInteger x_prime;
+		BigInteger y_prime;
+		BigInteger a;
+		BigInteger b;
+		BigInteger result;
 
 		// Step 1
 		if(isDGK) {
@@ -1121,17 +1049,18 @@ public final class alice extends socialist_millionaires implements Runnable
 		return result;
 	}
 	
-	public ElGamal_Ciphertext division(ElGamal_Ciphertext x, long d) 
+	public void division(ElGamal_Ciphertext x, long d)
 			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
 	{
 		if(!e_pk.ADDITIVE) {
-			return ElGamalCipher.divide(x, ElGamalCipher.encrypt(BigInteger.valueOf(d), e_pk), e_pk);
+			ElGamalCipher.divide(x, ElGamalCipher.encrypt(BigInteger.valueOf(d), e_pk), e_pk);
+			return;
 		}
-		Object in = null;
-		ElGamal_Ciphertext answer = null;
-		ElGamal_Ciphertext c = null;
-		ElGamal_Ciphertext z = null;
-		BigInteger r = null;
+		Object in;
+		ElGamal_Ciphertext answer;
+		ElGamal_Ciphertext c;
+		ElGamal_Ciphertext z;
+		BigInteger r;
 		int t = 0;
 		
 		// Step 1
@@ -1170,16 +1099,16 @@ public final class alice extends socialist_millionaires implements Runnable
 		if(t == 1) {
 			answer = ElGamalCipher.subtract(answer, ElGamalCipher.encrypt(t, e_pk), e_pk);
 		}
-		return answer;
 	}
 	
-	public ElGamal_Ciphertext multiplication(ElGamal_Ciphertext x, ElGamal_Ciphertext y) 
+	public void multiplication(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		if(!e_pk.ADDITIVE) {
-			return ElGamalCipher.multiply(x, y, e_pk);
+			ElGamalCipher.multiply(x, y, e_pk);
+			return;
 		}
-		Object in = null;
+		Object in;
 		ElGamal_Ciphertext result;
 		ElGamal_Ciphertext x_prime;
 		ElGamal_Ciphertext y_prime;
@@ -1211,7 +1140,6 @@ public final class alice extends socialist_millionaires implements Runnable
 		else {
 			throw new IllegalArgumentException("Didn't get [[x' * y']] from Bob: " + in.getClass().getName());
 		}
-		return result;
 	}
 
 	public void receivePublicKeys()
@@ -1220,7 +1148,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		x = fromBob.readObject();
 		if (x instanceof DGKPublicKey) {
 			System.out.println("Alice Received DGK Public key from Bob");
-			pubKey = (DGKPublicKey) x;
+			this.setDGKPublicKey((DGKPublicKey) x);
 		}
 		else {
 			pubKey = null;
@@ -1229,7 +1157,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		x = fromBob.readObject();
 		if(x instanceof PaillierPublicKey) {
 			System.out.println("Alice Received Paillier Public key from Bob");
-			pk = (PaillierPublicKey) x;
+			this.setPaillierPublicKey((PaillierPublicKey) x);
 		}
 		else {
 			pk = null;
@@ -1238,12 +1166,11 @@ public final class alice extends socialist_millionaires implements Runnable
 		x = fromBob.readObject();
 		if(x instanceof ElGamalPublicKey) {
 			System.out.println("Alice Received ElGamal Public key from Bob");
-			e_pk = (ElGamalPublicKey) x;
+			this.setElGamalPublicKey((ElGamalPublicKey) x);
 		}
 		else {
 			e_pk = null;
 		}
-		this.powL = TWO.pow(pubKey.getL());
 	}
 	
 	// Below are all supported sorting techniques!    
@@ -1284,7 +1211,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		BigInteger [] arr = deep_copy(input);
 		BigInteger [] max = new BigInteger[k];
 		
-		boolean activation = false;
+		boolean activation;
 		for (int i = 0; i < k; i++) {
 			for (int j = 0; j < arr.length - i - 1; j++) {
 				toBob.writeBoolean(true);
@@ -1318,17 +1245,14 @@ public final class alice extends socialist_millionaires implements Runnable
 		return max;
 	}
 	
-	public List<ElGamal_Ciphertext> getKMin_ElGamal(List<ElGamal_Ciphertext> input, int k) 
+	public void getKMin_ElGamal(List<ElGamal_Ciphertext> input, int k)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		if(k > input.size() || k <= 0) {
 			throw new IllegalArgumentException("Invalid k value! " + k);
 		}
 		// deep copy
-		List<ElGamal_Ciphertext> arr = new ArrayList<ElGamal_Ciphertext>();
-		for(ElGamal_Ciphertext p : input) {
-			arr.add(p);
-		}
+		List<ElGamal_Ciphertext> arr = new ArrayList<ElGamal_Ciphertext>(input);
 		
 		ElGamal_Ciphertext temp;
 		List<ElGamal_Ciphertext> min = new ArrayList<ElGamal_Ciphertext>();
@@ -1356,10 +1280,9 @@ public final class alice extends socialist_millionaires implements Runnable
 		// Close Bob
 		toBob.writeBoolean(false);
 		toBob.flush();
-		return min;
 	}
 	
-	public BigInteger[] getKMin(BigInteger [] input, int k) 
+	public void getKMin(BigInteger [] input, int k)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		if(k > input.length || k <= 0) {
@@ -1368,7 +1291,7 @@ public final class alice extends socialist_millionaires implements Runnable
 		BigInteger [] arr = deep_copy(input);
 		BigInteger [] min = new BigInteger[k];
 		
-		boolean activation = false;
+		boolean activation;
 		for (int i = 0; i < k; i++) {
 			for (int j = 0; j < arr.length - 1 - i; j++) {
 				toBob.writeBoolean(true);
@@ -1399,7 +1322,6 @@ public final class alice extends socialist_millionaires implements Runnable
 		// Close Bob
 		toBob.writeBoolean(false);
 		toBob.flush();
-		return min;
 	}
 	
 	public BigInteger[] getKMin(List<BigInteger> input, int k) 
@@ -1457,7 +1379,7 @@ public final class alice extends socialist_millionaires implements Runnable
 	private int partition(BigInteger[] arr, int low, int high)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
-		boolean activation = false;
+		boolean activation;
 		BigInteger pivot = arr[high]; 
 		int i = low - 1; // index of smaller element
 		for (int j = low; j < high; j++) {

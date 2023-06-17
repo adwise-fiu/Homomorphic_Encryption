@@ -47,9 +47,7 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 	}
 
 	// Input 1:
-	protected void engineUpdate(byte b) 
-			throws SignatureException 
-	{
+	protected void engineUpdate(byte b) {
 		// Since I am using SHA-256, that is 256 bits or 32 bytes long!
 		MessageDigest digest = null;
 		try
@@ -65,9 +63,7 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 	}
 
 	// Input 2: Prepare bytes to sign or verify!
-	protected void engineUpdate(byte [] b, int off, int len) 
-			throws SignatureException 
-	{
+	protected void engineUpdate(byte [] b, int off, int len) {
 		// Since I am using SHA-256, that is 256 bits or 32 bytes long!
 		MessageDigest digest = null;
 		try
@@ -86,9 +82,9 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 	protected byte[] engineSign()
 			throws SignatureException 
 	{
-		byte [] signature = null;
-		byte [] r = null;
-		byte [] s = null;
+		byte [] signature;
+		byte [] r;
+		byte [] s;
 		if(VERIFY_MODE)
 		{
 			throw new SignatureException("Did not Initialize SignInit!");
@@ -164,8 +160,7 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 		engineInitVerify(pk);
 	}
 	
-	public void update(byte [] b) throws SignatureException
-	{
+	public void update(byte [] b) {
 		engineUpdate(b, 0, b.length);
 	}
 	
@@ -189,7 +184,7 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 	public ElGamal_Ciphertext sign(BigInteger message, ElGamalPrivateKey sk)
 	{
 		BigInteger p1 = sk.p.subtract(BigInteger.ONE);
-		BigInteger K = null;
+		BigInteger K;
 		while(true)
 		{
 			// Pick [0, p - 2]
@@ -221,7 +216,7 @@ public class ElGamalSignature extends SignatureSpi implements CipherConstants
 	{
 		BigInteger r = signature.getA();
 		BigInteger s = signature.getB();
-		BigInteger check = null;
+		BigInteger check;
 
 		if (r.compareTo(BigInteger.ZERO) <= 0 || r.compareTo(pk.p.subtract(BigInteger.ONE)) > 0)
 		{

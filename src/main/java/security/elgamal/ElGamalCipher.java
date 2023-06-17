@@ -2,7 +2,6 @@ package security.elgamal;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -17,7 +16,6 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherSpi;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.ShortBufferException;
 
 import security.misc.CipherConstants;
 import security.misc.NTL;
@@ -89,12 +87,9 @@ public class ElGamalCipher extends CipherSpi
 	 * @param outputOffset
 	 *            - the offset in output where the result is stored
 	 * @return the number of bytes stored in output
-	 * @throws Exception
-	 *             throws if Plaintext m is not in Z_n , m should be less then n
 	 */
 	protected final int encrypt(byte[] input, int inputOffset, int inputLenth,
-			byte[] output, int outputOffset) throws Exception
-	{
+			byte[] output, int outputOffset) {
 		BigInteger m = new BigInteger(input);
 
 		// get the public key in order to encrypt
@@ -132,8 +127,8 @@ public class ElGamalCipher extends CipherSpi
 			byte[] output, int outputOffset)
 	{
 		// extract gr and hrgm
-		BigInteger gr = null;
-		BigInteger hrgm = null;
+		BigInteger gr;
+		BigInteger hrgm;
 		gr = new BigInteger(Arrays.copyOfRange(input, 0, 129));
 		hrgm = new BigInteger(Arrays.copyOfRange(input, 129, input.length));
 
@@ -162,14 +157,12 @@ public class ElGamalCipher extends CipherSpi
 
 	protected final void engineInit(int opmode, Key key,
 			AlgorithmParameterSpec params, SecureRandom random)
-					throws InvalidKeyException, InvalidAlgorithmParameterException
-	{
+					throws InvalidKeyException {
 		engineInit(opmode, key, random);
 	}
 
 	protected final void engineInit(int opmode, Key key, AlgorithmParameters params,
-			SecureRandom random) throws InvalidKeyException, InvalidAlgorithmParameterException 
-	{
+			SecureRandom random) throws InvalidKeyException {
 		engineInit(opmode, key, random);
 	}
 
@@ -181,14 +174,7 @@ public class ElGamalCipher extends CipherSpi
 	protected final byte[] engineUpdate(byte[] input, int inputOffset, int inputLen) 
 	{
 		byte[] out = new byte[engineGetOutputSize(inputLen)];
-		try 
-		{
-			engineUpdate(input, inputOffset, inputLen, out, 0);
-		} 
-		catch (ShortBufferException sbe) 
-		{
-
-		}
+		engineUpdate(input, inputOffset, inputLen, out, 0);
 		return out;
 	}
 
@@ -211,8 +197,7 @@ public class ElGamalCipher extends CipherSpi
 	 * @return the number of bytes stored in output
 	 */
 	protected final int engineUpdate(byte[] input, int inputOffset, int inputLen,
-			byte[] output, int outputOffset) throws ShortBufferException 
-	{
+			byte[] output, int outputOffset) {
 		int size;
 		if (stateMode == Cipher.ENCRYPT_MODE)
 		{
@@ -240,18 +225,9 @@ public class ElGamalCipher extends CipherSpi
 	 * 
 	 * @return returns the result from encryption or decryption
 	 */
-	protected final byte[] engineDoFinal(byte[] input, int inputOffset, int inputLen)
-			throws IllegalBlockSizeException, BadPaddingException
-	{
+	protected final byte[] engineDoFinal(byte[] input, int inputOffset, int inputLen) {
 		byte[] out = new byte[engineGetOutputSize(inputLen)];
-		try 
-		{
-			engineDoFinal(input, inputOffset, inputLen, out, 0);
-		} 
-		catch (ShortBufferException sbe)
-		{
-
-		}
+		engineDoFinal(input, inputOffset, inputLen, out, 0);
 		return out;
 	}
 
@@ -273,9 +249,7 @@ public class ElGamalCipher extends CipherSpi
 	 * @return the number of bytes stored in output
 	 */
 	protected final int engineDoFinal(byte[] input, int inputOffset, int inputLen,
-			byte[] output, int outputOffset)
-					throws ShortBufferException, IllegalBlockSizeException, BadPaddingException
-	{
+			byte[] output, int outputOffset) {
 		// Create a single array of input data
 		byte[] totalInput = new byte[inputLen];
 		if (inputLen > 0)
@@ -363,14 +337,12 @@ public class ElGamalCipher extends CipherSpi
 	
 	// ------------------------PUBLIC FACING METHODS---------------------------------------------------
 	public void init(int encryptMode, ElGamalPublicKey pk) 
-			throws InvalidKeyException, InvalidAlgorithmParameterException
-	{
+			throws InvalidKeyException {
 		engineInit(encryptMode, pk, new SecureRandom());
 	}
 
 	public void init(int decryptMode, ElGamalPrivateKey sk)
-			throws InvalidKeyException, InvalidAlgorithmParameterException 
-	{
+			throws InvalidKeyException {
 		engineInit(decryptMode, sk, new SecureRandom());
 	}
 
@@ -493,7 +465,7 @@ public class ElGamalCipher extends CipherSpi
 	{
 		if(pk.ADDITIVE)
 		{
-			ElGamal_Ciphertext answer = null;
+			ElGamal_Ciphertext answer;
 			answer = new ElGamal_Ciphertext(ciphertext1.gr.modPow(scalar, pk.p), ciphertext1.hrgm.modPow(scalar, pk.p));
 			return answer;
 		}
@@ -516,7 +488,7 @@ public class ElGamalCipher extends CipherSpi
 		}
 		else
 		{
-			ElGamal_Ciphertext answer = null;
+			ElGamal_Ciphertext answer;
 			answer = new ElGamal_Ciphertext(ciphertext1.gr.multiply(ciphertext2.gr).mod(pk.p), 
 					ciphertext1.hrgm.multiply(ciphertext2.hrgm).mod(pk.p));
 			return answer;	
@@ -531,8 +503,8 @@ public class ElGamalCipher extends CipherSpi
 		}
 		else
 		{
-			ElGamal_Ciphertext neg_ciphertext2 = null;
-			ElGamal_Ciphertext ciphertext = null;
+			ElGamal_Ciphertext neg_ciphertext2;
+			ElGamal_Ciphertext ciphertext;
 			// Get mod inverse
 			BigInteger inv_gr = ciphertext2.gr.modInverse(pk.p);
 			BigInteger inv_mhr = ciphertext2.hrgm.modInverse(pk.p);
@@ -547,7 +519,7 @@ public class ElGamalCipher extends CipherSpi
 	{
 		if(pk.ADDITIVE)
 		{
-			ElGamal_Ciphertext answer = null;
+			ElGamal_Ciphertext answer;
 			answer = new ElGamal_Ciphertext(ciphertext1.gr.multiply(ciphertext2.gr).mod(pk.p), 
 					ciphertext1.hrgm.multiply(ciphertext2.hrgm).mod(pk.p));
 			return answer;	
@@ -562,8 +534,8 @@ public class ElGamalCipher extends CipherSpi
 	{
 		if(pk.ADDITIVE)
 		{
-			ElGamal_Ciphertext neg_ciphertext2 = null;
-			ElGamal_Ciphertext ciphertext = null;
+			ElGamal_Ciphertext neg_ciphertext2;
+			ElGamal_Ciphertext ciphertext;
 			neg_ciphertext2 = ElGamalCipher.multiply_scalar(ciphertext2, -1, pk);
 			ciphertext = ElGamalCipher.add(ciphertext1, neg_ciphertext2, pk);
 			return ciphertext;
@@ -576,20 +548,16 @@ public class ElGamalCipher extends CipherSpi
 
 	public static ElGamal_Ciphertext sum(List<ElGamal_Ciphertext> values, ElGamalPublicKey pk, int limit)
 	{
-		if (!pk.ADDITIVE)
-		{
+		if (!pk.ADDITIVE) {
 			return null;
 		}
 		ElGamal_Ciphertext sum = ElGamalCipher.encrypt(BigInteger.ZERO, pk);
-		if (limit <= 0)
-		{
+		if (limit <= 0) {
 			return sum;
 		}
-		else if(limit > values.size())
-		{
-			for (int i = 0; i < values.size(); i++)
-			{
-				sum = ElGamalCipher.add(sum, values.get(i), pk);
+		else if(limit > values.size()) {
+			for (ElGamal_Ciphertext value : values) {
+				sum = ElGamalCipher.add(sum, value, pk);
 			}
 		}
 		else
@@ -613,15 +581,12 @@ public class ElGamalCipher extends CipherSpi
 		{
 			return sum;
 		}
-		else if(limit > values.length)
-		{
-			for (int i = 0; i < values.length; i++)
-			{
-				sum = ElGamalCipher.add(sum, values[i], pk);
+		else if(limit > values.length) {
+			for (ElGamal_Ciphertext value : values) {
+				sum = ElGamalCipher.add(sum, value, pk);
 			}
 		}
-		else
-		{
+		else {
 			for (int i = 0; i < limit; i++)
 			{
 				sum = ElGamalCipher.add(sum, values[i], pk);
@@ -630,20 +595,16 @@ public class ElGamalCipher extends CipherSpi
 		return sum;
 	}
 
-	public static ElGamal_Ciphertext sum_product (List<ElGamal_Ciphertext> cipher, List<Long> plain, ElGamalPublicKey pk)
-	{
-		if(!pk.ADDITIVE)
-		{
+	public static ElGamal_Ciphertext sum_product (List<ElGamal_Ciphertext> cipher, List<Long> plain, ElGamalPublicKey pk) {
+		if(!pk.ADDITIVE) {
 			return null;
 		}
-		if(cipher.size() != plain.size())
-		{
+		if(cipher.size() != plain.size()) {
 			throw new IllegalArgumentException("Arrays are NOT the same size!");
 		}
 
 		ElGamal_Ciphertext [] product_vector = new ElGamal_Ciphertext[cipher.size()];
-		for (int i = 0; i < product_vector.length; i++)
-		{
+		for (int i = 0; i < product_vector.length; i++) {
 			product_vector[i] = ElGamalCipher.multiply_scalar(cipher.get(i), plain.get(i), pk);
 		}
 		return ElGamalCipher.sum(product_vector, pk, product_vector.length);
@@ -651,18 +612,15 @@ public class ElGamalCipher extends CipherSpi
 
 	public static ElGamal_Ciphertext sum_product (List<ElGamal_Ciphertext> cipher, Long [] plain, ElGamalPublicKey pk)
 	{
-		if(!pk.ADDITIVE)
-		{
+		if(!pk.ADDITIVE) {
 			return null;
 		}
-		if(cipher.size() != plain.length)
-		{
+		if(cipher.size() != plain.length) {
 			throw new IllegalArgumentException("Arrays are NOT the same size!");
 		}
 
 		ElGamal_Ciphertext [] product_vector = new ElGamal_Ciphertext[cipher.size()];
-		for (int i = 0; i < product_vector.length; i++)
-		{
+		for (int i = 0; i < product_vector.length; i++) {
 			product_vector[i] = ElGamalCipher.multiply_scalar(cipher.get(i), plain[i], pk);
 		}
 		return ElGamalCipher.sum(product_vector, pk, product_vector.length);

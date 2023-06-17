@@ -2,7 +2,6 @@ package security.gm;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -17,7 +16,6 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherSpi;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.ShortBufferException;
 
 import security.misc.CipherConstants;
 import security.misc.HomomorphicException;
@@ -66,12 +64,9 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	 * @param outputOffset
 	 *            - the offset in output where the result is stored
 	 * @return the number of bytes stored in output
-	 * @throws Exception
-	 *             throws if Plaintext m is not in Z_n , m should be less then n
 	 */
 	protected final int encrypt(byte[] input, int inputOffset, int inputLenth,
-			byte[] output, int outputOffset) throws Exception
-	{
+			byte[] output, int outputOffset) {
 		BigInteger m = new BigInteger(input);
 		
 		// get the public key in order to encrypt
@@ -141,14 +136,12 @@ public class GMCipher extends CipherSpi implements CipherConstants
 
 	protected final void engineInit(int opmode, Key key,
 			AlgorithmParameterSpec params, SecureRandom random)
-			throws InvalidKeyException, InvalidAlgorithmParameterException
-	{
+			throws InvalidKeyException {
 		engineInit(opmode, key, random);
 	}
 
 	protected final void engineInit(int opmode, Key key, AlgorithmParameters params,
-			SecureRandom random) throws InvalidKeyException, InvalidAlgorithmParameterException 
-	{
+			SecureRandom random) throws InvalidKeyException {
 		engineInit(opmode, key, random);
 	}
 
@@ -161,14 +154,7 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	{
 		int num_bits = new BigInteger(input).bitLength();
 		byte [] out = new byte[engineGetOutputSize(num_bits)];
-		try 
-		{
-			 engineUpdate(input, inputOffset, inputLen, out, 0);
-		} 
-		catch (ShortBufferException sbe) 
-		{
-
-		}
+		engineUpdate(input, inputOffset, inputLen, out, 0);
 		return out;
 	}
 
@@ -191,8 +177,7 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	 * @return the number of bytes stored in output
 	 */
 	protected final int engineUpdate(byte[] input, int inputOffset, int inputLen,
-			byte[] output, int outputOffset) throws ShortBufferException 
-	{
+			byte[] output, int outputOffset) {
 		if (stateMode == Cipher.ENCRYPT_MODE)
 		{
 			try 
@@ -217,19 +202,10 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	 * 
 	 * @return returns the result from encryption or decryption
 	 */
-	protected final byte[] engineDoFinal(byte[] input, int inputOffset, int inputLen)
-			throws IllegalBlockSizeException, BadPaddingException
-	{
+	protected final byte[] engineDoFinal(byte[] input, int inputOffset, int inputLen) {
 		int num_bits = new BigInteger(input).bitLength();
 		byte [] out = new byte[engineGetOutputSize(num_bits)];
-		try 
-		{
-			engineDoFinal(input, inputOffset, inputLen, out, 0);
-		} 
-		catch (ShortBufferException sbe)
-		{
-			
-		}
+		engineDoFinal(input, inputOffset, inputLen, out, 0);
 		return out;
 	}
 
@@ -251,9 +227,7 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	 * @return the number of bytes stored in output
 	 */
 	protected final int engineDoFinal(byte[] input, int inputOffset, int inputLen,
-			byte[] output, int outputOffset)
-					throws ShortBufferException, IllegalBlockSizeException, BadPaddingException
-	{
+			byte[] output, int outputOffset) {
 		// Create a single array of input data
 		byte[] totalInput = new byte[inputLen];
 		if (inputLen > 0)
@@ -306,8 +280,6 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	/**
 	 * Return  the size based on the state of the cipher. This is one 
 	 * shot encryption or decryption, no need to calculate internal buffer.
-	 * @param inputLen
-	 *            the input length (in bytes)
 	 * @return outLength - the required output size (in bytes)
 	 */
 	protected final int engineGetOutputSize(int num_bits)
@@ -380,14 +352,12 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	
 	// -------------------------PUBLIC FACING METHODS---------------------------------
 	public void init(int encryptMode, GMPublicKey pk) 
-			throws InvalidKeyException, InvalidAlgorithmParameterException
-	{
+			throws InvalidKeyException {
 		engineInit(encryptMode, pk, new SecureRandom());
 	}
 
 	public void init(int decryptMode, GMPrivateKey sk)
-			throws InvalidKeyException, InvalidAlgorithmParameterException 
-	{
+			throws InvalidKeyException {
 		engineInit(decryptMode, sk, new SecureRandom());
 	}
 		
@@ -407,7 +377,7 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	public static List<BigInteger> encrypt(BigInteger message, GMPublicKey pk)
 	{
 		List<BigInteger> enc_bits = new ArrayList<BigInteger>();  
-		BigInteger x = null;
+		BigInteger x;
 		for(int i = message.bitLength() - 1; i >= 0 ; i--)
 		{
 			x = NTL.RandomBnd(pk.n);
@@ -428,11 +398,10 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	 * Decrypt Goldwasser-Micali encrypted bits
 	 * @param cipher - List of Goldwasser-Micali encrypted bits
 	 * @param sk - Goldwasser-Micali Private Key to decrypt
-	 * @return
 	 */
 	public static BigInteger decrypt(List<BigInteger> cipher, GMPrivateKey sk)
 	{
-		BigInteger e = BigInteger.ZERO;
+		BigInteger e;
 		BigInteger m = BigInteger.ZERO;
 		for (int i = cipher.size() - 1; i >= 0 ; i--)
 		{
@@ -449,11 +418,10 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	 * Decrypt Goldwasser-Micali encrypted bits
 	 * @param cipher - List of Goldwasser-Micali encrypted bits
 	 * @param sk - Goldwasser-Micali Private Key to decrypt
-	 * @return
 	 */
 	public static BigInteger decrypt(BigInteger [] cipher, GMPrivateKey sk)
 	{
-		BigInteger e = BigInteger.ZERO;
+		BigInteger e;
 		BigInteger m = BigInteger.ZERO;
 		for (int i = cipher.length - 1; i >= 0 ; i--)
 		{
@@ -472,7 +440,6 @@ public class GMCipher extends CipherSpi implements CipherConstants
 	 * @param cipher_2 - Goldwasser-Micali encrypted ciphertext
 	 * @param pk - Goldwasser-Micali public key used to encrypt the inputted ciphertexts
 	 * @return XORed encrypted ciphertexts
-	 * @throws IllegalArgumentException
 	 */
 	public static BigInteger[] xor(BigInteger [] cipher_1, BigInteger[] cipher_2, GMPublicKey pk) 
 			throws HomomorphicException

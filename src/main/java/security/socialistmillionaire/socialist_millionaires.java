@@ -6,8 +6,8 @@ import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-import security.DGK.DGKPrivateKey;
-import security.DGK.DGKPublicKey;
+import security.dgk.DGKPrivateKey;
+import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
 import security.paillier.PaillierPrivateKey;
@@ -104,7 +104,6 @@ public abstract class socialist_millionaires
 	
 	/**
 	 * Create deep copy of BigInteger array
-	 * @param input
 	 */
 	protected BigInteger [] deep_copy(BigInteger [] input) {
 		BigInteger [] copy = new BigInteger[input.length];
@@ -115,7 +114,6 @@ public abstract class socialist_millionaires
 	/**
 	 *  Used to shuffle the encrypted bits.
 	 *  Note: IT DOES NOT CREATE A NEW ARRAY.
-	 * @param array
 	 * @return - shuffled array
 	 */
 	protected BigInteger[] shuffle_bits(BigInteger[] array) {

@@ -1,4 +1,4 @@
-package security.DGK;
+package security.dgk;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -48,7 +48,6 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	 * @param l - sets size of plaintext
 	 * @param t - security parameter
 	 * @param k - number of bits of keys
-	 * @throws HomomorphicException
 	 */
 	public DGKKeyPairGenerator(int l, int t, int k) throws HomomorphicException
 	{

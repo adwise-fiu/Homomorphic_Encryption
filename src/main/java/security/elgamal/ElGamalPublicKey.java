@@ -43,17 +43,6 @@ public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_
 		return this.p;
 	}
 
-	private void readObject(ObjectInputStream aInputStream)
-			throws ClassNotFoundException,IOException
-	{
-		aInputStream.defaultReadObject();
-	}
-
-	private void writeObject(ObjectOutputStream aOutputStream) throws IOException
-	{
-		aOutputStream.defaultWriteObject();
-	}
-
 	public String toString()
 	{
 		String answer = "";
