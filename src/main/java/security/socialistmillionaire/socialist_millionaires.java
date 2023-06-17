@@ -1,10 +1,10 @@
 package security.socialistmillionaire;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.List;
 
 import security.dgk.DGKPrivateKey;
 import security.dgk.DGKPublicKey;
@@ -12,6 +12,7 @@ import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
 import security.paillier.PaillierPrivateKey;
 import security.paillier.PaillierPublicKey;
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 
 public abstract class socialist_millionaires 
 {
@@ -41,9 +42,9 @@ public abstract class socialist_millionaires
 	
 	//I/O
 	protected ObjectOutputStream toBob = null;
-	protected ObjectInputStream fromBob = null;
+	protected ValidatingObjectInputStream fromBob = null;
 	protected ObjectOutputStream toAlice = null;
-	protected ObjectInputStream fromAlice = null;
+	protected ValidatingObjectInputStream fromAlice = null;
 
 	public void setDGKMode(boolean isDGK) {
 		this.isDGK = isDGK;

@@ -1,12 +1,12 @@
 package security.socialistmillionaire;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.security.KeyPair;
 
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import security.dgk.DGKOperations;
 import security.dgk.DGKPrivateKey;
 import security.dgk.DGKPublicKey;
@@ -25,19 +25,6 @@ public class bob extends socialist_millionaires implements Runnable
 	/**
 	 * Create a bob instance for running extending protocols such as comparing 
 	 * encrypted numbers
-	 * @param a -
-	 * @param b - 
-	 * @throws IllegalArgumentException
-	 * If a is not a Paillier Keypair or b is not a DGK key pair
-	 */
-	public bob (Socket clientSocket,
-			KeyPair a, KeyPair b) throws IOException, IllegalArgumentException {
-		this(clientSocket, a, b, null);
-	}
-	
-	/**
-	 * Create a bob instance for running extending protocols such as comparing 
-	 * encrypted numbers
 	 * @throws IllegalArgumentException
 	 * If a is not a Paillier Keypair or b is not a DGK key pair or c is not ElGamal Keypair
 	 */
@@ -47,7 +34,16 @@ public class bob extends socialist_millionaires implements Runnable
 	{
 		if(clientSocket != null) {
 			this.toAlice = new ObjectOutputStream(clientSocket.getOutputStream());
-			this.fromAlice = new ObjectInputStream(clientSocket.getInputStream());
+			this.fromAlice = new ValidatingObjectInputStream(clientSocket.getInputStream());
+			this.fromAlice.accept(
+					java.math.BigInteger.class,
+					java.lang.Number.class,
+					java.util.HashMap.class,
+					java.lang.Long.class,
+					security.elgamal.ElGamal_Ciphertext.class
+			);
+			this.fromAlice.accept("[B");
+			this.fromAlice.accept("[L*");
 		}
 		else {
 			throw new NullPointerException("Client Socket is null!");
@@ -322,7 +318,7 @@ public class bob extends socialist_millionaires implements Runnable
 		
 		//Step 5: After blinding, Alice sends C_i to Bob
 		
-		//Step 6: Bob checks if there is a 0 in C_i and seta deltaB accordingly
+		//Step 6: Bob checks if there is a 0 in C_i and set deltaB accordingly
 		
 		/*
 		 * Currently by design of the program
@@ -591,7 +587,7 @@ public class bob extends socialist_millionaires implements Runnable
 		if (x instanceof BigInteger) {
 			if(isDGK) {
 				long decrypt = DGKOperations.decrypt((BigInteger) x, privKey);
-				// IF SOMETHING HAPPENS...GET POST MORTERM HERE
+				// IF SOMETHING HAPPENS...GET POST MORTEM HERE
 				if (decrypt != 0 && pubKey.getU().longValue() - 1 != decrypt) {
 					throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
 				}
@@ -612,7 +608,7 @@ public class bob extends socialist_millionaires implements Runnable
 		else {
 			throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
 		}
-		// IF SOMETHING HAPPENS...GET POST MORTERM HERE
+		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
 		if (answer != 0 && answer != 1) {
 			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
 		}
@@ -677,7 +673,7 @@ public class bob extends socialist_millionaires implements Runnable
 		else {
 			throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
 		}
-		// IF SOMETHING HAPPENS...GET POST MORTERM HERE
+		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
 		if (answer != 0 && answer != 1) {
 			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
 		}

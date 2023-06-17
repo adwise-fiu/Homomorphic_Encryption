@@ -1,7 +1,7 @@
 # Homomorphic Encryption
 [![Build Gradle project](https://github.com/AndrewQuijano/Homomorphic_Encryption/actions/workflows/build-gradle-project.yml/badge.svg)](https://github.com/AndrewQuijano/Homomorphic_Encryption/actions/workflows/build-gradle-project.yml)
 
-[![codecov](https://codecov.io/gh/AndrewQuijano/Homomorphic_Encryption/branch/master/graph/badge.svg?token=OIFWDVX2SA)](https://codecov.io/gh/AndrewQuijano/Homomorphic_Encryption)
+[![codecov](https://codecov.io/gh/AndrewQuijano/Homomorphic_Encryption/branch/main/graph/badge.svg?token=OIFWDVX2SA)](https://codecov.io/gh/AndrewQuijano/Homomorphic_Encryption)
 
 Homomorphic Encryption is a Java library that implements the following partially homomorphic encryption systems:
 * Paillier  
@@ -18,8 +18,8 @@ As the partially homomorphic encryption systems only support addition with two c
 Please retrieve the JAR file from [here](https://github.com/AndrewQuijano/Homomorphic_Encryption/tags)
 
 As this library uses Java 8, the JAR file can be imported into an Android project.
-If you want to review/edit the library, import the JAVA_PHE directory into an Eclipse project and edit as necessary. The Main.java folder only exists for testing and provide examples of how to use the library.
 
+To fix the risk of serialization, I used the [Apache Common IO library](https://commons.apache.org/proper/commons-io/)
 ## Generate Keys
 To create the keys, run the following commands:
 ```bash

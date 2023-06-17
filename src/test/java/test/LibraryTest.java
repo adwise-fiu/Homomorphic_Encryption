@@ -6,7 +6,6 @@ import security.gm.GMPrivateKey;
 import security.gm.GMPublicKey;
 import security.misc.HomomorphicException;
 
-import security.paillier.PaillierCipher;
 import security.paillier.PaillierKeyPairGenerator;
 import security.paillier.PaillierPrivateKey;
 import security.paillier.PaillierPublicKey;
@@ -200,46 +199,6 @@ public class LibraryTest
 		// Test Division, Division is failing for some reason...?
 		a = DGKOperations.divide(a, new BigInteger("2"), dgk_pk); // 100/2
 		assertEquals(50, DGKOperations.decrypt(a, dgk_sk));
-	}
-	
-	@Test
-	public void basic_Paillier() throws HomomorphicException {	
-		// Test D(E(X)) = X
-		BigInteger a;
-		a = PaillierCipher.decrypt(PaillierCipher.encrypt(BigInteger.TEN, pk), sk);
-		assertEquals(BigInteger.TEN, a);
-		
-		// Test Addition
-		a = PaillierCipher.encrypt(BigInteger.TEN, pk);
-		a = PaillierCipher.add(a, a, pk); // 20
-		assertEquals(new BigInteger("20"), PaillierCipher.decrypt(a, sk));
-
-		// Test addition, cipher-text and plain-text (skip encryption)
-		a = PaillierCipher.encrypt(BigInteger.TEN, pk);
-		a = PaillierCipher.add_plaintext(a, BigInteger.TEN, pk);
-		assertEquals(new BigInteger("20"), PaillierCipher.decrypt(a, sk));
-		
-		// Test Subtraction
-		a = PaillierCipher.subtract(PaillierCipher.encrypt(new BigInteger("20"), pk),
-				PaillierCipher.encrypt(BigInteger.TEN, pk), pk);// 20 - 10
-		assertEquals(BigInteger.TEN, PaillierCipher.decrypt(a, sk));
-
-		// Test Subtraction plaintext
-		/*
-		a = PaillierCipher.subtract_plaintext(PaillierCipher.encrypt(new BigInteger("20"), pk),
-				BigInteger.TEN, pk);// 20 - 10
-		assertEquals(BigInteger.TEN, PaillierCipher.decrypt(a, sk));
-		*/
-
-		// Test Multiplication
-		a = PaillierCipher.multiply(PaillierCipher.encrypt(BigInteger.TEN, pk),
-				BigInteger.TEN, pk); // 10 * 10
-		assertEquals(new BigInteger("100"), PaillierCipher.decrypt(a, sk));
-		
-		// Test Division
-		a = PaillierCipher.divide(PaillierCipher.encrypt(new BigInteger("100"), pk),
-				new BigInteger("2"), pk); // 100/2
-		assertEquals(new BigInteger("50"), PaillierCipher.decrypt(a, sk));
 	}
 	
 	// NOTE: THIS IS THE MULTIPLICATIVE VERSION

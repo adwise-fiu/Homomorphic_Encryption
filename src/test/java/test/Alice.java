@@ -65,15 +65,7 @@ public class Alice implements Runnable
 			alice_demo();
 			alice_demo_ElGamal();
 		}
-		catch (ClassNotFoundException | IOException e) 
-		{
-			e.printStackTrace();
-		} 
-		catch (HomomorphicException e) 
-		{
-			e.printStackTrace();
-		}
-		catch (InterruptedException e)
+		catch (ClassNotFoundException | IOException | HomomorphicException | InterruptedException e)
 		{
 			e.printStackTrace();
 		}
@@ -82,13 +74,12 @@ public class Alice implements Runnable
 	public static void k_min() 
 			throws ClassNotFoundException, IOException, HomomorphicException
 	{
-		List<ElGamal_Ciphertext> t = new ArrayList<ElGamal_Ciphertext>();
+		List<ElGamal_Ciphertext> t = new ArrayList<>();
 		BigInteger [] toSort = new BigInteger[low.length];
 		
 		// Test Paillier Sorting
 		Niu.setDGKMode(false);
-		for(int i = 0; i < low.length;i++)
-		{
+		for(int i = 0; i < low.length;i++) {
 			toSort[i] = NTL.generateXBitRandom(9);
 			toSort[i] = PaillierCipher.encrypt(toSort[i], pk);
 		}
@@ -96,21 +87,18 @@ public class Alice implements Runnable
 		
 		// Test DGK Sorting	
 		Niu.setDGKMode(true);
-		for(int i = 0; i < low.length;i++)
-		{
+		for(int i = 0; i < low.length;i++) {
 			toSort[i] = NTL.generateXBitRandom(9);
 			toSort[i] = DGKOperations.encrypt(toSort[i], pubKey);
 		}
 		Niu.getKMin(toSort, 3);
 		
 		// Test ElGamal Sorting
-		for(int i = 0; i < low.length;i++)
-		{
+		for(int i = 0; i < low.length;i++) {
 			toSort[i] = NTL.generateXBitRandom(9);
 			t.add(ElGamalCipher.encrypt(toSort[i], e_pk));
 		}
-		if(e_pk.ADDITIVE)
-		{
+		if(e_pk.ADDITIVE) {
 			Niu.getKMin_ElGamal(t, 3);
 		}
 	}
@@ -185,13 +173,11 @@ public class Alice implements Runnable
 			result = Niu.Modified_Protocol3(l);
 			System.out.println("Modified Protcool 3, X < Y: " + result);
 		}
-		for(BigInteger l: mid)
-		{
+		for(BigInteger l: mid) {
 			result = Niu.Modified_Protocol3(l);
 			System.out.println("Modified Protocol 3, X == Y: " + result);
 		}
-		for(BigInteger l: high)
-		{
+		for(BigInteger l: high) {
 			result = Niu.Modified_Protocol3(l);
 			System.out.println("Modified Protocol 3, X > Y: " + !result);
 		}

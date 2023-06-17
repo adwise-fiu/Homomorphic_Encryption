@@ -1,13 +1,13 @@
 package security.socialistmillionaire;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import security.dgk.DGKOperations;
 import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalCipher;
@@ -31,7 +31,23 @@ public class alice extends socialist_millionaires implements Runnable
 	public alice (Socket clientSocket) throws IOException {
 		if(clientSocket != null) {
 			toBob = new ObjectOutputStream(clientSocket.getOutputStream());
-			fromBob = new ObjectInputStream(clientSocket.getInputStream());
+			fromBob = new ValidatingObjectInputStream(clientSocket.getInputStream());
+			this.fromBob.accept(
+					security.paillier.PaillierPublicKey.class,
+					security.dgk.DGKPublicKey.class,
+					security.elgamal.ElGamalPublicKey.class,
+					security.paillier.PaillierPrivateKey.class,
+					security.dgk.DGKPrivateKey.class,
+					security.elgamal.ElGamalPrivateKey.class,
+					security.gm.GMPublicKey.class,
+					java.math.BigInteger.class,
+					java.lang.Number.class,
+					security.elgamal.ElGamal_Ciphertext.class,
+					java.util.HashMap.class,
+					java.lang.Long.class
+			);
+			this.fromBob.accept("[B");
+			this.fromBob.accept("[L*");
 		}
 		else {
 			throw new NullPointerException("Client Socket is null!");
@@ -49,9 +65,8 @@ public class alice extends socialist_millionaires implements Runnable
 	 * @throws IllegalArgumentException - If x or y have more bits 
 	 * than that is supported by the DGK Keys provided
 	 */
-	public boolean Protocol1(BigInteger x) 
-			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
-	{
+	public boolean Protocol1(BigInteger x)
+			throws IOException, IllegalArgumentException, HomomorphicException, ClassNotFoundException {
 		// Constraint...
 		if(x.bitLength() > pubKey.getL()) {
 			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, x is: " + x.bitLength() + " bits");
