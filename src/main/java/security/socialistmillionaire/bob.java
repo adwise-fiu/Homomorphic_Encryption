@@ -20,7 +20,7 @@ import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;
 import security.paillier.PaillierPrivateKey;
 
-public class bob extends socialist_millionaires implements Runnable
+public class bob extends socialist_millionaires implements Runnable, bob_interface
 {
 	/**
 	 * Create a bob instance for running extending protocols such as comparing 
@@ -50,22 +50,22 @@ public class bob extends socialist_millionaires implements Runnable
 		}
 		
 		if (a.getPublic() instanceof PaillierPublicKey) {
-			this.pk = (PaillierPublicKey) a.getPublic();
-			this.sk = (PaillierPrivateKey) a.getPrivate();
+			this.paillier_public = (PaillierPublicKey) a.getPublic();
+			this.paillier_private = (PaillierPrivateKey) a.getPrivate();
 			if(b.getPublic() instanceof DGKPublicKey) {
-				this.pubKey = (DGKPublicKey) b.getPublic();
-				this.privKey = (DGKPrivateKey) b.getPrivate();
+				this.dgk_public = (DGKPublicKey) b.getPublic();
+				this.dgk_private = (DGKPrivateKey) b.getPrivate();
 			}
 			else {
 				throw new IllegalArgumentException("Obtained Paillier Key Pair, Not DGK Key pair!");
 			}
 		}
 		else if (a.getPublic() instanceof DGKPublicKey) {
-			this.pubKey = (DGKPublicKey) a.getPublic();
-			this.privKey = (DGKPrivateKey) a.getPrivate();
+			this.dgk_public = (DGKPublicKey) a.getPublic();
+			this.dgk_private = (DGKPrivateKey) a.getPrivate();
 			if (b.getPublic() instanceof PaillierPublicKey) {
-				this.pk = (PaillierPublicKey) a.getPublic();
-				this.sk = (PaillierPrivateKey) a.getPrivate();
+				this.paillier_public = (PaillierPublicKey) a.getPublic();
+				this.paillier_private = (PaillierPrivateKey) a.getPrivate();
 			}
 			else {
 				throw new IllegalArgumentException("Obtained DGK Key Pair, Not Paillier Key pair!");
@@ -74,8 +74,8 @@ public class bob extends socialist_millionaires implements Runnable
 		
 		if(c != null) {
 			if (c.getPublic() instanceof ElGamalPublicKey) {
-				this.e_pk = (ElGamalPublicKey) c.getPublic();
-				this.e_sk = (ElGamalPrivateKey) c.getPrivate();
+				this.el_gamal_public = (ElGamalPublicKey) c.getPublic();
+				this.el_gamal_private= (ElGamalPrivateKey) c.getPrivate();
 			}
 			else {
 				throw new IllegalArgumentException("Third Keypair MUST BE AN EL GAMAL KEY PAIR!");
@@ -83,7 +83,7 @@ public class bob extends socialist_millionaires implements Runnable
 		}
 
 		this.isDGK = false;
-		powL = TWO.pow(pubKey.getL());
+		powL = TWO.pow(dgk_public.getL());
 	}
 	
 	/**
@@ -144,15 +144,16 @@ public class bob extends socialist_millionaires implements Runnable
 	 * Please review "Improving the DGK comparison protocol" - Protocol 1
 	 *
 	 * @param y - plaintext value
+	 * @return
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 * @throws IllegalArgumentException - if y has more bits than is supported by provided DGK keys
 	 */
-	public void Protocol1(BigInteger y)
+	public boolean Protocol1(BigInteger y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		// Constraint...
-		if(y.bitLength() > pubKey.getL()) {
+		if(y.bitLength() > dgk_public.getL()) {
 			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
 		}
 
@@ -164,7 +165,7 @@ public class bob extends socialist_millionaires implements Runnable
 		//Step 1: Bob sends encrypted bits to Alice
 		BigInteger [] EncY = new BigInteger[y.bitLength()];
 		for (int i = 0; i < y.bitLength(); i++) {
-			EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), pubKey);
+			EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
 		}
 		toAlice.writeObject(EncY);
 		toAlice.flush();
@@ -180,14 +181,14 @@ public class bob extends socialist_millionaires implements Runnable
 		}
 		else if (in instanceof BigInteger) {
 			deltaA = (BigInteger) in;
-			return;
+			return false;
 		}
 		else {
 			throw new IllegalArgumentException("Protocol 1, Step 6: Invalid object: " + in.getClass().getName());
 		}
 
 		for (BigInteger C_i: C) {
-			if (DGKOperations.decrypt(C_i, privKey) == 0) {
+			if (DGKOperations.decrypt(C_i, dgk_private) == 0) {
 				deltaB = 1;
 				break;
 			}
@@ -203,7 +204,7 @@ public class bob extends socialist_millionaires implements Runnable
 		// This is best used in situations like an auction where Bob needs to know
 		in = fromAlice.readObject();
 		if (in instanceof BigInteger) {
-			DGKOperations.decrypt((BigInteger) in, privKey);
+			return DGKOperations.decrypt((BigInteger) in, dgk_private) == 1;
 		}
 		else {
 			throw new IllegalArgumentException("Invalid response from Alice in Step 8: " + in.getClass().getName());
@@ -220,7 +221,7 @@ public class bob extends socialist_millionaires implements Runnable
 	 * @throws HomomorphicException
 	 */
 	
-	public void Protocol2()
+	public boolean Protocol2()
 			throws ClassNotFoundException, IOException, HomomorphicException {
 		// Step 1: Receive z from Alice
 		// Get the input and output streams
@@ -230,8 +231,8 @@ public class bob extends socialist_millionaires implements Runnable
 		BigInteger z;
 		
 		if(isDGK) {
-			System.err.println("COMPARING ENCRYPTED DGK VALUES WITH PROTOCOL 2 IS NOT ALLOWED, PLEASE USE PROTOCOL 4!");
-			return;
+			throw new HomomorphicException("COMPARING ENCRYPTED DGK VALUES WITH PROTOCOL 2 IS NOT ALLOWED," +
+					" PLEASE USE PROTOCOL 4!");
 		}
 
 		//Step 1: get [[z]] from Alice
@@ -244,17 +245,17 @@ public class bob extends socialist_millionaires implements Runnable
 		}
 		
 		//[[z]] = [[x - y + 2^l + r]]
-		z = PaillierCipher.decrypt(z, sk);
+		z = PaillierCipher.decrypt(z, paillier_private);
 		
 		// Step 2: compute Beta = z (mod 2^l),
 		beta = NTL.POSMOD(z, powL);
 		
 		// Step 3: Alice computes r (mod 2^l) (Alpha)
 		// Step 4: Run Protocol 3
-		Protocol3(beta);
+		Protocol1(beta);
 		
 		// Step 5: Send [[z/2^l]], Alice has the solution from Protocol 3 already...
-		toAlice.writeObject(PaillierCipher.encrypt(z.divide(powL), pk));
+		toAlice.writeObject(PaillierCipher.encrypt(z.divide(powL), paillier_public));
 		toAlice.flush();
 		
 		// Step 6 - 7: Alice Computes [[x <= y]]
@@ -262,420 +263,13 @@ public class bob extends socialist_millionaires implements Runnable
 		// Step 8 (UNOFFICIAL): Alice needs the answer for [[x <= y]]
 		x = fromAlice.readObject();
 		if (x instanceof BigInteger) {
-			answer = PaillierCipher.decrypt((BigInteger) x, sk).intValue();
+			answer = PaillierCipher.decrypt((BigInteger) x, paillier_private).intValue();
 			toAlice.writeInt(answer);
 			toAlice.flush();
+			return answer == 1;
 		}
 		else {
 			throw new IllegalArgumentException("Invalid response from Alice in Step 8! " + x.getClass().getName());
-		}
-	}
-
-	/**
-	 * Please review "Improving the DGK comparison protocol" - Protocol 3
-	 * Note: Bob already has the private keys upon initialization
-	 *
-	 * @param y - plaintext value
-	 * @throws IOException
-	 * @throws ClassNotFoundException
-	 * @throws IllegalArgumentException
-	 */
-
-	public void Protocol3(BigInteger y)
-			throws IOException, ClassNotFoundException, IllegalArgumentException
-	{
-		// Constraint...
-		if(y.bitLength() > pubKey.getL()) {
-			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
-		}
-		Object x;
-		BigInteger [] C;
-		int deltaB = 0;
-		BigInteger deltaA = null;
-
-		//Step 1: Bob sends encrypted bits to Alice
-		BigInteger [] EncY = new BigInteger[y.bitLength()];
-		for (int i = 0; i < y.bitLength(); i++)
-		{
-			if(y.testBit(i))
-			{
-				EncY[i] = DGKOperations.encrypt(1, pubKey);
-			}
-			else
-			{
-				EncY[i] = DGKOperations.encrypt(0, pubKey);
-			}
-			EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), pubKey);
-		}
-		toAlice.writeObject(EncY);
-		toAlice.flush();
-		
-		//Step 2: Wait for Alice to compute x XOR y
-		
-		//Step 3: Wait for Alice to compute set L and gamma A
-		
-		//Step 4: Wait for Alice to compute the array of C_i
-		
-		//Step 5: After blinding, Alice sends C_i to Bob
-		
-		//Step 6: Bob checks if there is a 0 in C_i and set deltaB accordingly
-		
-		/*
-		 * Currently by design of the program
-		 * 1- Alice KNOWS that bob will assume deltaB = 0.
-		 *
-		 * Alice knows the protocol should be skipped if
-		 * the bit length is NOT equal.
-		 *
-		 * Case 1:
-		 * y has more bits than x IMPLIES that y is bigger
-		 * x <= y is 1 (true)
-		 * given deltaB is 0 by default...
-		 * deltaA must be 1
-		 * answer = 1 XOR 0 = 1
-		 *
-		 * Case 2:
-		 * x has more bits than x IMPLIES that x is bigger
-		 * x <= y is 0 (false)
-		 * given deltaB is 0 by default...
-		 * deltaA must be 0
-		 * answer = 0 XOR 0 = 0
-		 */
-
-		x = fromAlice.readObject();
-		// Number of bits are the same for both numbers
-		if (x instanceof BigInteger []) {
-			C = (BigInteger []) x;
-			for (BigInteger C_i: C) {
-				if (DGKOperations.decrypt(C_i, privKey) == 0) {
-					deltaB = 1;
-					break;
-				}
-			}
-		}
-		// Number of bits gives away the answer!
-		else if (x instanceof BigInteger) {
-			deltaA = (BigInteger) x;
-			// Case 1 delta B is 0
-			// 1 XOR 0 = 0
-			// x <= y -> 1 (true)
-
-			// Case 2, delta B is 0
-			// 0 XOR 0 = 0
-			// x <= y -> 0 (false)
-			return;
-		}
-		else {
-			throw new IllegalArgumentException("Protocol 3, Step 4: Invalid object! " + x.getClass().getName());
-		}
-
-		// Step 7: Return Gamma B to Alice, Alice will compute GammaA XOR GammaB
-		toAlice.writeInt(deltaB);
-		toAlice.flush();
-
-		// Step 8: UNOFFICIAL
-		// Alice sends the answer, decrypt it and keep it for yourself
-		// This is best used in situations like an auction where Bob needs to know
-		x = fromAlice.readObject();
-		if (x instanceof BigInteger) {
-			DGKOperations.decrypt((BigInteger) x, privKey);
-		}
-		else {
-			throw new IllegalArgumentException("Invalid response from Alice in Step 8! " + x.getClass().getName());
-		}
-	}
-	
-	// Used for Regular Modified Protocol 3 ONLY 
-	public void Modified_Protocol3(BigInteger z)
-			throws IOException, ClassNotFoundException, IllegalArgumentException
-	{
-		BigInteger beta;
-		boolean answer;
-		
-		// Constraint...
-		if(z.bitLength() > pubKey.getL()) {
-			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, x is: " + z.bitLength() + " bits");
-		}
-		if(isDGK) {
-			beta = z.mod(powL);
-			answer = Modified_Protocol3(beta, z);
-		}
-		else {
-			isDGK = true;
-			beta = z.mod(powL);
-			answer = Modified_Protocol3(beta, z);
-			isDGK = false;
-		}
-	}
-
-	// Use this for Using Modified Protocol3 within Protocol 4
-	private boolean Modified_Protocol3(BigInteger beta, BigInteger z) 
-			throws IOException, ClassNotFoundException, IllegalArgumentException
-	{
-		Object in;
-		BigInteger [] C;
-		BigInteger [] beta_bits = new BigInteger[beta.bitLength()];
-		BigInteger deltaA;
-		BigInteger d;
-		BigInteger N;
-		int answer;
-		int deltaB = 0;
-		
-		if(isDGK) {
-			N = pubKey.getU();
-		}
-		else {
-			N = pk.getN();
-		}
-		
-		// Step A: z < (N - 1)/2
-		if(z.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) == -1) {
-			d = DGKOperations.encrypt(1, pubKey);
-		}
-		else {
-			d = DGKOperations.encrypt(0, pubKey);
-		}
-		toAlice.writeObject(d);
-		toAlice.flush();
-
-		// Step B: Send the encrypted Beta bits
-		for (int i = 0; i < beta_bits.length;i++) {
-			if(beta.testBit(i)) {
-				beta_bits[i] = DGKOperations.encrypt(1, pubKey);
-			}
-			else {
-				beta_bits[i] = DGKOperations.encrypt(0, pubKey);	
-			}
-			beta_bits[i] = DGKOperations.encrypt(NTL.bit(beta, i), pubKey);
-		}
-		toAlice.writeObject(beta_bits);
-		toAlice.flush();
-
-		// Step C: Alice corrects d...
-
-		// Step D: Alice computes [[alpha XOR beta]]
-
-		// Step E: Alice Computes alpha_hat and w_bits
-
-		// Step F: Alice Exponent w_bits
-
-		// Step G: Alice picks Delta A
-
-		// Step H: Alice computes C_i
-
-		// Step I: Alice blinds C_i
-
-		// Step J: Get C_i and look for zeros
-		in = fromAlice.readObject();
-		if(in instanceof BigInteger[]) {
-			C = (BigInteger []) in;
-		}
-		else if (in instanceof BigInteger) {
-			deltaA = (BigInteger) in;
-			return deltaA.intValue() == 1;
-		}
-		else {
-			throw new IllegalArgumentException("Modified Protocol3: invalid input in Step J " + in.getClass().getName());
-		}
-
-		for (BigInteger C_i: C) {
-			if(DGKOperations.decrypt(C_i, privKey) == 0) {
-				deltaB = 1;
-				break;
-			}
-		}
-		toAlice.writeInt(deltaB);
-		toAlice.flush();
-
-		// Extra step...Bob gets the answer from Alice
-		in = fromAlice.readObject();
-		if(in instanceof BigInteger) {
-			answer = (int) DGKOperations.decrypt((BigInteger) in, privKey);
-		}
-		else {
-			throw new IllegalArgumentException("Modified_Protocol 3, Step 8 Invalid Object! " + in.getClass().getName());
-		}
-		toAlice.flush();
-		return answer == 1;
-	}
-	
-	/**
-	 * Please review Correction to Improving the DGK comparison protocol - Protocol 3
-	 *
-	 * @throws IOException
-	 * @throws ClassNotFoundException
-	 * @throws HomomorphicException
-	 */
-	public void Protocol4()
-			throws IOException, ClassNotFoundException, HomomorphicException
-	{
-		// Constraint for Paillier
-		if(!isDGK && pubKey.getL() + 2 >= pk.key_size)
-		{
-			throw new IllegalArgumentException("Constraint violated: l + 2 < log_2(N)");
-		}
-		
-		int answer = -1;
-		Object x;
-		BigInteger beta;
-		BigInteger z;
-		BigInteger zeta_one;
-		BigInteger zeta_two;
-		
-		//Step 1: get [[z]] from Alice
-		x = fromAlice.readObject();
-		if (x instanceof BigInteger)
-		{
-			z = (BigInteger) x;
-		}
-		else
-		{
-			throw new IllegalArgumentException("Protocol 4: No BigInteger found! " + x.getClass().getName());
-		}
-		
-		if(isDGK)
-		{
-			z = BigInteger.valueOf(DGKOperations.decrypt(z, privKey));
-		}
-		else
-		{
-			z = PaillierCipher.decrypt(z, sk);
-		}
-		
-		// Step 2: compute Beta = z (mod 2^l), 
-		beta = NTL.POSMOD(z, powL);
-		
-		// Step 3: Alice computes r (mod 2^l) (Alpha)
-		// Step 4: Run Modified DGK Comparison Protocol
-		// true --> run Modified protocol 3
-		
-		if(fromAlice.readBoolean()) {
-			Modified_Protocol3(beta, z);
-		}
-		else {
-			Protocol3(beta);
-		}
-		
-		//Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already
-		if(isDGK) {
-			zeta_one = DGKOperations.encrypt(z.divide(powL), pubKey);
-			if(z.compareTo(pubKey.getU().subtract(BigInteger.ONE).divide(TWO)) == -1) {
-				zeta_two = DGKOperations.encrypt(z.add(pubKey.getU()).divide(powL), pubKey);
-			}
-			else {
-				zeta_two = DGKOperations.encrypt(z.divide(powL), pubKey);
-			}
-		}
-		else
-		{
-			zeta_one = PaillierCipher.encrypt(z.divide(powL), pk);
-			if(z.compareTo(pk.getN().subtract(BigInteger.ONE).divide(TWO)) == -1) {
-				zeta_two = PaillierCipher.encrypt(z.add(pubKey.getN()).divide(powL), pk);
-			}
-			else {
-				zeta_two =  PaillierCipher.encrypt(z.divide(powL), pk);
-			}
-		}
-		toAlice.writeObject(zeta_one);
-		toAlice.writeObject(zeta_two);
-		toAlice.flush();
-
-		//Step 6 - 7: Alice Computes [[x >= y]]
-
-		//Step 8 (UNOFFICIAL): Alice needs the answer...
-		x = fromAlice.readObject();
-		if (x instanceof BigInteger) {
-			if(isDGK) {
-				long decrypt = DGKOperations.decrypt((BigInteger) x, privKey);
-				// IF SOMETHING HAPPENS...GET POST MORTEM HERE
-				if (decrypt != 0 && pubKey.getU().longValue() - 1 != decrypt) {
-					throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
-				}
-				
-				if (pubKey.getu() - 1 == decrypt) {
-					answer = 0;
-				}
-				else {
-					answer = 1;
-				}
-			}
-			else {
-				answer = PaillierCipher.decrypt((BigInteger) x, sk).intValue();
-			}
-			toAlice.writeInt(answer);
-			toAlice.flush();	
-		}
-		else {
-			throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
-		}
-		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
-		if (answer != 0 && answer != 1) {
-			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
-		}
-	}
-	
-	public void ElGamal_Protocol4()
-			throws IOException, ClassNotFoundException, IllegalArgumentException
-	{
-		int answer;
-		Object x;
-		BigInteger beta;
-		BigInteger z;
-		ElGamal_Ciphertext enc_z;
-		ElGamal_Ciphertext zeta_one;
-		ElGamal_Ciphertext zeta_two;
-		BigInteger N = e_pk.getP().subtract(BigInteger.ONE);
-		
-		//Step 1: get [[z]] from Alice
-		x = fromAlice.readObject();
-		if (x instanceof ElGamal_Ciphertext) {
-			enc_z = (ElGamal_Ciphertext) x;
-		}
-		else {
-			throw new IllegalArgumentException("Protocol 4: No ElGamal_Ciphertext found! " + x.getClass().getName());
-		}
-		z = ElGamalCipher.decrypt(enc_z, e_sk);
-		
-		// Step 2: compute Beta = z (mod 2^l), 
-		beta = NTL.POSMOD(z, powL);
-		
-		// Step 3: Alice computes r (mod 2^l) (Alpha)
-		
-		// Step 4: Run Modified DGK Comparison Protocol
-		// true --> run Modified protocol 3
-		if(fromAlice.readBoolean()) {
-			Modified_Protocol3(beta, z);
-		}
-		else {
-			Protocol3(beta);
-		}
-		
-		//Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already
-		zeta_one = ElGamalCipher.encrypt(z.divide(powL), e_pk);
-		if(z.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) == -1) {
-			zeta_two = ElGamalCipher.encrypt(z.add(N).divide(powL), e_pk);
-		}
-		else {
-			zeta_two = ElGamalCipher.encrypt(z.divide(powL), e_pk);
-		}
-		toAlice.writeObject(zeta_one);
-		toAlice.writeObject(zeta_two);
-		toAlice.flush();
-		
-		//Step 6 - 7: Alice Computes [[x >= y]]
-		//Step 8 (UNOFFICIAL): Alice needs the answer...
-		x = fromAlice.readObject();
-		if (x instanceof ElGamal_Ciphertext) {
-			answer = ElGamalCipher.decrypt((ElGamal_Ciphertext) x, e_sk).intValue();
-			toAlice.writeInt(answer);
-			toAlice.flush();
-		}
-		else {
-			throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
-		}
-		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
-		if (answer != 0 && answer != 1) {
-			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
 		}
 	}
 
@@ -707,13 +301,13 @@ public class bob extends socialist_millionaires implements Runnable
 		}
 		
 		// Step 3
-		x_prime = ElGamalCipher.decrypt(enc_x_prime, e_sk);
-		y_prime = ElGamalCipher.decrypt(enc_y_prime, e_sk);
+		x_prime = ElGamalCipher.decrypt(enc_x_prime, el_gamal_private);
+		y_prime = ElGamalCipher.decrypt(enc_y_prime, el_gamal_private);
 		if(addition) {
-			toAlice.writeObject(ElGamalCipher.encrypt(x_prime.add(y_prime), e_pk));	
+			toAlice.writeObject(ElGamalCipher.encrypt(x_prime.add(y_prime), el_gamal_public));	
 		}
 		else {
-			toAlice.writeObject(ElGamalCipher.encrypt(x_prime.subtract(y_prime), e_pk));
+			toAlice.writeObject(ElGamalCipher.encrypt(x_prime.subtract(y_prime), el_gamal_public));
 		}
 		toAlice.flush();
 	}
@@ -732,13 +326,13 @@ public class bob extends socialist_millionaires implements Runnable
 			throw new IllegalArgumentException("Division: No ElGamal Ciphertext found! " + alice.getClass().getName());
 		}
 	
-		z = ElGamalCipher.decrypt(enc_z, e_sk);
+		z = ElGamalCipher.decrypt(enc_z, el_gamal_private);
 		if(!FAST_DIVIDE) {
 			Protocol3(z.mod(BigInteger.valueOf(divisor)));
 		}
 		
 		c = z.divide(BigInteger.valueOf(divisor));
-		toAlice.writeObject(ElGamalCipher.encrypt(c, e_pk));
+		toAlice.writeObject(ElGamalCipher.encrypt(c, el_gamal_public));
 		toAlice.flush();
 		/*
 		 *  Unlike Comparison, it is decided Bob shouldn't know the answer.
@@ -776,9 +370,9 @@ public class bob extends socialist_millionaires implements Runnable
 		}
 		
 		// Step 3
-		x_prime = ElGamalCipher.decrypt(enc_x_prime, e_sk);
-		y_prime = ElGamalCipher.decrypt(enc_y_prime, e_sk);
-		toAlice.writeObject(ElGamalCipher.encrypt(x_prime.multiply(y_prime), e_pk));
+		x_prime = ElGamalCipher.decrypt(enc_x_prime, el_gamal_private);
+		y_prime = ElGamalCipher.decrypt(enc_y_prime, el_gamal_private);
+		toAlice.writeObject(ElGamalCipher.encrypt(x_prime.multiply(y_prime), el_gamal_public));
 		toAlice.flush();
 	}
 	
@@ -808,16 +402,16 @@ public class bob extends socialist_millionaires implements Runnable
 		
 		// Step 3
 		if(isDGK) {
-			x_prime = BigInteger.valueOf(DGKOperations.decrypt(x_prime, privKey));
-			y_prime = BigInteger.valueOf(DGKOperations.decrypt(y_prime, privKey));
+			x_prime = BigInteger.valueOf(DGKOperations.decrypt(x_prime, dgk_private));
+			y_prime = BigInteger.valueOf(DGKOperations.decrypt(y_prime, dgk_private));
 			// To avoid myself throwing errors of encryption must be [0, U), mod it now!
-			toAlice.writeObject(DGKOperations.encrypt(x_prime.multiply(y_prime).mod(pubKey.getU()), pubKey));
+			toAlice.writeObject(DGKOperations.encrypt(x_prime.multiply(y_prime).mod(dgk_public.getU()), dgk_public));
 		}
 		else {
-			x_prime = PaillierCipher.decrypt(x_prime, sk);
-			y_prime = PaillierCipher.decrypt(y_prime, sk);
+			x_prime = PaillierCipher.decrypt(x_prime, paillier_private);
+			y_prime = PaillierCipher.decrypt(y_prime, paillier_private);
 			// To avoid myself throwing errors of encryption must be [0, N), mod it now!
-			toAlice.writeObject(PaillierCipher.encrypt(x_prime.multiply(y_prime).mod(pk.getN()), pk));
+			toAlice.writeObject(PaillierCipher.encrypt(x_prime.multiply(y_prime).mod(paillier_public.getN()), paillier_public));
 		}
 		toAlice.flush();
 	}
@@ -836,10 +430,10 @@ public class bob extends socialist_millionaires implements Runnable
 		}
 		
 		if(isDGK) {
-			z = BigInteger.valueOf(DGKOperations.decrypt(z, privKey));
+			z = BigInteger.valueOf(DGKOperations.decrypt(z, dgk_private));
 		}
 		else {
-			z = PaillierCipher.decrypt(z, sk);
+			z = PaillierCipher.decrypt(z, paillier_private);
 		}
 		
 		if(!FAST_DIVIDE) {
@@ -850,10 +444,10 @@ public class bob extends socialist_millionaires implements Runnable
 	
 		c = z.divide(BigInteger.valueOf(divisor));
 		if(isDGK) {
-			toAlice.writeObject(DGKOperations.encrypt(c, pubKey));	
+			toAlice.writeObject(DGKOperations.encrypt(c, dgk_public));	
 		}
 		else {
-			toAlice.writeObject(PaillierCipher.encrypt(c, pk));
+			toAlice.writeObject(PaillierCipher.encrypt(c, paillier_public));
 		}
 		toAlice.flush();
 		/*
@@ -867,22 +461,22 @@ public class bob extends socialist_millionaires implements Runnable
 	
 	public void sendPublicKeys() throws IOException
 	{
-		if(pubKey != null) {
-			toAlice.writeObject(pubKey);
+		if(dgk_public != null) {
+			toAlice.writeObject(dgk_public);
 			System.out.println("Bob sent DGK Public Key to Alice");
 		}
 		else {
 			toAlice.writeObject(BigInteger.ZERO);
 		}
-		if(pk != null) {
-			toAlice.writeObject(pk);
+		if(paillier_public != null) {
+			toAlice.writeObject(paillier_public);
 			System.out.println("Bob sent Paillier Public Key to Alice");
 		}
 		else {
 			toAlice.writeObject(BigInteger.ZERO);
 		}
-		if(e_pk != null) {
-			toAlice.writeObject(e_pk);
+		if(el_gamal_public != null) {
+			toAlice.writeObject(el_gamal_public);
 			System.out.println("Bob sent ElGamal Public Key to Alice");
 		}
 		else {
@@ -893,17 +487,10 @@ public class bob extends socialist_millionaires implements Runnable
 	
 	public void run() 
 	{
-		try
-		{
-			if(USE_PROTOCOL_2) {
-				repeat_Protocol2();
-			}
-			else {
-				repeat_Protocol4();
-			}
+		try {
+			repeat_Protocol2();
 		}
-		catch (ClassNotFoundException | IOException | IllegalArgumentException | HomomorphicException e) 
-		{
+		catch (ClassNotFoundException | IOException | IllegalArgumentException | HomomorphicException e) {
 			e.printStackTrace();
 		}
 	}

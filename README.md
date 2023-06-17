@@ -43,6 +43,7 @@ Please view Client.java and Server.java for an example how to compare encrypted 
 ### security.socialistmillionaire.alice
 **Initialize**
 ```java
+
 public class demo {
     public static void main(String[] args) {
         alice Niu = new alice(new Socket("192.168.1.208", 9254));

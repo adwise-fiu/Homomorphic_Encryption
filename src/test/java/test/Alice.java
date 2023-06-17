@@ -64,6 +64,14 @@ public class Alice implements Runnable
 			// Test Protocol 1 - 4 Functionality
 			alice_demo();
 			alice_demo_ElGamal();
+
+			// Test Protocol 1
+			// Test Protocol 2
+			// Test Multiply
+			// Test Divide
+			// Test Add
+
+			// Other class, test their Protocol 1/2
 		}
 		catch (ClassNotFoundException | IOException | HomomorphicException | InterruptedException e)
 		{

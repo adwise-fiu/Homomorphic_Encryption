@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.List;
 
 import security.dgk.DGKPrivateKey;
 import security.dgk.DGKPublicKey;
@@ -20,22 +19,19 @@ public abstract class socialist_millionaires
 	protected final SecureRandom rnd = new SecureRandom();
 	protected final static int SIGMA = 80;
 	protected final static int BILLION = BigInteger.TEN.pow(9).intValue();
-	
-	// Ensure Alice and Bob have the same settings!
-	// May enable users to set this at Runtime?
-	protected boolean USE_PROTOCOL_2 = false;
+
 	protected boolean FAST_DIVIDE = false;
 	protected boolean isDGK = false;
 
 	// Both Alice and Bob will have keys
-	protected PaillierPublicKey pk = null;
-	protected DGKPublicKey pubKey = null;
-	protected ElGamalPublicKey e_pk = null;
+	protected PaillierPublicKey paillier_public = null;
+	protected DGKPublicKey dgk_public = null;
+	protected ElGamalPublicKey el_gamal_public = null;
 	
 	// Key Master
-	protected PaillierPrivateKey sk = null;
-	protected DGKPrivateKey privKey = null;
-	protected ElGamalPrivateKey e_sk = null;
+	protected PaillierPrivateKey paillier_private = null;
+	protected DGKPrivateKey dgk_private = null;
+	protected ElGamalPrivateKey el_gamal_private = null;
 
 	// Both use 2^l
 	protected BigInteger powL;
@@ -55,30 +51,30 @@ public abstract class socialist_millionaires
 	}
 
 	// Set Public Key
-	public void setPaillierPublicKey(PaillierPublicKey pk) {
-		this.pk = pk;
+	public void setPaillierPublicKey(PaillierPublicKey paillier_public) {
+		this.paillier_public = paillier_public;
 	}
 
-	public void setDGKPublicKey(DGKPublicKey pubKey) {
-		this.pubKey = pubKey;
-		this.powL = TWO.pow(this.pubKey.getL());
+	public void setDGKPublicKey(DGKPublicKey dgk_public) {
+		this.dgk_public = dgk_public;
+		this.powL = TWO.pow(this.dgk_public.getL());
 	}
 
-	public void setElGamalPublicKey(ElGamalPublicKey e_pk) {
-		this.e_pk = e_pk;
+	public void setElGamalPublicKey(ElGamalPublicKey el_gamal_public) {
+		this.el_gamal_public = el_gamal_public;
 	}
 
 	// Get PublicKey
 	public PaillierPublicKey getPaillierPublicKey() {
-		return pk;
+		return paillier_public;
 	}
 
 	public DGKPublicKey getDGKPublicKey() {
-		return pubKey;
+		return dgk_public;
 	}
 
 	public ElGamalPublicKey getElGamalPublicKey() {
-		return e_pk;
+		return el_gamal_public;
 	}
 	
 	public void writeObject(Object o) throws IOException

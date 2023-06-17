@@ -20,7 +20,7 @@ preferred-citation:
   - family-names: "Akkaya"
     given-names: "Kemal"
   journal: " IEEE 16th International Conference on Mobile Ad Hoc and Sensor Systems Workshops"
-  month: 9
+  month: 11
   start: 53 # First page number
   end: 57 # Last page number
   title: "Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting"
