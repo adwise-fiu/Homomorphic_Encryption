@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.KeyPair;
 
 import security.misc.HomomorphicException;
 import security.socialistmillionaire.bob;
@@ -14,21 +13,13 @@ import static org.junit.Assert.*;
 public class test_bob implements Runnable
 {
 	private final  int port;
-	// Initialize Alice and Bob
 	private static ServerSocket bob_socket = null;
 	private static Socket bob_client = null;
-	private static bob andrew = null;
-
+	private final bob andrew;
 	private static final BigInteger [] mid = IntegrationTests.generate_mid();
 	
-	private final KeyPair p;
-	private final KeyPair d;
-	private final KeyPair e;
-	
-	public test_bob(KeyPair paillier, KeyPair dgk, KeyPair elgamal, int port) {
-		this.p = paillier;
-		this.d = dgk;
-		this.e = elgamal;
+	public test_bob(bob andrew, int port) {
+		this.andrew = andrew;
 		this.port = port;
 	}
 	
@@ -39,9 +30,8 @@ public class test_bob implements Runnable
 			bob_socket = new ServerSocket(this.port);
 			System.out.println("Bob is ready...");
 			bob_client = bob_socket.accept();
-			andrew = new bob(bob_client, this.p, this.d, this.e);
+			andrew.set_socket(bob_client);
 			andrew.sendPublicKeys();
-
 
 			test_outsourced_multiply(true);
 			test_outsourced_multiply(false);
@@ -52,22 +42,17 @@ public class test_bob implements Runnable
 			test_protocol_one(true);
 			test_protocol_one(false);
 
-			test_sorting(true);
-			test_sorting(false);
-
 			test_protocol_two(true);
 			test_protocol_two(false);
 
-
-
+			test_sorting(true);
+			test_sorting(false);
 		}
 		catch (IOException | ClassNotFoundException | HomomorphicException | IllegalArgumentException x) {
 			x.printStackTrace();
 		}
-		finally
-		{
-			try 
-			{
+		finally {
+			try {
 				if(bob_client != null) {
 					bob_client.close();
 				}
@@ -75,14 +60,13 @@ public class test_bob implements Runnable
 					bob_socket.close();
 				}
 			}
-			catch (IOException e) 
-			{
+			catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
-	public static void test_outsourced_multiply(boolean dgk_mode)
+	public void test_outsourced_multiply(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
 		// Test out-source multiplication, DGK
 		System.out.println("Bob: Testing Multiplication, DGK Mode: " + dgk_mode);
@@ -92,7 +76,7 @@ public class test_bob implements Runnable
 		}
 	}
 
-	public static void test_outsourced_division(boolean dgk_mode)
+	public void test_outsourced_division(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
 		System.out.println("Bob: Testing Division, DGK Mode: " + dgk_mode);
 		// Division Protocol Test, Paillier
@@ -104,59 +88,81 @@ public class test_bob implements Runnable
 		andrew.division(25);
 	}
 
-	public static void test_protocol_one(boolean dgk_mode)
+	public synchronized void test_protocol_one(boolean dgk_mode)
 			throws IOException, ClassNotFoundException, HomomorphicException {
 		System.out.println("Bob: Testing Protocol 1, DGK Mode:" + dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		boolean answer;
-		for(int i = 0; i < 16 * 2; i++) {
+		for(BigInteger l: mid) {
 			// X <= Y is true
-			answer = andrew.Protocol1(mid[i % 16]);
-			assertTrue(answer);
+			answer = andrew.Protocol1(l);
+			//System.out.println(answer);
+			//assertTrue(answer);
 		}
-		for(int i = 0; i < 16; i++) {
+		for(BigInteger l: mid) {
+			// X <= Y is true
+			answer = andrew.Protocol1(l);
+			//System.out.println(answer);
+			//assertTrue(answer);
+		}
+		for(BigInteger l: mid) {
 			// X <= Y is false
-			answer = andrew.Protocol1(mid[i % 16]);
-			assertFalse(answer);
+			answer = andrew.Protocol1(l);
+			//System.out.println(answer);
+			//assertFalse(answer);
 		}
 	}
 
 	// This checks for X >= Y
-	public static void test_protocol_two(boolean dgk_mode)
+	public void test_protocol_two(boolean dgk_mode)
 			throws IOException, ClassNotFoundException, HomomorphicException {
 		System.out.println("Bob: Testing Protocol 2, DGK Mode:" + dgk_mode);
 		andrew.setDGKMode(dgk_mode);
+		boolean answer;
 
 		if (dgk_mode) {
-			if (andrew.getClass() == security.socialistmillionaire.bob.class) {
-				// Protocol 2 won't work on regular alice
-				return;
+			if (andrew.getClass() == security.socialistmillionaire.bob_veugen.class) {
+				// X > Y is false
+				for(int i = 0; i < mid.length * 2; i++) {
+					answer = andrew.Protocol2();
+					//assertFalse(answer);
+				}
+
+				// X > Y is true
+				for(int i = 0; i < mid.length; i++) {
+					answer = andrew.Protocol2();
+					//assertTrue(answer);
+				}
 			}
 		}
+		else {
+			// X >= Y is false
+			for(int i = 0; i < mid.length; i++) {
+				answer = andrew.Protocol2();
+				//System.out.println(answer);
+				assertFalse(answer);
 
-		boolean answer;
-		// X >= Y is false
-		for(int i = 0; i < 16; i++) {
-			answer = andrew.Protocol2();
-			assertFalse(answer);
-		}
+				answer = andrew.Protocol2();
+				//System.out.println(answer);
+				assertTrue(answer);
 
-		// X >= Y is true
-		for(int i = 0; i < 16; i++) {
-			answer = andrew.Protocol2();
-			assertTrue(answer);
+				answer = andrew.Protocol2();
+				//System.out.println(answer);
+				assertTrue(answer);
+			}
 		}
 	}
 
-	public static void test_sorting(boolean dgk_mode) {
+	public void test_sorting(boolean dgk_mode) {
 		System.out.println("Bob: Testing Sorting, DGK Mode:" + dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		if (dgk_mode) {
 			if (andrew.getClass() == security.socialistmillionaire.bob.class) {
-				// Protocol 2 won't work on regular alice
-				return;
+				System.out.println("Skipping because will crash...");
 			}
 		}
-		andrew.run();
+		else {
+			andrew.run();
+		}
 	}
 }

@@ -457,10 +457,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Step 3: Compute secure comparison Protocol 
 		if(!FAST_DIVIDE) {
 			// FLIP IT
-			if(Protocol1(r.mod(BigInteger.valueOf(d)))) {
-				t = 0;
-			}
-			else {
+			if(!Protocol1(r.mod(BigInteger.valueOf(d)))) {
 				t = 1;
 			}
 		}
@@ -483,12 +480,11 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 	}
 	
-	public void multiplication(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
+	public ElGamal_Ciphertext multiplication(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		if(!el_gamal_public.ADDITIVE) {
-			ElGamalCipher.multiply(x, y, el_gamal_public);
-			return;
+			return ElGamalCipher.multiply(x, y, el_gamal_public);
 		}
 		Object in;
 		ElGamal_Ciphertext result;
@@ -522,6 +518,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		else {
 			throw new IllegalArgumentException("Didn't get [[x' * y']] from Bob: " + in.getClass().getName());
 		}
+		return result;
 	}
 
 	public void receivePublicKeys()
@@ -618,7 +615,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return max;
 	}
 	
-	public void getKMin(BigInteger [] input, int k)
+	public BigInteger[] getKMin(BigInteger [] input, int k)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		if(k > input.length || k <= 0) {
@@ -653,6 +650,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Close Bob
 		toBob.writeBoolean(false);
 		toBob.flush();
+		return min;
 	}
 	
 	public BigInteger[] getKMin(List<BigInteger> input, int k) 

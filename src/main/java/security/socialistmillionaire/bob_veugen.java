@@ -13,6 +13,11 @@ import java.net.Socket;
 import java.security.KeyPair;
 
 public class bob_veugen extends bob {
+
+    public bob_veugen(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
+        super(a, b, c);
+    }
+
     public bob_veugen(Socket clientSocket, KeyPair a, KeyPair b, KeyPair c) throws IOException, IllegalArgumentException {
         super(clientSocket, a, b, c);
     }
@@ -22,9 +27,6 @@ public class bob_veugen extends bob {
      * Note: Bob already has the private keys upon initialization
      *
      * @param y - plaintext value
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws IllegalArgumentException
      */
 
     public boolean Protocol2(BigInteger y)
@@ -36,20 +38,10 @@ public class bob_veugen extends bob {
         Object x;
         BigInteger [] C;
         int deltaB = 0;
-        BigInteger deltaA = null;
 
         //Step 1: Bob sends encrypted bits to Alice
         BigInteger [] EncY = new BigInteger[y.bitLength()];
-        for (int i = 0; i < y.bitLength(); i++)
-        {
-            if(y.testBit(i))
-            {
-                EncY[i] = DGKOperations.encrypt(1, dgk_public);
-            }
-            else
-            {
-                EncY[i] = DGKOperations.encrypt(0, dgk_public);
-            }
+        for (int i = 0; i < y.bitLength(); i++) {
             EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
         }
         toAlice.writeObject(EncY);
@@ -100,7 +92,6 @@ public class bob_veugen extends bob {
         }
         // Number of bits gives away the answer!
         else if (x instanceof BigInteger) {
-            deltaA = (BigInteger) x;
             // Case 1 delta B is 0
             // 1 XOR 0 = 0
             // x <= y -> 1 (true)
@@ -131,7 +122,7 @@ public class bob_veugen extends bob {
     }
 
     // Used for Regular Modified Protocol 3 ONLY
-    public void Modified_Protocol3(BigInteger z)
+    public boolean Modified_Protocol3(BigInteger z)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         BigInteger beta;
         boolean answer;
@@ -150,6 +141,7 @@ public class bob_veugen extends bob {
             answer = Modified_Protocol3(beta, z);
             isDGK = false;
         }
+        return answer;
     }
 
     // Use this for Using Modified Protocol3 within Protocol 4
@@ -244,10 +236,6 @@ public class bob_veugen extends bob {
 
     /**
      * Please review Correction to Improving the DGK comparison protocol - Protocol 3
-     *
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws HomomorphicException
      */
     public boolean Protocol2()
             throws IOException, ClassNotFoundException, HomomorphicException
@@ -297,7 +285,7 @@ public class bob_veugen extends bob {
         //Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already
         if(isDGK) {
             zeta_one = DGKOperations.encrypt(z.divide(powL), dgk_public);
-            if(z.compareTo(dgk_public.getU().subtract(BigInteger.ONE).divide(TWO)) == -1) {
+            if(z.compareTo(dgk_public.getU().subtract(BigInteger.ONE).divide(TWO)) < 0) {
                 zeta_two = DGKOperations.encrypt(z.add(dgk_public.getU()).divide(powL), dgk_public);
             }
             else {
@@ -307,7 +295,7 @@ public class bob_veugen extends bob {
         else
         {
             zeta_one = PaillierCipher.encrypt(z.divide(powL), paillier_public);
-            if(z.compareTo(paillier_public.getN().subtract(BigInteger.ONE).divide(TWO)) == -1) {
+            if(z.compareTo(paillier_public.getN().subtract(BigInteger.ONE).divide(TWO)) < 0) {
                 zeta_two = PaillierCipher.encrypt(z.add(dgk_public.getN()).divide(powL), paillier_public);
             }
             else {

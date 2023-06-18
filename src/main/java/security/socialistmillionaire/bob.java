@@ -22,19 +22,65 @@ import security.paillier.PaillierPrivateKey;
 
 public class bob extends socialist_millionaires implements Runnable, bob_interface
 {
+	public bob(KeyPair first, KeyPair second, KeyPair third) {
+		parse_key_pairs(first, second, third);
+	}
 	/**
 	 * Create a bob instance for running extending protocols such as comparing 
 	 * encrypted numbers
 	 * @throws IllegalArgumentException
-	 * If a is not a Paillier Keypair or b is not a DGK key pair or c is not ElGamal Keypair
+	 * If first is not a Paillier Keypair or second is not a DGK key pair or third is not ElGamal Keypair
 	 */
-	public bob (Socket clientSocket,
-			KeyPair a, KeyPair b, KeyPair c) 
+	public bob (Socket socket,
+			KeyPair first, KeyPair second, KeyPair third)
 					throws IOException, IllegalArgumentException
 	{
-		if(clientSocket != null) {
-			this.toAlice = new ObjectOutputStream(clientSocket.getOutputStream());
-			this.fromAlice = new ValidatingObjectInputStream(clientSocket.getInputStream());
+		set_socket(socket);
+		parse_key_pairs(first, second, third);
+	}
+
+	private void parse_key_pairs(KeyPair first, KeyPair second, KeyPair third) {
+		if (first.getPublic() instanceof PaillierPublicKey) {
+			this.paillier_public = (PaillierPublicKey) first.getPublic();
+			this.paillier_private = (PaillierPrivateKey) first.getPrivate();
+			if(second.getPublic() instanceof DGKPublicKey) {
+				this.dgk_public = (DGKPublicKey) second.getPublic();
+				this.dgk_private = (DGKPrivateKey) second.getPrivate();
+			}
+			else {
+				throw new IllegalArgumentException("Obtained Paillier Key Pair, Not DGK Key pair!");
+			}
+		}
+		else if (first.getPublic() instanceof DGKPublicKey) {
+			this.dgk_public = (DGKPublicKey) first.getPublic();
+			this.dgk_private = (DGKPrivateKey) first.getPrivate();
+			if (second.getPublic() instanceof PaillierPublicKey) {
+				this.paillier_public = (PaillierPublicKey) second.getPublic();
+				this.paillier_private = (PaillierPrivateKey) second.getPrivate();
+			}
+			else {
+				throw new IllegalArgumentException("Obtained DGK Key Pair, Not Paillier Key pair!");
+			}
+		}
+
+		if(third != null) {
+			if (third.getPublic() instanceof ElGamalPublicKey) {
+				this.el_gamal_public = (ElGamalPublicKey) third.getPublic();
+				this.el_gamal_private= (ElGamalPrivateKey) third.getPrivate();
+			}
+			else {
+				throw new IllegalArgumentException("Third Keypair MUST BE AN EL GAMAL KEY PAIR!");
+			}
+		}
+
+		this.isDGK = false;
+		powL = TWO.pow(dgk_public.getL());
+	}
+
+	public void set_socket(Socket socket) throws IOException {
+		if(socket != null) {
+			this.toAlice = new ObjectOutputStream(socket.getOutputStream());
+			this.fromAlice = new ValidatingObjectInputStream(socket.getInputStream());
 			this.fromAlice.accept(
 					java.math.BigInteger.class,
 					java.lang.Number.class,
@@ -48,44 +94,7 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 		else {
 			throw new NullPointerException("Client Socket is null!");
 		}
-		
-		if (a.getPublic() instanceof PaillierPublicKey) {
-			this.paillier_public = (PaillierPublicKey) a.getPublic();
-			this.paillier_private = (PaillierPrivateKey) a.getPrivate();
-			if(b.getPublic() instanceof DGKPublicKey) {
-				this.dgk_public = (DGKPublicKey) b.getPublic();
-				this.dgk_private = (DGKPrivateKey) b.getPrivate();
-			}
-			else {
-				throw new IllegalArgumentException("Obtained Paillier Key Pair, Not DGK Key pair!");
-			}
-		}
-		else if (a.getPublic() instanceof DGKPublicKey) {
-			this.dgk_public = (DGKPublicKey) a.getPublic();
-			this.dgk_private = (DGKPrivateKey) a.getPrivate();
-			if (b.getPublic() instanceof PaillierPublicKey) {
-				this.paillier_public = (PaillierPublicKey) a.getPublic();
-				this.paillier_private = (PaillierPrivateKey) a.getPrivate();
-			}
-			else {
-				throw new IllegalArgumentException("Obtained DGK Key Pair, Not Paillier Key pair!");
-			}
-		}
-		
-		if(c != null) {
-			if (c.getPublic() instanceof ElGamalPublicKey) {
-				this.el_gamal_public = (ElGamalPublicKey) c.getPublic();
-				this.el_gamal_private= (ElGamalPrivateKey) c.getPrivate();
-			}
-			else {
-				throw new IllegalArgumentException("Third Keypair MUST BE AN EL GAMAL KEY PAIR!");
-			}
-		}
-
-		this.isDGK = false;
-		powL = TWO.pow(dgk_public.getL());
 	}
-	
 	/**
 	 * if Alice wants to sort a list of encrypted numbers, use this method if you 
 	 * will consistently sort using Protocol 2

@@ -11,9 +11,7 @@ import java.security.KeyPair;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import security.socialistmillionaire.alice;
-import security.socialistmillionaire.alice_joye;
-import security.socialistmillionaire.alice_veugen;
+import security.socialistmillionaire.*;
 
 public class IntegrationTests implements constants
 {
@@ -125,7 +123,8 @@ public class IntegrationTests implements constants
 	// Test Basic Implementation of Alice and Bob
 	@Test
 	public void integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		Thread andrew = new Thread(new test_bob(paillier, dgk, el_gamal, 9200));
+		bob bob_version_one = new bob(paillier, dgk, el_gamal);
+		Thread andrew = new Thread(new test_bob(bob_version_one, 9200));
 		andrew.start();
 
 		// Wait then connect!
@@ -147,11 +146,12 @@ public class IntegrationTests implements constants
 		}
 	}
 
-	/*
 	// Test Veugen implementation of Alice and Bob
 	@Test
 	public void veugen_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		Thread andrew = new Thread(new test_bob(paillier, dgk, el_gamal, 9201));
+
+		bob_veugen bob_version_two = new bob_veugen(paillier, dgk, el_gamal);
+		Thread andrew = new Thread(new test_bob(bob_version_two, 9201));
 		andrew.start();
 
 		// Wait then connect!
@@ -173,6 +173,7 @@ public class IntegrationTests implements constants
 		}
 	}
 
+	/*
 	// Test El Gamal version of Alice and Bob
 	@Test
 	public void el_gamal_integration_test() throws IOException, InterruptedException, ClassNotFoundException {

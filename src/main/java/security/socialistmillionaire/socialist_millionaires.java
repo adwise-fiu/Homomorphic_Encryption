@@ -9,16 +9,15 @@ import security.dgk.DGKPrivateKey;
 import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
+import security.misc.CipherConstants;
 import security.paillier.PaillierPrivateKey;
 import security.paillier.PaillierPublicKey;
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 
-public abstract class socialist_millionaires 
+public abstract class socialist_millionaires implements CipherConstants
 {
-	protected final static BigInteger TWO = new BigInteger("2");
 	protected final SecureRandom rnd = new SecureRandom();
 	protected final static int SIGMA = 80;
-	protected final static int BILLION = BigInteger.TEN.pow(9).intValue();
 
 	protected boolean FAST_DIVIDE = false;
 	protected boolean isDGK = false;

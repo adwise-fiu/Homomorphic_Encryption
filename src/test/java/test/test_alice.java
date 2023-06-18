@@ -56,11 +56,11 @@ public class test_alice implements Runnable, constants
 			test_protocol_one(true);
 			test_protocol_one(false);
 
-			test_sorting(true);
-			test_sorting(false);
-
 			test_protocol_two(true);
 			test_protocol_two(false);
+
+			test_sorting(true);
+			test_sorting(false);
 		}
 		catch (ClassNotFoundException | IOException | HomomorphicException e) {
 			e.printStackTrace();
@@ -71,9 +71,11 @@ public class test_alice implements Runnable, constants
 			throws ClassNotFoundException, IOException, HomomorphicException {
 		System.out.println("Alice: Testing Sorting with DGK Mode: " + dgk_mode);
 		BigInteger [] toSort = new BigInteger[low.length];
+		BigInteger [] min;
+
 		Niu.setDGKMode(dgk_mode);
 		for(int i = 0; i < low.length; i++) {
-			toSort[i] = NTL.generateXBitRandom(5);
+			toSort[i] = NTL.generateXBitRandom(9);
 			if (dgk_mode) {
 				toSort[i] = DGKOperations.encrypt(toSort[i], dgk_public_key);
 			}
@@ -82,11 +84,22 @@ public class test_alice implements Runnable, constants
 			}
 		}
 
-		if (Niu.getClass() == security.socialistmillionaire.alice.class) {
-			// Protocol 2 won't work on regular alice
-			return;
+		if (dgk_mode) {
+			if (Niu.getClass() == security.socialistmillionaire.alice.class) {
+				// Protocol 2 won't work on regular alice
+				return;
+			}
 		}
-		Niu.getKMin(toSort, 3);
+
+		min = Niu.getKMin(toSort, 3);
+		for (int i = 0; i < min.length; i++) {
+			if (dgk_mode) {
+				min[i] = BigInteger.valueOf(DGKOperations.decrypt(min[i], dgk_private));
+			}
+			else {
+				min[i] = PaillierCipher.decrypt(min[i], paillier_private);
+			}
+		}
 		for (int i = 0; i < toSort.length; i++) {
 			if (dgk_mode) {
 				toSort[i] = BigInteger.valueOf(DGKOperations.decrypt(toSort[i], dgk_private));
@@ -95,7 +108,8 @@ public class test_alice implements Runnable, constants
 				toSort[i] = PaillierCipher.decrypt(toSort[i], paillier_private);
 			}
 		}
-		System.out.println("Sorted and moved 3 lowest values: " + Arrays.toString(toSort));
+		System.out.println("General List: " + Arrays.toString(toSort));
+		System.out.println("Three minimum numbers: " + Arrays.toString(min));
 	}
 
 	public void test_outsourced_multiply(boolean dgk_mode)
@@ -136,7 +150,7 @@ public class test_alice implements Runnable, constants
 		// Division Test, Paillier
 		// REMEMBER THE OUTPUT IS THE ENCRYPTED ANSWER, ONLY BOB CAN VERIFY THE ANSWER
 		Niu.setDGKMode(dgk_mode);
-		System.out.println("Alice: Division Tests, DGK Mode: " + dgk_mode);
+		System.out.println("Alice: Testing Division, DGK Mode: " + dgk_mode);
 		BigInteger d;
 		BigInteger temp;
 		if (dgk_mode) {
@@ -192,16 +206,19 @@ public class test_alice implements Runnable, constants
 		for(BigInteger l: low) {
 			// X <= Y is true
 			answer = Niu.Protocol1(l);
+			//System.out.println(answer);
 			assertTrue(answer);
 		}
 		for(BigInteger l: mid) {
 			// X <= Y is true
 			answer = Niu.Protocol1(l);
+			//System.out.println(answer);
 			assertTrue(answer);
 		}
 		for(BigInteger l: high) {
 			// X <= Y is false
 			answer = Niu.Protocol1(l);
+			//System.out.println(!answer);
 			assertFalse(answer);
 		}
 	}
@@ -213,21 +230,46 @@ public class test_alice implements Runnable, constants
 
 		Niu.setDGKMode(dgk_mode);
 		boolean answer;
-		if (!(dgk_mode && Niu.getClass() == security.socialistmillionaire.alice.class)) {
+		if (dgk_mode) {
+			if (Niu.getClass() == security.socialistmillionaire.alice_veugen.class) {
+				for (int i = 0; i < low.length; i++) {
+					// X >= Y is false
+					answer = Niu.Protocol2(DGKOperations.encrypt(low[i], dgk_public_key),
+							DGKOperations.encrypt(mid[i], dgk_public_key));
+					assertFalse(answer);
+
+					// X >= Y is true
+					// Veugen Protocol 4, DGK only can X > Y
+					answer = Niu.Protocol2(DGKOperations.encrypt(mid[i], dgk_public_key),
+							DGKOperations.encrypt(mid[i], dgk_public_key));
+					assertFalse(answer);
+
+					// X >= Y is true
+					answer = Niu.Protocol2(DGKOperations.encrypt(high[i], dgk_public_key),
+							DGKOperations.encrypt(mid[i], dgk_public_key));
+					assertTrue(answer);
+				}
+			}
+		}
+		else {
 			for (int i = 0; i < low.length;i++) {
 				// X >= Y is false
 				answer = Niu.Protocol2(PaillierCipher.encrypt(low[i], paillier_public),
 						PaillierCipher.encrypt(mid[i], paillier_public));
+				//System.out.println(!answer);
 				assertFalse(answer);
 
 				// X >= Y is true
+				// Veugen Protocol 4, DGK only can X > Y
 				answer = Niu.Protocol2(PaillierCipher.encrypt(mid[i], paillier_public),
 						PaillierCipher.encrypt(mid[i], paillier_public));
+				//System.out.println(answer);
 				assertTrue(answer);
 
 				// X >= Y is true
 				answer = Niu.Protocol2(PaillierCipher.encrypt(high[i], paillier_public),
 						PaillierCipher.encrypt(mid[i], paillier_public));
+				//System.out.println(answer);
 				assertTrue(answer);
 			}
 		}
