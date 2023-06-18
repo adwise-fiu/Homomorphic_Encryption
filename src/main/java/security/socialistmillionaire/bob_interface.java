@@ -7,7 +7,7 @@ import java.math.BigInteger;
 
 public interface bob_interface {
 
-    // Used to compare alice's private integer x and bob's private integer y
+    // Used to compare alice's private integer x and Bob's private integer y
     boolean Protocol1(BigInteger y)
             throws IOException, IllegalArgumentException, HomomorphicException, ClassNotFoundException;
 

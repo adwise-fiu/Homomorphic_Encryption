@@ -28,13 +28,11 @@ public final class PaillierCipher implements CipherConstants {
 	public static BigInteger encrypt(BigInteger plaintext, PaillierPublicKey public_key)
 			throws HomomorphicException 
 	{
-		if (plaintext.signum() == -1)
-		{
+		if (plaintext.signum() == -1) {
 			throw new HomomorphicException("Encryption Invalid Parameter: the plaintext is not in Zu (plaintext < 0)"
 					+ " value of Plain Text is: " + plaintext);
 		}
-		else if (plaintext.compareTo(public_key.n) >= 0)
-		{
+		else if (plaintext.compareTo(public_key.n) >= 0) {
 			throw new HomomorphicException("Encryption Invalid Parameter: the plaintext is not in N"
 					+ " (plaintext >= N) value of Plain Text is: " + plaintext);
 		}
@@ -46,8 +44,7 @@ public final class PaillierCipher implements CipherConstants {
 	}
 
 	public static BigInteger encrypt(long plaintext, PaillierPublicKey public_key)
-			throws HomomorphicException 
-	{
+			throws HomomorphicException {
 		return PaillierCipher.encrypt(BigInteger.valueOf(plaintext), public_key);
 	}
 
@@ -60,8 +57,7 @@ public final class PaillierCipher implements CipherConstants {
 	 * 	- If the ciphertext is larger than N^2, an exception will be thrown
 	 */
 	public static BigInteger decrypt(BigInteger ciphertext, PaillierPrivateKey private_key) 
-			throws HomomorphicException
-	{
+			throws HomomorphicException {
 		if (ciphertext.signum() == -1) {
 			throw new HomomorphicException("decryption Invalid Parameter : the cipher text is not in Zn, "
 					+ "value of cipher text is: (c < 0): " + ciphertext);
@@ -85,8 +81,7 @@ public final class PaillierCipher implements CipherConstants {
 	 * - If either ciphertext is greater than N or negative, throw an exception
 	 */
 	public static BigInteger add(BigInteger ciphertext1, BigInteger ciphertext2, PaillierPublicKey public_key) 
-			throws HomomorphicException
-	{
+			throws HomomorphicException {
 		if (ciphertext1.signum() == -1 || ciphertext1.compareTo(public_key.modulus) > 0) {
 			throw new HomomorphicException("PaillierAdd Invalid Parameter ciphertext1: " + ciphertext1);
 		}
@@ -106,14 +101,14 @@ public final class PaillierCipher implements CipherConstants {
 	 * @throws HomomorphicException 
 	 * - If a ciphertext is negative or exceeds N^2 or plaintext is negative or exceeds N
 	 */
-	public static BigInteger add_plaintext(BigInteger ciphertext, BigInteger plaintext, PaillierPublicKey public_key) throws HomomorphicException
-	{
+	public static BigInteger add_plaintext(BigInteger ciphertext, BigInteger plaintext, PaillierPublicKey public_key)
+			throws HomomorphicException {
 		if (ciphertext.signum() ==-1 || ciphertext.compareTo(public_key.modulus) > 0) {
 			throw new HomomorphicException("Paillier add_plaintext Invalid Parameter ciphertext: " + ciphertext);
 		}
 		// will accept plaintext -1 because of Protocol 1 and Modified Protocol 3 need it
 		else if (plaintext.compareTo(NEG_ONE) < 0 || plaintext.compareTo(public_key.n) > 0) {
-			throw new HomomorphicException("Paillier add_plaintext Invalid Parameter plaintext: " + plaintext);		
+			throw new HomomorphicException("Paillier add_plaintext Invalid Parameter plaintext: " + plaintext);
 		}
 		return ciphertext.multiply(public_key.g.modPow(plaintext, public_key.modulus)).mod(public_key.modulus);
 	}
@@ -140,8 +135,11 @@ public final class PaillierCipher implements CipherConstants {
 	 * @param public_key - used to encrypt ciphertext
 	 * @return Paillier encrypted ciphertext with ciphertext1 - ciphertext2
 	 */
-	public static BigInteger subtract_plaintext(BigInteger ciphertext, BigInteger plaintext, PaillierPublicKey public_key) {
-		return ciphertext.divide(public_key.g.modPow(plaintext, public_key.modulus)).mod(public_key.modulus);
+	public static BigInteger subtract_plaintext(BigInteger ciphertext, BigInteger plaintext,
+												PaillierPublicKey public_key) throws HomomorphicException {
+		// Multiply the plaintext value by -1
+		BigInteger inverse = NTL.POSMOD(plaintext.multiply(NEG_ONE), public_key.n);
+		return add_plaintext(ciphertext, inverse, public_key);
 	}
 	
 	/**
@@ -154,8 +152,8 @@ public final class PaillierCipher implements CipherConstants {
 	 * If ciphertext is negative or exceeds N^2 or plaintext exceeds N
 	 */
 
-	public static BigInteger multiply(BigInteger ciphertext, BigInteger plaintext, PaillierPublicKey public_key) throws HomomorphicException
-	{
+	public static BigInteger multiply(BigInteger ciphertext, BigInteger plaintext, PaillierPublicKey public_key)
+			throws HomomorphicException {
 		if (ciphertext.signum() == -1 || ciphertext.compareTo(public_key.modulus) > 0) {
 			throw new HomomorphicException("PaillierCipher Multiply Invalid Parameter ciphertext: " + ciphertext);
 		}

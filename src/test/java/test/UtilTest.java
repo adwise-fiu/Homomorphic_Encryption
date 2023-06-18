@@ -2,6 +2,7 @@ package test;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import security.dgk.DGKKeyPairGenerator;
 import security.dgk.DGKPrivateKey;
 import security.dgk.DGKPublicKey;
 import security.paillier.PaillierKeyPairGenerator;
@@ -28,9 +29,9 @@ public class UtilTest implements constants {
         paillier_public_key = (PaillierPublicKey) paillier.getPublic();
         paillier_private_key = (PaillierPrivateKey) paillier.getPrivate();
 
-        PaillierKeyPairGenerator dgk_generator = new PaillierKeyPairGenerator();
+        DGKKeyPairGenerator dgk_generator = new DGKKeyPairGenerator();
         dgk_generator.initialize(KEY_SIZE, null);
-        KeyPair dgk = pa.generateKeyPair();
+        KeyPair dgk = dgk_generator.generateKeyPair();
         dgk_public_key = (DGKPublicKey) dgk.getPublic();
         dgk_private_key = (DGKPrivateKey) dgk.getPrivate();
     }

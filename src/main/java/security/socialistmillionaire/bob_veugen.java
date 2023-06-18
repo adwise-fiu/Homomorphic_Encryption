@@ -28,8 +28,7 @@ public class bob_veugen extends bob {
      */
 
     public boolean Protocol2(BigInteger y)
-            throws IOException, ClassNotFoundException, IllegalArgumentException
-    {
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         // Constraint...
         if(y.bitLength() > dgk_public.getL()) {
             throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
@@ -133,8 +132,7 @@ public class bob_veugen extends bob {
 
     // Used for Regular Modified Protocol 3 ONLY
     public void Modified_Protocol3(BigInteger z)
-            throws IOException, ClassNotFoundException, IllegalArgumentException
-    {
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         BigInteger beta;
         boolean answer;
 
@@ -156,8 +154,7 @@ public class bob_veugen extends bob {
 
     // Use this for Using Modified Protocol3 within Protocol 4
     private boolean Modified_Protocol3(BigInteger beta, BigInteger z)
-            throws IOException, ClassNotFoundException, IllegalArgumentException
-    {
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         Object in;
         BigInteger [] C;
         BigInteger [] beta_bits = new BigInteger[beta.bitLength()];
@@ -356,9 +353,25 @@ public class bob_veugen extends bob {
         return answer == 1;
     }
 
+
+    /**
+     * if Alice wants to sort a list of encrypted numbers, use this method if you
+     * will consistently sort using Protocol 4
+     */
+    public void repeat_ElGamal_Protocol4()
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
+        long start_time = System.nanoTime();
+        int counter = 0;
+        while(fromAlice.readBoolean()) {
+            ++counter;
+            this.ElGamal_Protocol4();
+        }
+        System.out.println("ElGamal Protocol 4 was used " + counter + " times!");
+        System.out.println("ElGamal Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
+    }
+
     public void ElGamal_Protocol4()
-            throws IOException, ClassNotFoundException, IllegalArgumentException
-    {
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         int answer;
         Object x;
         BigInteger beta;
@@ -394,7 +407,7 @@ public class bob_veugen extends bob {
 
         //Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already
         zeta_one = ElGamalCipher.encrypt(z.divide(powL), el_gamal_public);
-        if(z.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) == -1) {
+        if(z.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) < 0) {
             zeta_two = ElGamalCipher.encrypt(z.add(N).divide(powL), el_gamal_public);
         }
         else {

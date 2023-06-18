@@ -18,8 +18,6 @@ import java.security.SecureRandom;
 
 public final class NTL implements CipherConstants
 {
-	private static final SecureRandom rnd = new SecureRandom();
-
 	public static BigInteger POSMOD(BigInteger x, BigInteger n) {
 		return x.mod(n).add(n).mod(n);
 	}

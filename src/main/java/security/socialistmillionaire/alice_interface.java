@@ -15,7 +15,7 @@ public interface alice_interface {
     boolean Protocol2(BigInteger x, BigInteger y)
             throws IOException, ClassNotFoundException, HomomorphicException;
 
-    void division(BigInteger x, long d) throws IOException, ClassNotFoundException, HomomorphicException;
+    BigInteger division(BigInteger x, long d) throws IOException, ClassNotFoundException, HomomorphicException;
     BigInteger multiplication(BigInteger x, BigInteger y)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException;
 

@@ -101,57 +101,16 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 		System.out.println("Protocol 2 was used " + counter + " times!");
 		System.out.println("Protocol 2 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
 	}
-	
-	/**
-	 * if Alice wants to sort a list of encrypted numbers, use this method if you 
-	 * will consistently sort using Protocol 4
-	 */
-	private void repeat_Protocol4()
-			throws IOException, ClassNotFoundException, HomomorphicException {
-		long start_time = System.nanoTime();
-		int counter = 0;
-		while(fromAlice.readBoolean()) {
-			++counter;
-			this.Protocol4();
-		}
-		if(isDGK) {
-			System.out.println("DGK Protocol 4 was used " + counter + " times!");
-			System.out.println("DGK Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");			
-		}
-		else {
-			System.out.println("Paillier Protocol 4 was used " + counter + " times!");
-			System.out.println("Paillier Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
-		}
-	}
-	
-	/**
-	 * if Alice wants to sort a list of encrypted numbers, use this method if you 
-	 * will consistently sort using Protocol 4
-	 */
-	public void repeat_ElGamal_Protocol4()
-			throws IOException, ClassNotFoundException, IllegalArgumentException {
-		long start_time = System.nanoTime();
-		int counter = 0;
-		while(fromAlice.readBoolean()) {
-			++counter;
-			this.ElGamal_Protocol4();
-		}
-		System.out.println("ElGamal Protocol 4 was used " + counter + " times!");
-		System.out.println("ElGamal Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
-	}
-	
+
 	/**
 	 * Please review "Improving the DGK comparison protocol" - Protocol 1
 	 *
 	 * @param y - plaintext value
-	 * @return
-	 * @throws IOException
-	 * @throws ClassNotFoundException
+	 * @return boolean
 	 * @throws IllegalArgumentException - if y has more bits than is supported by provided DGK keys
 	 */
 	public boolean Protocol1(BigInteger y)
-			throws IOException, ClassNotFoundException, IllegalArgumentException
-	{
+			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
 		// Constraint...
 		if(y.bitLength() > dgk_public.getL()) {
 			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
@@ -159,7 +118,6 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 
 		Object in;
 		int deltaB = 0;
-		BigInteger deltaA = null;
 		BigInteger [] C;
 
 		//Step 1: Bob sends encrypted bits to Alice
@@ -180,7 +138,6 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 			C = (BigInteger []) in;
 		}
 		else if (in instanceof BigInteger) {
-			deltaA = (BigInteger) in;
 			return false;
 		}
 		else {
@@ -215,10 +172,6 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 	 * Please review "Improving the DGK comparison protocol" - Protocol 1
 	 * NOTE: The paper has a typo!
 	 * This protocol computes X >= Y NOT X <= Y
-	 *
-	 * @throws ClassNotFoundException
-	 * @throws IOException
-	 * @throws HomomorphicException
 	 */
 	
 	public boolean Protocol2()
@@ -312,9 +265,8 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 		toAlice.flush();
 	}
 
-	public void ElGamal_division(long divisor) 
-			throws ClassNotFoundException, IOException, IllegalArgumentException
-	{
+	public void ElGamal_division(long divisor)
+			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 		BigInteger c;
 		BigInteger z;
 		ElGamal_Ciphertext enc_z;
@@ -328,7 +280,7 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 	
 		z = ElGamalCipher.decrypt(enc_z, el_gamal_private);
 		if(!FAST_DIVIDE) {
-			Protocol3(z.mod(BigInteger.valueOf(divisor)));
+			Protocol1(z.mod(BigInteger.valueOf(divisor)));
 		}
 		
 		c = z.divide(BigInteger.valueOf(divisor));
@@ -437,7 +389,7 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 		}
 		
 		if(!FAST_DIVIDE) {
-			Protocol3(z.mod(BigInteger.valueOf(divisor)));
+			Protocol1(z.mod(BigInteger.valueOf(divisor)));
 		}
 		// MAYBE IF OVER FLOW HAPPENS?
 		// Modified_Protocol3(z.mod(powL), z);	

@@ -49,11 +49,20 @@ public class PaillierTest implements constants {
     }
 
     @Test
-    public void test_subtract() throws HomomorphicException {
+    public void test_multiply() throws HomomorphicException {
         // Test Multiplication
         a = PaillierCipher.multiply(PaillierCipher.encrypt(BigInteger.TEN, public_key),
                 BigInteger.TEN, public_key); // 10 * 10
         assertEquals(HUNDRED, PaillierCipher.decrypt(a, private_key));
+    }
+
+    @Test
+    public void test_subtract() throws HomomorphicException {
+        // Test Subtraction
+        a = PaillierCipher.encrypt(TWENTY, public_key);
+        a = PaillierCipher.subtract(a, PaillierCipher.encrypt(BigInteger.TEN, public_key),
+                public_key);// 20 - 10
+        assertEquals(BigInteger.TEN, PaillierCipher.decrypt(a, private_key));
 
         // Test Subtraction plaintext
 		a = PaillierCipher.subtract_plaintext(PaillierCipher.encrypt(TWENTY, public_key),
@@ -68,7 +77,6 @@ public class PaillierTest implements constants {
         assertEquals(FIFTY, PaillierCipher.decrypt(a, private_key));
     }
 
-
     @Test
     public void paillier_test_sum() throws HomomorphicException {
 
@@ -82,17 +90,17 @@ public class PaillierTest implements constants {
         }
 
         a = PaillierCipher.sum(values, public_key, 11);
-        assertEquals(HUNDRED, a);
+        assertEquals(HUNDRED, PaillierCipher.decrypt(a, private_key));
 
         a = PaillierCipher.sum(values, public_key, 5);
-        assertEquals(FIFTY, a);
+        assertEquals(FIFTY, PaillierCipher.decrypt(a, private_key));
 
         // sum with lists
         a = PaillierCipher.sum(list_values, public_key, 11);
-        assertEquals(HUNDRED, a);
+        assertEquals(HUNDRED, PaillierCipher.decrypt(a, private_key));
 
         a = PaillierCipher.sum(list_values, public_key, 5);
-        assertEquals(FIFTY, a);
+        assertEquals(FIFTY, PaillierCipher.decrypt(a, private_key));
     }
 
     // This was used in the SST REU project

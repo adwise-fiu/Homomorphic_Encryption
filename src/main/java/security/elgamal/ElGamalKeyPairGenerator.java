@@ -13,7 +13,11 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 {
 	private int key_size = 1024;
 	private SecureRandom random = null;
-	private boolean ADDITIVE = false;
+	private final boolean additive;
+
+	public ElGamalKeyPairGenerator(boolean additive) {
+		this.additive = additive;
+	}
 	
 	public void initialize(int key_size, SecureRandom random) {
 		this.key_size = key_size;
@@ -24,7 +28,6 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 		long start_time;
 		if(this.random == null) {
 			random = new SecureRandom();
-			this.ADDITIVE = true;
 		}
 		
 		// (a) take a random prime p with getPrime() function. p = 2 * p' + 1 with prime(p') = true
@@ -69,9 +72,9 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 		BigInteger h = g.modPow(x, p);
 
 		// secret key is (p, x) and public key is (p, g, h)
-		ElGamalPrivateKey sk = new ElGamalPrivateKey(p, x, g, h, ADDITIVE);
-		ElGamalPublicKey pk = new ElGamalPublicKey(p, g, h, ADDITIVE);
-		if (ADDITIVE) {
+		ElGamalPrivateKey sk = new ElGamalPrivateKey(p, x, g, h, this.additive);
+		ElGamalPublicKey pk = new ElGamalPublicKey(p, g, h, this.additive);
+		if (this.additive) {
 			System.out.println("El-Gamal Key pair generated! (Supports Addition over Ciphertext/Scalar Multiplication");
 		}
 		else {

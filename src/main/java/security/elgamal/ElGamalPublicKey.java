@@ -10,7 +10,7 @@ public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_
 	final BigInteger p;
 	final BigInteger g;
 	final BigInteger h;
-	public boolean ADDITIVE;
+	public final boolean ADDITIVE;
 
 	public ElGamalPublicKey(BigInteger p, BigInteger g, BigInteger h, boolean ADDITIVE)
 	{

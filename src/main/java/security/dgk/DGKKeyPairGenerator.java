@@ -15,7 +15,6 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	private int l = 16;
 	private int t = 160;
 	private int k = 1024;
-	private SecureRandom rnd = null;
 
 	public static void main(String []  args) {
 		System.out.println("Creating DGK Key pair");
@@ -153,7 +152,6 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 
 	public void initialize(int k, SecureRandom random) {
 		this.k = k;
-		this.rnd = random;
 	}
 
 	/**
@@ -161,13 +159,9 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	 */
 	public KeyPair generateKeyPair() {
 		long start_time = System.nanoTime();
-		if(this.rnd == null)
-		{
-			this.rnd = new SecureRandom();
-		}
-		
-		DGKPublicKey pubKey;
-		DGKPrivateKey privkey;
+
+		DGKPublicKey public_key;
+		DGKPrivateKey private_key;
 		
 		System.out.println("Generating Keys...");
 
@@ -362,15 +356,15 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 		System.out.println("While loop 3: g is generated");
 
 		System.out.println("Generating hashmaps...");
-		pubKey =  new DGKPublicKey(n, g, h, u, this.l, this.t, this.k);
-		privkey = new DGKPrivateKey(p, q, vp, vq, pubKey);
+		public_key =  new DGKPublicKey(n, g, h, u, this.l, this.t, this.k);
+		private_key = new DGKPrivateKey(p, q, vp, vq, public_key);
 		boolean no_skip_public_key_maps = true;
 		if(no_skip_public_key_maps)
 		{
-			pubKey.run();
+			public_key.run();
 		}
 		System.out.println("FINISHED WITH DGK KEY GENERATION in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
-		return new KeyPair(pubKey, privkey);
+		return new KeyPair(public_key, private_key);
 	}
 
 	public String toString() {

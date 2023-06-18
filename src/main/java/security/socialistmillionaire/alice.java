@@ -29,9 +29,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 					security.paillier.PaillierPublicKey.class,
 					security.dgk.DGKPublicKey.class,
 					security.elgamal.ElGamalPublicKey.class,
-					security.paillier.PaillierPrivateKey.class,
-					security.dgk.DGKPrivateKey.class,
-					security.elgamal.ElGamalPrivateKey.class,
 					security.gm.GMPublicKey.class,
 					java.math.BigInteger.class,
 					java.lang.Number.class,
@@ -79,7 +76,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 			Encrypted_Y = (BigInteger []) in;
 		}
 		else {
-			throw new IllegalArgumentException("Protocol 1 Step 1: Missing Y-bits!");
+			throw new IllegalArgumentException("Protocol 1 Step 1: Missing Y-bits! Got " + in.getClass().getName());
 		}
 
 		if (x.bitLength() < Encrypted_Y.length) {
@@ -278,7 +275,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 	 * @throws IOException            - Any socket errors
 	 * @throws HomomorphicException   Constraints: 0 <= x <= N * 2^{-sigma} and 0 <= d < N
 	 */
-	public void division(BigInteger x, long d)
+	public BigInteger division(BigInteger x, long d)
 			throws IOException, ClassNotFoundException,  HomomorphicException {
 		Object in;
 		BigInteger answer;
@@ -339,6 +336,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 				answer = PaillierCipher.subtract(answer, PaillierCipher.encrypt(BigInteger.valueOf(t), paillier_public), paillier_public);
 			}
 		}
+		return answer;
 	}
 	
 	// What to do if you want to subtract two El-Gamal texts?
@@ -620,43 +618,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return max;
 	}
 	
-	public void getKMin_ElGamal(List<ElGamal_Ciphertext> input, int k)
-			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
-	{
-		if(k > input.size() || k <= 0) {
-			throw new IllegalArgumentException("Invalid k value! " + k);
-		}
-		// deep copy
-		List<ElGamal_Ciphertext> arr = new ArrayList<>(input);
-		
-		ElGamal_Ciphertext temp;
-		List<ElGamal_Ciphertext> min = new ArrayList<>();
-		
-		for (int i = 0; i < k; i++) {
-			for (int j = 0; j < arr.size() - i - 1; j++) {
-				toBob.writeBoolean(true);
-				toBob.flush();
-				
-				// Originally arr[j] > arr[j + 1]
-				if (!this.Protocol2(arr.get(j), arr.get(j + 1))) {
-					// swap temp and arr[i]
-					temp = arr.get(j);
-					arr.set(j, arr.get(j + 1));
-					arr.set(j + 1, temp);
-				}
-			}
-		}
-		
-		// Get last K-elements of arr!! 
-		for (int i = 0; i < k; i++) {
-			min.add(arr.get(arr.size() - 1 - i));
-		}
-		
-		// Close Bob
-		toBob.writeBoolean(false);
-		toBob.flush();
-	}
-	
 	public void getKMin(BigInteger [] input, int k)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
@@ -673,7 +634,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 				toBob.flush();
 				// Might need a K-Max test as well!
 				activation = this.Protocol2(arr[j], arr[j + 1]);
-
 				
 				// Originally arr[j] > arr[j + 1]
 				if (!activation) {

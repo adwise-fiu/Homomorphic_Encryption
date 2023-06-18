@@ -11,6 +11,8 @@ import security.paillier.PaillierCipher;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class alice_veugen extends alice {
     public alice_veugen(Socket clientSocket) throws IOException {
@@ -237,7 +239,7 @@ public class alice_veugen extends alice {
          * Currently by design of the program
          * 1- Alice KNOWS that bob will assume deltaB = 0.
          *
-         * Alice knows the protocol should be paillier_privateipped if
+         * Alice knows the protocol should be paillier_private if
          * the bit length is NOT equal.
          *
          * Case 1:
@@ -634,5 +636,42 @@ public class alice_veugen extends alice {
             throw new IllegalArgumentException("Invalid Comparison result --> " + comparison);
         }
         return comparison == 1;
+    }
+
+    public void getKMin_ElGamal(List<ElGamal_Ciphertext> input, int k)
+            throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
+    {
+        if(k > input.size() || k <= 0) {
+            throw new IllegalArgumentException("Invalid k value! " + k);
+        }
+        // deep copy
+        List<ElGamal_Ciphertext> arr = new ArrayList<>(input);
+
+        ElGamal_Ciphertext temp;
+        List<ElGamal_Ciphertext> min = new ArrayList<>();
+
+        for (int i = 0; i < k; i++) {
+            for (int j = 0; j < arr.size() - i - 1; j++) {
+                toBob.writeBoolean(true);
+                toBob.flush();
+
+                // Originally arr[j] > arr[j + 1]
+                if (!this.Protocol4(arr.get(j), arr.get(j + 1))) {
+                    // swap temp and arr[i]
+                    temp = arr.get(j);
+                    arr.set(j, arr.get(j + 1));
+                    arr.set(j + 1, temp);
+                }
+            }
+        }
+
+        // Get last K-elements of arr!!
+        for (int i = 0; i < k; i++) {
+            min.add(arr.get(arr.size() - 1 - i));
+        }
+
+        // Close Bob
+        toBob.writeBoolean(false);
+        toBob.flush();
     }
 }

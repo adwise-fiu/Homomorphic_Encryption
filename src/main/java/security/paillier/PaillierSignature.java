@@ -11,26 +11,26 @@ public class PaillierSignature {
 	/**
 	 * Please refer to "Public-Key Cryptosystems Based on Composite Degree Residuosity Classes"
 	 * @param message to sign
-	 * @param sk - used to sign message
+	 * @param private_key - used to sign message
 	 */
-	public static List<BigInteger> sign(BigInteger message, PaillierPrivateKey sk) {
+	public static List<BigInteger> sign(BigInteger message, PaillierPrivateKey private_key) {
 		List<BigInteger> tuple = new ArrayList<>();
-		BigInteger sigma_one = PaillierCipher.L(message.modPow(sk.lambda, sk.modulus), sk.n);
-		sigma_one = sigma_one.multiply(sk.rho);
+		BigInteger sigma_one = PaillierCipher.L(message.modPow(private_key.lambda, private_key.modulus), private_key.n);
+		sigma_one = sigma_one.multiply(private_key.rho);
 		
-		BigInteger sigma_two = message.multiply(sk.g.modPow(sigma_one, sk.n).modInverse(sk.n));
-		sigma_two = sigma_two.modPow(sk.n.modInverse(sk.lambda), sk.n);
+		BigInteger sigma_two = message.multiply(private_key.g.modPow(sigma_one, private_key.n).modInverse(private_key.n));
+		sigma_two = sigma_two.modPow(private_key.n.modInverse(private_key.lambda), private_key.n);
 		
 		tuple.add(sigma_one);
 		tuple.add(sigma_two);
 		return tuple;
 	}
 
-	public static boolean verify(BigInteger message, List<BigInteger> signed_message, PaillierPublicKey pk) {
+	public static boolean verify(BigInteger message, List<BigInteger> signed_message, PaillierPublicKey public_key) {
 		assert signed_message.size() == 2;
 		BigInteger sigma_one = signed_message.get(0);
 		BigInteger sigma_two = signed_message.get(1);
-		return verify(message, sigma_one, sigma_two, pk);
+		return verify(message, sigma_one, sigma_two, public_key);
 	}
 	
 	/**
@@ -38,12 +38,12 @@ public class PaillierSignature {
 	 * @param message - Plaintext message to verify
 	 * @param sigma_one - First component of signature
 	 * @param sigma_two - Second component of signature
-	 * @param pk - Used to verify signature
+	 * @param public_key - Used to verify signature
 	 * @return - true - valid, false - invalid
 	 */
-	public static boolean verify(BigInteger message, BigInteger sigma_one, BigInteger sigma_two, PaillierPublicKey pk) {
-		BigInteger first_part = pk.g.modPow(sigma_one, pk.modulus);
-		BigInteger second_part = sigma_two.modPow(pk.n, pk.modulus);
-		return message.compareTo(first_part.multiply(second_part).mod(pk.modulus)) == 0;
+	public static boolean verify(BigInteger message, BigInteger sigma_one, BigInteger sigma_two, PaillierPublicKey public_key) {
+		BigInteger first_part = public_key.g.modPow(sigma_one, public_key.modulus);
+		BigInteger second_part = sigma_two.modPow(public_key.n, public_key.modulus);
+		return message.compareTo(first_part.multiply(second_part).mod(public_key.modulus)) == 0;
 	}
 }

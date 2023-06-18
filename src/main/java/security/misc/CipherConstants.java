@@ -1,12 +1,15 @@
 package security.misc;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 
 // This interface collects constants used by a lot of
 // 1- KeyPairGenerators
 // 2- Ciphers (ElGamal)
 public interface CipherConstants 
 {
+	SecureRandom rnd = new SecureRandom();
+
 	// controls the error probability of the primality testing algorithm
     int CERTAINTY = 40;
 	// This variable has been needed a lot, but I want to keep it a Java 8 library
@@ -27,6 +30,6 @@ public interface CipherConstants
 	// Misc
     BigInteger NEG_ONE = new BigInteger("-1");
 	
-	// For tracking time in nano-seconds to seconds
+	// For tracking time in nanoseconds to seconds
     int BILLION = BigInteger.TEN.pow(9).intValue();
 }

@@ -11,11 +11,11 @@ public class ElGamalSignature implements CipherConstants
 	 * Sign a message with ElGamal Private Key
 	 * <a href="https://en.wikipedia.org/wiki/ElGamal_signature_scheme">...</a>
 	 * @param message - plaintext
-	 * @param sk - ElGamal Private Key to sign
+	 * @param private_key - ElGamal Private Key to sign
 	 * @return - signed message
 	 */
-	public static ElGamal_Ciphertext sign(BigInteger message, ElGamalPrivateKey sk) {
-		BigInteger p1 = sk.p.subtract(BigInteger.ONE);
+	public static ElGamal_Ciphertext sign(BigInteger message, ElGamalPrivateKey private_key) {
+		BigInteger p1 = private_key.p.subtract(BigInteger.ONE);
 		BigInteger K;
 		while(true) {
 			// Pick [0, p - 2]
@@ -28,8 +28,8 @@ public class ElGamalSignature implements CipherConstants
 				break;
 			}
 		}
-		BigInteger r = sk.g.modPow(K, sk.p);
-		BigInteger s = message.subtract(sk.x.multiply(r)).multiply(K.modInverse(p1)).mod(p1);
+		BigInteger r = private_key.g.modPow(K, private_key.p);
+		BigInteger s = message.subtract(private_key.x.multiply(r)).multiply(K.modInverse(p1)).mod(p1);
 		return new ElGamal_Ciphertext(r, s);
 	}
 	
@@ -38,25 +38,25 @@ public class ElGamalSignature implements CipherConstants
 	 * <a href="https://en.wikipedia.org/wiki/ElGamal_signature_scheme">...</a>
 	 * @param message - plaintext
 	 * @param signature - signed message to verify
-	 * @param pk - Used to verify signed message integrity
+	 * @param public_key - Used to verify signed message integrity
 	 * @return - true - is valid, false - not valid
 	 */
-	public static boolean verify(BigInteger message, ElGamal_Ciphertext signature, ElGamalPublicKey pk) {
+	public static boolean verify(BigInteger message, ElGamal_Ciphertext signature, ElGamalPublicKey public_key) {
 		BigInteger r = signature.getA();
 		BigInteger s = signature.getB();
 		BigInteger check;
 
-		if (r.compareTo(BigInteger.ZERO) <= 0 || r.compareTo(pk.p.subtract(BigInteger.ONE)) > 0) {
-			//System.err.println("(ElGamal Signature) r: " + r + " and " + pk.p.subtract(BigInteger.ONE));
+		if (r.compareTo(BigInteger.ZERO) <= 0 || r.compareTo(public_key.p.subtract(BigInteger.ONE)) > 0) {
+			//System.err.println("(ElGamal Signature) r: " + r + " and " + public_key.p.subtract(BigInteger.ONE));
 			return false;
 		}
-		if (s.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(pk.p.subtract(TWO)) > 0) {
-			//System.err.println("(ElGamal Signature) s: " + s + " and " + pk.p.subtract(TWO));
+		if (s.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(public_key.p.subtract(TWO)) > 0) {
+			//System.err.println("(ElGamal Signature) s: " + s + " and " + public_key.p.subtract(TWO));
 			return false;
 		}
 		// h = y = g^x
-		check = pk.h.modPow(r, pk.p);
-		check = check.multiply(r.modPow(s, pk.p)).mod(pk.p);
-		return check.compareTo(pk.g.modPow(message, pk.p)) == 0;
+		check = public_key.h.modPow(r, public_key.p);
+		check = check.multiply(r.modPow(s, public_key.p)).mod(public_key.p);
+		return check.compareTo(public_key.g.modPow(message, public_key.p)) == 0;
 	}
 }
