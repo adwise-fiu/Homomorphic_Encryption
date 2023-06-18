@@ -29,7 +29,7 @@ public class bob_veugen extends bob {
      * @param y - plaintext value
      */
 
-    public boolean Protocol2(BigInteger y)
+    public boolean Protocol1(BigInteger y)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         // Constraint...
         if(y.bitLength() > dgk_public.getL()) {
@@ -279,7 +279,7 @@ public class bob_veugen extends bob {
             Modified_Protocol3(beta, z);
         }
         else {
-            Protocol2(beta);
+            Protocol1(beta);
         }
 
         //Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already
@@ -390,7 +390,7 @@ public class bob_veugen extends bob {
             Modified_Protocol3(beta, z);
         }
         else {
-            Protocol2(beta);
+            Protocol1(beta);
         }
 
         //Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already

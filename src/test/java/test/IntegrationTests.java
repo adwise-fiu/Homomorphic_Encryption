@@ -1,5 +1,6 @@
 package test;
 
+import security.elgamal.ElGamalPrivateKey;
 import security.paillier.PaillierKeyPairGenerator;
 import security.dgk.DGKKeyPairGenerator;
 import security.elgamal.ElGamalKeyPairGenerator;
@@ -173,11 +174,11 @@ public class IntegrationTests implements constants
 		}
 	}
 
-	/*
 	// Test El Gamal version of Alice and Bob
 	@Test
 	public void el_gamal_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		Thread andrew = new Thread(new test_bob(paillier, dgk, el_gamal, 9202));
+		bob_veugen bob_version_two = new bob_veugen(paillier, dgk, el_gamal);
+		Thread andrew = new Thread(new test_el_gamal_bob(bob_version_two, 9202));
 		andrew.start();
 
 		// Wait then connect!
@@ -185,10 +186,10 @@ public class IntegrationTests implements constants
 		Thread.sleep(2 * 1000);
 		System.out.println("Alice starting...");
 
-		alice Niu = new alice_veugen(new Socket("127.0.0.1", 9202));
+		alice_veugen Niu = new alice_veugen(new Socket("127.0.0.1", 9202));
 		Niu.receivePublicKeys();
 
-		Thread yujia = new Thread(new test_alice(Niu, paillier, dgk));
+		Thread yujia = new Thread(new test_el_gamal_alice(Niu, (ElGamalPrivateKey) el_gamal.getPrivate()));
 		yujia.start();
 		try {
 			andrew.join();
@@ -202,7 +203,8 @@ public class IntegrationTests implements constants
 	// Test Joye and Salehi Implementation of Alice and Bob
 	@Test
 	public void joye_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		Thread andrew = new Thread(new test_bob(paillier, dgk, el_gamal, 9203));
+		bob_joye bob_version_three = new bob_joye(paillier, dgk, el_gamal);
+		Thread andrew = new Thread(new test_bob(bob_version_three, 9203));
 		andrew.start();
 
 		// Wait then connect!
@@ -223,5 +225,4 @@ public class IntegrationTests implements constants
 			e.printStackTrace();
 		}
 	}
-	 */
 }

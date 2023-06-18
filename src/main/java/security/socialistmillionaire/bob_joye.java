@@ -6,8 +6,8 @@ import java.net.Socket;
 import java.security.KeyPair;
 
 public class bob_joye extends bob{
-    public bob_joye(Socket clientSocket, KeyPair a, KeyPair b, KeyPair c) throws IOException, IllegalArgumentException {
-        super(clientSocket, a, b, c);
+    public bob_joye(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
+        super(a, b, c);
     }
 
     // I can use the same Protocol1 from Veugen's Protocol for basic Protocol

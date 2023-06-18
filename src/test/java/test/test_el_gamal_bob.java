@@ -1,48 +1,31 @@
 package test;
 
-import security.dgk.DGKPrivateKey;
-import security.elgamal.ElGamalPrivateKey;
 import security.misc.HomomorphicException;
-import security.paillier.PaillierPrivateKey;
 import security.socialistmillionaire.bob_veugen;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.KeyPair;
 
-public class test_el_gamal_bob {
+public class test_el_gamal_bob implements Runnable {
     private static ServerSocket bob_socket = null;
     private static Socket bob_client = null;
-    private static bob_veugen andrew = null;
-    private final KeyPair p;
-    private final KeyPair d;
-    private final KeyPair e;
+    private final bob_veugen andrew;
+    private final int port;
 
-    public test_el_gamal_bob(KeyPair paillier, KeyPair dgk, KeyPair elgamal) {
-        this.p = paillier;
-        this.d = dgk;
-        this.e = elgamal;
+    public test_el_gamal_bob(bob_veugen andrew, int port) {
+        this.andrew = andrew;
+        this.port = port;
     }
 
     // This would be in Bob's Main Method
     public void run() {
         try
         {
-            bob_socket = new ServerSocket(9254);
+            bob_socket = new ServerSocket(port);
             System.out.println("Bob is ready...");
             bob_client = bob_socket.accept();
-            andrew = new bob_veugen(bob_client, this.p, this.d, this.e);
             andrew.sendPublicKeys();
-
-            // Send Private Keys to alive for testing purposes.
-            PaillierPrivateKey p = (PaillierPrivateKey) this.p.getPrivate();
-            DGKPrivateKey d = (DGKPrivateKey) this.d.getPrivate();
-            ElGamalPrivateKey g = (ElGamalPrivateKey) this.e.getPrivate();
-
-            andrew.writeObject(p);
-            andrew.writeObject(d);
-            andrew.writeObject(g);
 
             test_sorting();
             test_protocol_two();

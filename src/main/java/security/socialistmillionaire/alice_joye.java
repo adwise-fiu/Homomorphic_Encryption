@@ -58,6 +58,7 @@ public class alice_joye extends alice {
         t_bits = x.bitLength();
         double ceiling = Math.ceil(t_bits/2.0);
         double floor = Math.floor(t_bits/2.0);
+
         if (hamming_weight > floor) {
             delta_a = 0;
         }
@@ -104,10 +105,9 @@ public class alice_joye extends alice {
             C[i] = DGKOperations.add(C[i], second_term, dgk_public);
             C[i] = DGKOperations.add_plaintext(C[i], first_term, dgk_public);
         }
-
         // Use the same trick as from Veugen
         C[set_l.size()] = DGKOperations.sum(XOR, dgk_public);
-        C[set_l.size()] = DGKOperations.add_plaintext(C[Encrypted_Y.length], delta_a, dgk_public);
+        C[set_l.size()] = DGKOperations.add_plaintext(C[set_l.size()], delta_a, dgk_public);
 
         // Step 4: send shuffled bits to Bob
         C = shuffle_bits(C);
@@ -145,9 +145,5 @@ public class alice_joye extends alice {
         else {
             return value.bitCount();
         }
-    }
-
-    public boolean Protocol2(BigInteger x, BigInteger y){
-        return true;
     }
 }

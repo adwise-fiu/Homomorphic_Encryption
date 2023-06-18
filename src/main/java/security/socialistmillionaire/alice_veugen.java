@@ -474,7 +474,8 @@ public class alice_veugen extends alice {
 
             // Step 7: Compute [[x > y]]
             if(r.compareTo(dgk_public.getU().subtract(BigInteger.ONE).divide(TWO)) < 0) {
-                result = DGKOperations.subtract(zeta_one, DGKOperations.encrypt(r.divide(powL), dgk_public), dgk_public);
+                result = DGKOperations.
+                        subtract(zeta_one, DGKOperations.encrypt(r.divide(powL), dgk_public), dgk_public);
             }
             else {
                 result = DGKOperations.subtract(zeta_two, DGKOperations.encrypt(r.divide(powL), dgk_public), dgk_public);

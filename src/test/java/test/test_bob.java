@@ -158,7 +158,7 @@ public class test_bob implements Runnable
 		andrew.setDGKMode(dgk_mode);
 		if (dgk_mode) {
 			if (andrew.getClass() == security.socialistmillionaire.bob.class) {
-				System.out.println("Skipping because will crash...");
+				System.out.println("Bob: Skipping Sorting because will crash with this alice version...");
 			}
 		}
 		else {

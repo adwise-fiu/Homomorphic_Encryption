@@ -1,16 +1,11 @@
 package test;
 
-import security.dgk.DGKPrivateKey;
-import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
 import security.elgamal.ElGamal_Ciphertext;
 import security.misc.HomomorphicException;
 import security.misc.NTL;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
-import security.socialistmillionaire.alice;
 import security.socialistmillionaire.alice_veugen;
 
 import java.io.IOException;
@@ -18,19 +13,16 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class test_el_gamal_alice implements constants {
-    public test_el_gamal_alice(alice_veugen Niu) {
+public class test_el_gamal_alice implements constants, Runnable {
+    public test_el_gamal_alice(alice_veugen Niu, ElGamalPrivateKey el_gamal_private) {
         this.Niu = Niu;
+        this.el_gamal_private = el_gamal_private;
     }
 
     private final alice_veugen Niu;
-    private static PaillierPublicKey paillier_public;
-    private static DGKPublicKey dgk_public_key;
-    private static ElGamalPublicKey el_gamal_public;
 
-    private static PaillierPrivateKey paillier_private;
-    private static DGKPrivateKey privKey;
-    private static ElGamalPrivateKey e_paillier_private;
+    private ElGamalPublicKey el_gamal_public;
+    private ElGamalPrivateKey el_gamal_private;
 
     // Get your test data...
     private static final BigInteger[] low = IntegrationTests.generate_low();
@@ -39,22 +31,12 @@ public class test_el_gamal_alice implements constants {
 
     public void run() {
         try {
-            paillier_public = Niu.getPaillierPublicKey();
-            dgk_public_key = Niu.getDGKPublicKey();
             el_gamal_public = Niu.getElGamalPublicKey();
 
-            // Get Private Keys from Bob
-            // This is only for verifying tests...
-            paillier_private = (PaillierPrivateKey) Niu.readObject();
-            privKey = (DGKPrivateKey) Niu.readObject();
-            e_paillier_private = (ElGamalPrivateKey) Niu.readObject();
-
             test_sorting();
-
             test_protocol_two();
             test_outsourced_multiply();
             test_outsourced_division();
-
         }
         catch (ClassNotFoundException | IOException | HomomorphicException e) {
             e.printStackTrace();
