@@ -171,28 +171,6 @@ public class alice_veugen extends alice {
     /**
      * Primarily used in Protocol 4.
      */
-    public boolean Modified_Protocol3(BigInteger r)
-            throws ClassNotFoundException, IOException, HomomorphicException
-    {
-        BigInteger alpha;
-        boolean answer;
-        // Constraint...
-        if(r.bitLength() > dgk_public.getL()) {
-            throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, x is: " + r.bitLength() + " bits");
-        }
-        if(isDGK) {
-            alpha = r.mod(powL);
-            answer = Modified_Protocol3(alpha, r, rnd.nextInt(2));
-        }
-        else {
-            isDGK = true;
-            alpha = r.mod(powL);
-            answer = Modified_Protocol3(alpha, r, rnd.nextInt(2));
-            isDGK = false;
-        }
-        return answer;
-    }
-
     private boolean Modified_Protocol3(BigInteger alpha, BigInteger r, int deltaA)
             throws ClassNotFoundException, IOException, HomomorphicException
     {
@@ -321,13 +299,6 @@ public class alice_veugen extends alice {
                 C[i] = dgk_public.ONE();
             }
             else {
-                exponent = 0;
-                if(alpha_hat.testBit(i)) {
-                    exponent += 1;
-                }
-                if(alpha.testBit(i)) {
-                    exponent -= 1;
-                }
                 exponent = NTL.bit(alpha_hat, i) - NTL.bit(alpha, i);
                 C[i] = DGKOperations.multiply(DGKOperations.sum(w, dgk_public, i), 3, dgk_public);
                 C[i] = DGKOperations.add_plaintext(C[i], 1 - (2L * deltaA), dgk_public);

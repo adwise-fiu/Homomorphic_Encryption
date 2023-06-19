@@ -236,9 +236,13 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 	}
 
 	// Support addition and subtraction
-	public void addition(boolean addition) 
-			throws IOException, ClassNotFoundException, IllegalArgumentException
-	{
+	public void addition(boolean addition)
+			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
+		if (el_gamal_public.additive) {
+			throw new HomomorphicException("El Gamal Keys already support addition over cipher-text. " +
+					"Don't outsource it.");
+		}
+
 		Object in;
 		ElGamal_Ciphertext enc_x_prime;
 		ElGamal_Ciphertext enc_y_prime;
@@ -276,6 +280,12 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 
 	public void ElGamal_division(long divisor)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
+
+		if (!el_gamal_public.additive) {
+			throw new HomomorphicException("El Gamal Keys are not using additive version, so you can't " +
+					"outsource division");
+		}
+
 		BigInteger c;
 		BigInteger z;
 		ElGamal_Ciphertext enc_z;
@@ -305,8 +315,13 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 	}
 	
 	public void ElGamal_multiplication() 
-			throws IOException, ClassNotFoundException, IllegalArgumentException
+			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
 	{
+		if (!el_gamal_public.additive) {
+			throw new HomomorphicException("El Gamal Keys are not using additive version, so you can't " +
+					"outsource multiply");
+		}
+
 		Object in;
 		ElGamal_Ciphertext enc_x_prime;
 		ElGamal_Ciphertext enc_y_prime;

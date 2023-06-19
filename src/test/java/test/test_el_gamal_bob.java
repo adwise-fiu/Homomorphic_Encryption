@@ -57,9 +57,7 @@ public class test_el_gamal_bob implements Runnable {
     }
 
     public void test_sorting() throws IOException, ClassNotFoundException, HomomorphicException {
-        if(andrew.getElGamalPublicKey().additive) {
-            andrew.repeat_ElGamal_Protocol4();
-        }
+        andrew.repeat_ElGamal_Protocol4();
     }
 
     public void test_protocol_two() throws IOException, ClassNotFoundException, HomomorphicException {
@@ -68,7 +66,7 @@ public class test_el_gamal_bob implements Runnable {
         }
     }
 
-    public void test_outsourced_multiply() throws IOException, ClassNotFoundException {
+    public void test_outsourced_multiply() throws IOException, ClassNotFoundException, HomomorphicException {
         for(int i = 0; i < 3; i++) {
             andrew.ElGamal_multiplication();
         }
@@ -82,8 +80,7 @@ public class test_el_gamal_bob implements Runnable {
         andrew.ElGamal_division(25);
     }
 
-    public void test_addition() throws ClassNotFoundException, IOException
-    {
+    public void test_addition() throws ClassNotFoundException, IOException, HomomorphicException {
         if(!andrew.getElGamalPublicKey().additive) {
             andrew.addition(true);
             andrew.addition(true);
@@ -91,7 +88,7 @@ public class test_el_gamal_bob implements Runnable {
         }
     }
 
-    public void test_subtraction() throws IOException, ClassNotFoundException {
+    public void test_subtraction() throws IOException, ClassNotFoundException, HomomorphicException {
         if(!andrew.getElGamalPublicKey().additive) {
             andrew.addition(false);
             andrew.addition(false);

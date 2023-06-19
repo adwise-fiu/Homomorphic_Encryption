@@ -23,7 +23,6 @@ public class test_el_gamal_alice implements constants, Runnable {
     }
 
     private final alice_veugen Niu;
-
     private ElGamalPublicKey el_gamal_public;
     private final ElGamalPrivateKey el_gamal_private;
 
@@ -42,11 +41,11 @@ public class test_el_gamal_alice implements constants, Runnable {
 
             //Niu.set_el_gamal_additive(false);
             //el_gamal_private.set_additive(false);
-            //el_gamal_public.set_additive(false);
+            ///el_gamal_public.set_additive(false);
             //test_addition();
             //test_subtract();
         }
-        catch (ClassNotFoundException | IOException | HomomorphicException e) {
+        catch (ClassNotFoundException | HomomorphicException | IOException e) {
             e.printStackTrace();
         }
     }

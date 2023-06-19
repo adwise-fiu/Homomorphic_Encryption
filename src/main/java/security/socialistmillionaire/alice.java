@@ -344,10 +344,10 @@ public class alice extends socialist_millionaires implements alice_interface {
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
 		if(el_gamal_public.additive) {
-			//throw new IllegalArgumentException("ElGamal is NOT additive mode");
-			ElGamalCipher.add(x, y, el_gamal_public);
-			return x;
+			// Can add both ciphertexts by default
+			return ElGamalCipher.add(x, y, el_gamal_public);
 		}
+		// Must outsource this operation
 		Object in;
 		ElGamal_Ciphertext x_prime;
 		ElGamal_Ciphertext y_prime;

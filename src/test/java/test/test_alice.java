@@ -207,19 +207,19 @@ public class test_alice implements Runnable, constants
 		for(BigInteger l: low) {
 			// X <= Y is true
 			answer = Niu.Protocol1(l);
-			System.out.println(answer);
+			//System.out.println(answer);
 			assertTrue(answer);
 		}
 		for(BigInteger l: mid) {
 			// X <= Y is true
 			answer = Niu.Protocol1(l);
-			System.out.println(answer);
+			//System.out.println(answer);
 			assertTrue(answer);
 		}
 		for(BigInteger l: high) {
 			// X <= Y is false
 			answer = Niu.Protocol1(l);
-			System.out.println(!answer);
+			//System.out.println(!answer);
 			//assertFalse(answer);
 		}
 	}

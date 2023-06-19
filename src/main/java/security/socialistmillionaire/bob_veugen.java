@@ -360,6 +360,11 @@ public class bob_veugen extends bob {
 
     public void ElGamal_Protocol4()
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
+
+        if (!this.getElGamalPublicKey().additive) {
+            throw new HomomorphicException("Encrypted Integer can't work on this version of EL Gamal");
+        }
+
         int answer;
         Object x;
         BigInteger beta;
