@@ -340,13 +340,13 @@ public class alice extends socialist_millionaires implements alice_interface {
 	}
 	
 	// What to do if you want to subtract two El-Gamal texts?
-	public void addition(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
+	public ElGamal_Ciphertext addition(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
-		if(el_gamal_public.ADDITIVE) {
+		if(el_gamal_public.additive) {
 			//throw new IllegalArgumentException("ElGamal is NOT additive mode");
 			ElGamalCipher.add(x, y, el_gamal_public);
-			return;
+			return x;
 		}
 		Object in;
 		ElGamal_Ciphertext x_prime;
@@ -376,6 +376,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		else {
 			throw new IllegalArgumentException("Didn't get [[x' * y']] from Bob: " + in.getClass().getName());
 		}
+		return result;
 	}
 
 	public BigInteger multiplication(BigInteger x, BigInteger y) 
@@ -432,12 +433,12 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return result;
 	}
 	
-	public void division(ElGamal_Ciphertext x, long d)
+	public ElGamal_Ciphertext division(ElGamal_Ciphertext x, long d)
 			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
 	{
-		if(!el_gamal_public.ADDITIVE) {
+		if(!el_gamal_public.additive) {
 			ElGamalCipher.divide(x, ElGamalCipher.encrypt(BigInteger.valueOf(d), el_gamal_public), el_gamal_public);
-			return;
+			return x;
 		}
 		Object in;
 		ElGamal_Ciphertext answer;
@@ -478,12 +479,13 @@ public class alice extends socialist_millionaires implements alice_interface {
 		if(t == 1) {
 			answer = ElGamalCipher.subtract(answer, ElGamalCipher.encrypt(t, el_gamal_public), el_gamal_public);
 		}
+		return answer;
 	}
 	
 	public ElGamal_Ciphertext multiplication(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException
 	{
-		if(!el_gamal_public.ADDITIVE) {
+		if(!el_gamal_public.additive) {
 			return ElGamalCipher.multiply(x, y, el_gamal_public);
 		}
 		Object in;

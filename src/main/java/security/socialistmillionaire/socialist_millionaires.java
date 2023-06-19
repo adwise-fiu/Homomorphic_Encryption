@@ -87,17 +87,14 @@ public abstract class socialist_millionaires implements CipherConstants
 			toAlice.flush();	
 		}
 	}
-	
-	public Object readObject() throws ClassNotFoundException, IOException
-	{
-		if (fromBob != null) {
-			return fromBob.readObject();	
-		}
-		else {
-			return fromAlice.readObject();
+
+	public void set_el_gamal_additive(boolean additive){
+		this.el_gamal_public.set_additive(additive);
+		if (this.el_gamal_private != null) {
+			this.el_gamal_private.set_additive(additive);
 		}
 	}
-	
+
 	/**
 	 * Create deep copy of BigInteger array
 	 */

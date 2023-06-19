@@ -10,14 +10,17 @@ public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_
 	final BigInteger p;
 	final BigInteger g;
 	final BigInteger h;
-	public final boolean ADDITIVE;
+	public boolean additive;
 
-	public ElGamalPublicKey(BigInteger p, BigInteger g, BigInteger h, boolean ADDITIVE)
-	{
+	public ElGamalPublicKey(BigInteger p, BigInteger g, BigInteger h, boolean additive) {
 		this.p = p;
 		this.g = g;
 		this.h = h;
-		this.ADDITIVE = ADDITIVE;
+		this.additive = additive;
+	}
+
+	public void set_additive(boolean additive) {
+		this.additive = additive;
 	}
 
 	public String getAlgorithm() 

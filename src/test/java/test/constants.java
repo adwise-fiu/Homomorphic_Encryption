@@ -17,7 +17,9 @@ public interface constants {
     BigInteger FORTY_TWO = new BigInteger("42");
 
     BigInteger TWO_HUNDRED = new BigInteger("200");
-
+    BigInteger THREE_HUNDRED = new BigInteger("300");
+    BigInteger FOUR_HUNDRED = new BigInteger("400");
+    BigInteger FIVE_HUNDRED = new BigInteger("500");
     BigInteger THOUSAND = new BigInteger("1000");
 
     BigInteger TWO_THOUSAND = new BigInteger("2000");

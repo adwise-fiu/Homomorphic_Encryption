@@ -13,7 +13,7 @@ public class ElGamalCipher
 {
 	// --------------------------BigInteger ElGamal---------------------------------------
 	public static ElGamal_Ciphertext encrypt(BigInteger plaintext, ElGamalPublicKey public_key) {
-		if(public_key.ADDITIVE) {
+		if(public_key.additive) {
 			return Encrypt_Homomorph(plaintext, public_key);
 		}
 		else {
@@ -27,7 +27,7 @@ public class ElGamalCipher
 	}
 
 	public static BigInteger decrypt(ElGamal_Ciphertext ciphertext, ElGamalPrivateKey private_key) {
-		if(private_key.ADDITIVE) {
+		if(private_key.additive) {
 			return Decrypt_Homomorph(ciphertext, private_key);	
 		}
 		else {
@@ -108,7 +108,7 @@ public class ElGamalCipher
 	public static ElGamal_Ciphertext multiply_scalar(ElGamal_Ciphertext ciphertext1,
 													 BigInteger scalar, ElGamalPublicKey public_key)
 	{
-		if(public_key.ADDITIVE) {
+		if(public_key.additive) {
 			ElGamal_Ciphertext answer;
 			answer = new ElGamal_Ciphertext(ciphertext1.gr.modPow(scalar, public_key.p),
 					ciphertext1.hrgm.modPow(scalar, public_key.p));
@@ -126,7 +126,7 @@ public class ElGamalCipher
 	
 	public static ElGamal_Ciphertext multiply(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2, ElGamalPublicKey public_key)
 	{
-		if(public_key.ADDITIVE) {
+		if(public_key.additive) {
 			throw new IllegalArgumentException("Method is not permitted since ElGamal Cipher is using additive mode!");			
 		}
 		else {
@@ -139,7 +139,7 @@ public class ElGamalCipher
 
 	public static ElGamal_Ciphertext divide(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2, ElGamalPublicKey public_key)
 	{
-		if(public_key.ADDITIVE) {
+		if(public_key.additive) {
 			throw new IllegalArgumentException("Method is not permitted since ElGamal Cipher is using additive mode!");
 		}
 		else {
@@ -157,7 +157,7 @@ public class ElGamalCipher
 
 	public static ElGamal_Ciphertext add(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2, ElGamalPublicKey public_key)
 	{
-		if(public_key.ADDITIVE) {
+		if(public_key.additive) {
 			ElGamal_Ciphertext answer;
 			answer = new ElGamal_Ciphertext(ciphertext1.gr.multiply(ciphertext2.gr).mod(public_key.p), 
 					ciphertext1.hrgm.multiply(ciphertext2.hrgm).mod(public_key.p));
@@ -171,7 +171,7 @@ public class ElGamalCipher
 	public static ElGamal_Ciphertext subtract(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2,
 											  ElGamalPublicKey public_key)
 	{
-		if(public_key.ADDITIVE) {
+		if(public_key.additive) {
 			ElGamal_Ciphertext neg_ciphertext2;
 			ElGamal_Ciphertext ciphertext;
 			neg_ciphertext2 = ElGamalCipher.multiply_scalar(ciphertext2, -1, public_key);
@@ -186,7 +186,7 @@ public class ElGamalCipher
 	public static ElGamal_Ciphertext sum(List<ElGamal_Ciphertext> values, ElGamalPublicKey public_key, int limit)
 			throws HomomorphicException {
 
-		if (!public_key.ADDITIVE) {
+		if (!public_key.additive) {
 			throw new HomomorphicException("sum not supported on this version of El Gamal");
 		}
 		ElGamal_Ciphertext sum = ElGamalCipher.encrypt(BigInteger.ZERO, public_key);
@@ -208,7 +208,7 @@ public class ElGamalCipher
 
 	public static ElGamal_Ciphertext sum(ElGamal_Ciphertext [] values, ElGamalPublicKey public_key, int limit)
 			throws HomomorphicException {
-		if (!public_key.ADDITIVE) {
+		if (!public_key.additive) {
 			throw new HomomorphicException("sum not supported on this version of El Gamal");
 		}
 
@@ -231,7 +231,7 @@ public class ElGamalCipher
 
 	public static ElGamal_Ciphertext sum_product (ElGamal_Ciphertext [] cipher, Long [] plain,
 												  ElGamalPublicKey public_key) throws HomomorphicException {
-		if (!public_key.ADDITIVE) {
+		if (!public_key.additive) {
 			throw new HomomorphicException("sum_product not supported on this version of El Gamal");
 		}
 
@@ -248,7 +248,7 @@ public class ElGamalCipher
 
 	public static ElGamal_Ciphertext sum_product (List<ElGamal_Ciphertext> cipher, List<Long> plain,
 												  ElGamalPublicKey public_key) throws HomomorphicException {
-		if (!public_key.ADDITIVE) {
+		if (!public_key.additive) {
 			throw new HomomorphicException("sum_product not supported on this version of El Gamal");
 		}
 

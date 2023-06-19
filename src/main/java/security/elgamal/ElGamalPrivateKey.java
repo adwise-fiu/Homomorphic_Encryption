@@ -18,23 +18,27 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 	final BigInteger p;
 	final BigInteger g;
 	private final BigInteger h;
-	boolean ADDITIVE;
+	boolean additive;
 
 	private static final long serialVersionUID = 9160045368787508459L;
 
-	public ElGamalPrivateKey(BigInteger p, BigInteger x, BigInteger g, BigInteger h, boolean ADDITIVE) {
+	public ElGamalPrivateKey(BigInteger p, BigInteger x, BigInteger g, BigInteger h, boolean additive) {
 		this.p = p;
 		this.x = x;
 		this.g = g;
 		this.h = h;
-		this.ADDITIVE = ADDITIVE;
-		if(ADDITIVE) {
+		this.additive = additive;
+		if(additive) {
 			this.LUT = new HashMap<>(FIELD_SIZE.intValue(), (float) 1.0);
 			this.decrypt_table();
 		}
 		else {
 			this.LUT = null;
 		}
+	}
+
+	public void set_additive(boolean additive) {
+		this.additive = additive;
 	}
 
 	public String getAlgorithm()

@@ -159,7 +159,9 @@ public class test_bob implements Runnable
 		if (dgk_mode) {
 			if (andrew.getClass() == security.socialistmillionaire.bob.class) {
 				System.out.println("Bob: Skipping Sorting because will crash with this alice version...");
+				return;
 			}
+			andrew.run();
 		}
 		else {
 			andrew.run();

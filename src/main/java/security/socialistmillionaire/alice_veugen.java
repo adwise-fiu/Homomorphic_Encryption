@@ -639,7 +639,7 @@ public class alice_veugen extends alice {
         return comparison == 1;
     }
 
-    public void getKMin_ElGamal(List<ElGamal_Ciphertext> input, int k)
+    public List<ElGamal_Ciphertext> getKMin_ElGamal(List<ElGamal_Ciphertext> input, int k)
             throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
     {
         if(k > input.size() || k <= 0) {
@@ -674,5 +674,6 @@ public class alice_veugen extends alice {
         // Close Bob
         toBob.writeBoolean(false);
         toBob.flush();
+        return min;
     }
 }

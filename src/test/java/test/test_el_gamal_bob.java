@@ -25,20 +25,24 @@ public class test_el_gamal_bob implements Runnable {
             bob_socket = new ServerSocket(port);
             System.out.println("Bob is ready...");
             bob_client = bob_socket.accept();
+            andrew.set_socket(bob_client);
             andrew.sendPublicKeys();
 
             test_sorting();
             test_protocol_two();
             test_outsourced_multiply();
             test_outsourced_divide();
+
+            //andrew.set_el_gamal_additive(false);
+            //test_addition();
+            //test_subtraction();
         }
         catch (IOException | ClassNotFoundException | HomomorphicException | IllegalArgumentException x) {
             x.printStackTrace();
         }
         finally
         {
-            try
-            {
+            try {
                 if(bob_client != null) {
                     bob_client.close();
                 }
@@ -46,15 +50,14 @@ public class test_el_gamal_bob implements Runnable {
                     bob_socket.close();
                 }
             }
-            catch (IOException e)
-            {
+            catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
     public void test_sorting() throws IOException, ClassNotFoundException, HomomorphicException {
-        if(andrew.getElGamalPublicKey().ADDITIVE) {
+        if(andrew.getElGamalPublicKey().additive) {
             andrew.repeat_ElGamal_Protocol4();
         }
     }
@@ -81,7 +84,7 @@ public class test_el_gamal_bob implements Runnable {
 
     public void test_addition() throws ClassNotFoundException, IOException
     {
-        if(!andrew.getElGamalPublicKey().ADDITIVE) {
+        if(!andrew.getElGamalPublicKey().additive) {
             andrew.addition(true);
             andrew.addition(true);
             andrew.addition(true);
@@ -89,8 +92,7 @@ public class test_el_gamal_bob implements Runnable {
     }
 
     public void test_subtraction() throws IOException, ClassNotFoundException {
-        if(!andrew.getElGamalPublicKey().ADDITIVE)
-        {
+        if(!andrew.getElGamalPublicKey().additive) {
             andrew.addition(false);
             andrew.addition(false);
             andrew.addition(false);
