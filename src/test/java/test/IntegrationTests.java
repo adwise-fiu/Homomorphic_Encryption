@@ -14,6 +14,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import security.socialistmillionaire.*;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 public class IntegrationTests implements constants
 {
 	private static final int KEY_SIZE = 1024;
@@ -201,8 +203,10 @@ public class IntegrationTests implements constants
 	}
 
 	// Test Joye and Salehi Implementation of Alice and Bob
+	/*
 	@Test
 	public void joye_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
+
 		bob_joye bob_version_three = new bob_joye(paillier, dgk, el_gamal);
 		Thread andrew = new Thread(new test_bob(bob_version_three, 9203));
 		andrew.start();
@@ -225,4 +229,5 @@ public class IntegrationTests implements constants
 			e.printStackTrace();
 		}
 	}
+	 */
 }

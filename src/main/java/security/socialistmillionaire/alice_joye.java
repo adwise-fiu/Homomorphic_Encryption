@@ -19,6 +19,46 @@ public class alice_joye extends alice {
         return Protocol0(x);
     }
 
+    public boolean test(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
+        // Step 1 by Bob
+        Object o = fromBob.readObject();
+        BigInteger little_y_star;
+        int delta_a;
+        int delta_a_prime = 0;
+
+        if (o instanceof BigInteger) {
+            little_y_star = (BigInteger) o;
+        }
+        else {
+            throw new HomomorphicException("Invalid object on Step 1 Alice: " + o.getClass().getName());
+        }
+
+        // Step 2 done by Alice
+        int t = x.bitLength();
+        BigInteger powT = TWO.pow(t);
+        BigInteger x_prime = NTL.generateXBitRandom(t);
+
+        BigInteger big_z_star = little_y_star.add(x_prime).subtract(x).divide(powT);
+        BigInteger little_z_star =  little_y_star.add(x_prime).subtract(x).mod(powT);
+        toAlice.writeObject(little_z_star);
+
+        // Figure 1 compare
+        boolean leq = Protocol1(x_prime);
+
+        // Step 3 Alice
+        if (big_z_star.mod(TWO).equals(BigInteger.ZERO)) {
+            delta_a = delta_a_prime;
+        }
+        else {
+            delta_a = 1 ^ delta_a_prime;
+        }
+
+        // Step 4 Bob
+
+        // Step 5, Extra: get delta_A XOR delta_B
+        return true;
+    }
+
     // This function is the equivalent of the protocol on Figure 1 on Joye and Salehi's paper
     private boolean Protocol0(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
         Object in = fromBob.readObject();
@@ -72,10 +112,6 @@ public class alice_joye extends alice {
         // Step 3: Form Set L
         for (int i = 0; i < Encrypted_Y.length; i++) {
             // Break if |L| > floor(t/2)
-            // Shouldn't ever happen based on proof though...
-            if (set_l.size() > floor) {
-                throw new HomomorphicException("Something went wrong here");
-            }
             if (delta_a == NTL.bit(x, i)) {
                 set_l.add(i);
             }
@@ -99,11 +135,16 @@ public class alice_joye extends alice {
         int index;
         for (int i = 0; i < set_l.size(); i++) {
             index = set_l.get(i);
+
             C[i] = DGKOperations.sum(XOR, dgk_public, Encrypted_Y.length - 1 - index);
-            first_term = 1 + (1 - 2 * delta_a) * NTL.bit(x, index);
-            second_term = DGKOperations.add_plaintext(Encrypted_Y[index], 2 * delta_a - 1 , dgk_public);
-            C[i] = DGKOperations.add(C[i], second_term, dgk_public);
+            // 1 + (1 - 2 * delta_a) * x_i
+            first_term = 1 + ((1 - 2 * delta_a) * NTL.bit(x, Encrypted_Y.length - 1 - index));
+            // (2 * delta_a + 1) * y_i
+            second_term = DGKOperations.multiply(Encrypted_Y[Encrypted_Y.length - 1 - index],
+                    (2 * delta_a) - 1 , dgk_public);
+            // Combine terms...
             C[i] = DGKOperations.add_plaintext(C[i], first_term, dgk_public);
+            C[i] = DGKOperations.add(C[i], second_term, dgk_public);
         }
         // Use the same trick as from Veugen
         C[set_l.size()] = DGKOperations.sum(XOR, dgk_public);

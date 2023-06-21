@@ -308,9 +308,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 			}
 		}
 		
-		// MAYBE IF OVERFLOW HAPPENS?
-		//t -= Modified_Protocol3(r.mod(powL), r, rnd.nextInt(2));
-		
 		// Step 4: Bob computes c and Alice receives it
 		in = fromBob.readObject();
 		if (in instanceof BigInteger) {
