@@ -8,6 +8,7 @@ import java.security.SecureRandom;
 // 2- Ciphers (ElGamal)
 public interface CipherConstants 
 {
+	int KEY_SIZE = 2048;
 	SecureRandom rnd = new SecureRandom();
 
 	// controls the error probability of the primality testing algorithm

@@ -14,12 +14,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import security.socialistmillionaire.*;
 
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
-
 public class IntegrationTests implements constants
 {
-	private static final int KEY_SIZE = 1024;
-	
 	// All Key Pairs
 	private static KeyPair dgk = null;
 	private static KeyPair paillier = null;
@@ -119,7 +115,7 @@ public class IntegrationTests implements constants
 		
 		// Build Additive El-Gamal Key
 		ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator(true);
-		pg.initialize(KEY_SIZE, null);
+		pg.initialize(KEY_SIZE/2, null);
 		el_gamal = pg.generateKeyPair();
 	}
 

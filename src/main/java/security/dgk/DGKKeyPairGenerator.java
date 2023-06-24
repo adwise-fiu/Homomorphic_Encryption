@@ -14,13 +14,12 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	// Default parameters
 	private int l = 16;
 	private int t = 160;
-	private int k = 1024;
+	private int k = KEY_SIZE;
 
 	public static void main(String []  args) {
 		System.out.println("Creating DGK Key pair");
 		String dgk_private_key_file = "dgk";
 		String dgk_public_key_file = "dgk.pub";
-		int KEY_SIZE = 1024;
 		KeyPair dgk;
 		DGKPublicKey pk;
 		DGKPrivateKey sk;
@@ -37,8 +36,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 		sk.writeKey(dgk_private_key_file);
 	}
 
-	public DGKKeyPairGenerator()
-	{
+	public DGKKeyPairGenerator() {
 		this.initialize(this.k, null);
 	}
 	
@@ -50,32 +48,30 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	 */
 	public DGKKeyPairGenerator(int l, int t, int k) throws HomomorphicException
 	{
-		if (l < 0 || l > 32)
-		{
+		if (k < KEY_SIZE) {
+			throw new IllegalArgumentException("Minimum strength of 2048 bits required! Safe until 2030...");
+		}
+
+		if (l < 0 || l > 32) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: plaintext space must be less than 32 bits");
 		}
 		
-		if (l > t || t > k)
-		{
+		if (l > t || t > k) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: we must have l < k < t");
 		}
 		
-		if (k/2 < t + l + 1)
-		{
+		if (k/2 < t + l + 1) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: we must have k > k/2 < t + l");
 		}
 		
-		if (t % 2 != 0)
-		{
+		if (t % 2 != 0) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: t must be divisible by 2 ");
 		}
 		
-		if (k % 2 != 0)
-		{
+		if (k % 2 != 0) {
 			throw new IllegalArgumentException("Require even number of bits!");
 		}
-		if (k < 1024)
-		{
+		if (k < 1024) {
 			throw new IllegalArgumentException("Minimum strength of 1024 bits required!");
 		}
 		
@@ -92,18 +88,15 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	
 	public void setL(int l) throws HomomorphicException
 	{
-		if (l < 0 || l > 32)
-		{
+		if (l < 0 || l > 32) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: plaintext space must be less than 32 bits");
 		}
 
-		if (l > this.t || this.t > this.k)
-		{
+		if (l > this.t || this.t > this.k) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: we must have l < k < t");
 		}
 
-		if (this.k/2 < this.t + l + 1)
-		{
+		if (this.k/2 < this.t + l + 1) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: we must have k > k/2 < t + l");
 		}
 		this.l = l;
@@ -116,30 +109,25 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	
 	public void setT(int t) throws HomomorphicException
 	{
-		if (this.l > t || t > this.k)
-		{
+		if (this.l > t || t > this.k) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: we must have l < k < t");
 		}
 		
-		if (this.k/2 < t + this.l + 1)
-		{
+		if (this.k/2 < t + this.l + 1) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: we must have k > k/2 < t + l");
 		}
 		
-		if (t % 2 != 0)
-		{
+		if (t % 2 != 0) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: t must be divisible by 2 ");
 		}
 		this.t = t;
 	}
 	
-	public int getK()
-	{
+	public int getK() {
 		return this.k;
 	}
 	
-	public void setK(int k) throws HomomorphicException
-	{
+	public void setK(int k) throws HomomorphicException {
 		if (this.l > this.t || this.t > k) {
 			throw new HomomorphicException("DGK Keygen Invalid parameters: we must have l < k < t");
 		}
@@ -151,6 +139,9 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	}
 
 	public void initialize(int k, SecureRandom random) {
+		if (k < KEY_SIZE) {
+			throw new IllegalArgumentException("Minimum strength of 2048 bits required!");
+		}
 		this.k = k;
 	}
 
@@ -359,8 +350,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 		public_key =  new DGKPublicKey(n, g, h, u, this.l, this.t, this.k);
 		private_key = new DGKPrivateKey(p, q, vp, vq, public_key);
 		boolean no_skip_public_key_maps = true;
-		if(no_skip_public_key_maps)
-		{
+		if(no_skip_public_key_maps) {
 			public_key.run();
 		}
 		System.out.println("FINISHED WITH DGK KEY GENERATION in " + (System.nanoTime() - start_time)/BILLION + " seconds!");

@@ -3,7 +3,7 @@ package test;
 import java.math.BigInteger;
 
 public interface constants {
-    int KEY_SIZE = 1024;
+    int KEY_SIZE = 2048;
     BigInteger TWO = new BigInteger("2");
     BigInteger THREE = new BigInteger("3");
     BigInteger FOUR = new BigInteger("4");

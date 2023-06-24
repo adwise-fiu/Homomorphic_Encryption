@@ -21,7 +21,7 @@ public class ElGamalMultiply implements constants {
     @BeforeClass
     public static void generate_keys() {
         ElGamalKeyPairGenerator pa = new ElGamalKeyPairGenerator(false);
-        pa.initialize(KEY_SIZE, new SecureRandom());
+        pa.initialize(KEY_SIZE/2, new SecureRandom());
         KeyPair paillier = pa.generateKeyPair();
         public_key = (ElGamalPublicKey) paillier.getPublic();
         private_key = (ElGamalPrivateKey) paillier.getPrivate();

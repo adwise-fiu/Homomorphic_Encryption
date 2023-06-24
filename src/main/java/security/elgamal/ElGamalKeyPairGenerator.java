@@ -11,7 +11,7 @@ import security.misc.NTL;
 
 public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
 {
-	private int key_size = 1024;
+	private int key_size = KEY_SIZE;
 	private SecureRandom random = null;
 	private final boolean additive;
 
@@ -20,6 +20,10 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 	}
 	
 	public void initialize(int key_size, SecureRandom random) {
+		if (key_size < KEY_SIZE/2) {
+			throw new IllegalArgumentException("I am allowing minimum 1024 minimum. Note it isn't safe now though." +
+					"This is just to prove my implementation works though...");
+		}
 		this.key_size = key_size;
 		this.random = random;
 	}

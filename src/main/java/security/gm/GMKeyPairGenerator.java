@@ -10,10 +10,13 @@ import security.misc.NTL;
 
 public class GMKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
 {
-	int key_size;
+	int key_size = KEY_SIZE;
 
 	// https://medium.com/coinmonks/probabilistic-encryption-using-the-goldwasser-micali-gm-method-7f9893a93ac9
 	public void initialize(int key_size, SecureRandom random) {
+		if (key_size < KEY_SIZE) {
+			throw new IllegalArgumentException("Minimum strength of 2048 bits required! Safe until 2030...");
+		}
 		this.key_size = key_size;
 	}
 

@@ -12,10 +12,7 @@ import security.misc.CipherConstants;
 
 public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
 {
-	// k2 controls the error probability of the primality testing algorithm
-	// (specifically, with probability at most 2^(-k2) a NON prime is chosen).
-	private final static int CERTAINTY = 40;
-	private int key_size = 1024;
+	private int key_size = KEY_SIZE;
 	private SecureRandom rnd = null;
 
 	// Use this function to generate public and private key
@@ -23,7 +20,6 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 		System.out.println("HELLO PAILLIER");
 		String paillier_private_key_file = "paillier";
 		String paillier_public_key_file = "paillier.pub";
-		int KEY_SIZE = 1024;
 		KeyPair paillier;
 		PaillierPublicKey pk;
 		PaillierPrivateKey sk;
@@ -57,9 +53,9 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 		if (key_size % 2 != 0) {
 			throw new IllegalArgumentException("Require even number of bits!");
 		}
-		if (key_size < 1024) {
-			throw new IllegalArgumentException("Minimum strength of 1024 bits required!");
-		}		
+		if (key_size < KEY_SIZE) {
+			throw new IllegalArgumentException("Minimum strength of 2048 bits required! Safe until 2030...");
+		}
 		this.key_size = key_size;
 	}
 
@@ -68,6 +64,8 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 		if (this.rnd == null) {
 			rnd = new SecureRandom();
 		}
+
+		System.out.println("Paillier has key size" + key_size);
 		
 		// Chooses a random prime of length k2. The probability that
 		// p is not prime is at most 2^(-k2)
