@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class ElGamalAdd implements constants {
+public class ElGamalAddTest implements constants {
     private static ElGamalPublicKey public_key;
     private static ElGamalPrivateKey private_key;
     private static ElGamal_Ciphertext a;
@@ -20,10 +20,10 @@ public class ElGamalAdd implements constants {
     @BeforeClass
     public static void generate_keys() {
         ElGamalKeyPairGenerator pa = new ElGamalKeyPairGenerator(true);
-        pa.initialize(KEY_SIZE/2, null);
-        KeyPair paillier = pa.generateKeyPair();
-        public_key = (ElGamalPublicKey) paillier.getPublic();
-        private_key = (ElGamalPrivateKey) paillier.getPrivate();
+        pa.initialize(EL_GAMAL_KEY_SIZE, null);
+        KeyPair el_gamal = pa.generateKeyPair();
+        public_key = (ElGamalPublicKey) el_gamal.getPublic();
+        private_key = (ElGamalPrivateKey) el_gamal.getPrivate();
     }
 
     @Test

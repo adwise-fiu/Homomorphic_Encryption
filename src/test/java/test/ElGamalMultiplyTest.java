@@ -13,7 +13,7 @@ import java.security.SecureRandom;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
-public class ElGamalMultiply implements constants {
+public class ElGamalMultiplyTest implements constants {
     private static ElGamalPublicKey public_key;
     private static ElGamalPrivateKey private_key;
     private static ElGamal_Ciphertext a;
@@ -21,10 +21,10 @@ public class ElGamalMultiply implements constants {
     @BeforeClass
     public static void generate_keys() {
         ElGamalKeyPairGenerator pa = new ElGamalKeyPairGenerator(false);
-        pa.initialize(KEY_SIZE/2, new SecureRandom());
-        KeyPair paillier = pa.generateKeyPair();
-        public_key = (ElGamalPublicKey) paillier.getPublic();
-        private_key = (ElGamalPrivateKey) paillier.getPrivate();
+        pa.initialize(EL_GAMAL_KEY_SIZE, new SecureRandom());
+        KeyPair el_gamal = pa.generateKeyPair();
+        public_key = (ElGamalPublicKey) el_gamal.getPublic();
+        private_key = (ElGamalPrivateKey) el_gamal.getPrivate();
     }
 
     @Test

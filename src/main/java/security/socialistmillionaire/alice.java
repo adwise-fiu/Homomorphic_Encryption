@@ -321,16 +321,16 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// [[z/d - r/d]]
 		// [[z/d - r/d - t]]
 		if (isDGK) {
-			answer = DGKOperations.subtract(c, DGKOperations.encrypt(r.divide(BigInteger.valueOf(d)), dgk_public), dgk_public);
+			answer = DGKOperations.subtract_plaintext(c, r.divide(BigInteger.valueOf(d)), dgk_public);
 			if(t == 1) {
-				answer = DGKOperations.subtract(answer, DGKOperations.encrypt(t, dgk_public), dgk_public);
+				answer = DGKOperations.subtract_plaintext(answer, BigInteger.valueOf(t), dgk_public);
 			}
 		}
 		else
 		{
-			answer = PaillierCipher.subtract(c, PaillierCipher.encrypt(r.divide(BigInteger.valueOf(d)), paillier_public), paillier_public);
+			answer = PaillierCipher.subtract_plaintext(c, r.divide(BigInteger.valueOf(d)), paillier_public);
 			if(t == 1) {
-				answer = PaillierCipher.subtract(answer, PaillierCipher.encrypt(BigInteger.valueOf(t), paillier_public), paillier_public);
+				answer = PaillierCipher.subtract_plaintext(answer, BigInteger.valueOf(t), paillier_public);
 			}
 		}
 		return answer;
@@ -399,9 +399,11 @@ public class alice extends socialist_millionaires implements alice_interface {
 			x_prime = PaillierCipher.add_plaintext(x, a, paillier_public);
 			y_prime = PaillierCipher.add_plaintext(y, b, paillier_public);
 		}
+		// x' = x + a
 		toBob.writeObject(x_prime);
 		toBob.flush();
-		
+
+		// y' = y + b
 		toBob.writeObject(y_prime);
 		toBob.flush();
 		
@@ -410,18 +412,20 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Step 3
 		in = fromBob.readObject();
 		if (in instanceof BigInteger) {
+			// (x + a)(y + b) = xy + xb + ya + ab
+			// xy = (x + a)(y + b) - xb - ya - ab
 			result = (BigInteger) in;
 			if(isDGK) {
 				result = DGKOperations.subtract(result, DGKOperations.multiply(x, b, dgk_public), dgk_public);
 				result = DGKOperations.subtract(result, DGKOperations.multiply(y, a, dgk_public), dgk_public);
 				// To avoid throwing an exception to myself of encrypt range [0, U), mod it now!
-				result = DGKOperations.subtract(result, DGKOperations.encrypt(a.multiply(b).mod(dgk_public.getU()), dgk_public), dgk_public);	
+				result = DGKOperations.subtract_plaintext(result, a.multiply(b).mod(dgk_public.getU()), dgk_public);
 			}
 			else {
 				result = PaillierCipher.subtract(result, PaillierCipher.multiply(x, b, paillier_public), paillier_public);
 				result = PaillierCipher.subtract(result, PaillierCipher.multiply(y, a, paillier_public), paillier_public);
 				// To avoid throwing an exception to myself of encrypt range [0, N), mod it now!
-				result = PaillierCipher.subtract(result, PaillierCipher.encrypt(a.multiply(b).mod(paillier_public.getN()), paillier_public), paillier_public);
+				result = PaillierCipher.subtract_plaintext(result, a.multiply(b).mod(paillier_public.getN()), paillier_public);
 			}
 		}
 		else {
@@ -551,77 +555,16 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 	}
 	
-	// Below are all supported sorting techniques!    
-	// ----------------Bubble Sort-----------------------------------
-	// ---------------We also use this to obtain K-Min/K-max items----
-	
-	private void bubbleSort(BigInteger [] arr)
-			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
-		boolean activation;
-		for (int i = 0; i < arr.length - 1; i++) {
-			for (int j = 0; j < arr.length - i - 1; j++) {
-				toBob.writeBoolean(true);
-				toBob.flush();
-				activation = this.Protocol2(arr[j], arr[j + 1]);
-				
-				// Originally arr[j] > arr[j + 1]
-				if (activation) {
-					// swap temp and arr[i]
-					BigInteger temp = arr[j];
-					arr[j] = arr[j + 1];
-					arr[j + 1] = temp;
-				}
-			}
-		}
-	}
-	
-	public BigInteger[] getKMax(BigInteger [] input, int k) 
-			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
-	{
-		if(k > input.length || k <= 0) {
-			throw new IllegalArgumentException("Invalid k value! " + k);
-		}
-		BigInteger [] arr = deep_copy(input);
-		BigInteger [] max = new BigInteger[k];
-		
-		boolean activation;
-		for (int i = 0; i < k; i++) {
-			for (int j = 0; j < arr.length - i - 1; j++) {
-				toBob.writeBoolean(true);
-				toBob.flush();
 
-				activation = this.Protocol2(arr[j], arr[j + 1]);
-
-				// Originally arr[j] > arr[j + 1]
-				// Protocol4 (x, y) --> [[x >= y]]
-				if (activation) {
-					// swap temp and arr[i]
-					BigInteger temp = arr[j];
-					arr[j] = arr[j + 1];
-					arr[j + 1] = temp;
-				}
-			}
-		}
-		
-		// Get last K-elements of arr!! 
-		for (int i = 0; i < k; i++) {
-			max[k - 1 - i] = arr[arr.length - 1 - i];
-		}
-		
-		// Close Bob
-		toBob.writeBoolean(false);
-		toBob.flush();
-		return max;
-	}
-	
-	public BigInteger[] getKMin(BigInteger [] input, int k)
+	// Use Bubble sort to get K-biggest or smallest values. You can sort the whole list too if you want
+	public BigInteger[] getKValues(BigInteger [] input, int k, boolean smallest_first)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		if(k > input.length || k <= 0) {
 			throw new IllegalArgumentException("Invalid k value! " + k);
 		}
 		BigInteger [] arr = deep_copy(input);
-		BigInteger [] min = new BigInteger[k];
+		BigInteger [] sorted_k = new BigInteger[k];
 		
 		boolean activation;
 		for (int i = 0; i < k; i++) {
@@ -630,9 +573,12 @@ public class alice extends socialist_millionaires implements alice_interface {
 				toBob.flush();
 				// Might need a K-Max test as well!
 				activation = this.Protocol2(arr[j], arr[j + 1]);
+				if (smallest_first) {
+					activation = !activation;
+				}
 				
 				// Originally arr[j] > arr[j + 1]
-				if (!activation) {
+				if (activation) {
 					// swap temp and arr[i]
 					BigInteger temp = arr[j];
 					arr[j] = arr[j + 1];
@@ -643,16 +589,21 @@ public class alice extends socialist_millionaires implements alice_interface {
 		
 		// Get last K-elements of arr!! 
 		for (int i = 0; i < k; i++) {
-			min[i] = arr[arr.length - 1 - i];
+			if (smallest_first) {
+				sorted_k[i] = arr[arr.length - 1 - i];
+			}
+			else {
+				sorted_k[k - 1 - i] = arr[arr.length - 1 - i];
+			}
 		}
 		
 		// Close Bob
 		toBob.writeBoolean(false);
 		toBob.flush();
-		return min;
+		return sorted_k;
 	}
 	
-	public BigInteger[] getKMin(List<BigInteger> input, int k) 
+	public BigInteger[] getKValues(List<BigInteger> input, int k,  boolean smallest_first)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
 		if(k > input.size() || k <= 0) {
@@ -661,7 +612,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// deep copy
 		List<BigInteger> arr = new ArrayList<>(input);
 		
-		BigInteger [] min = new BigInteger[k];
+		BigInteger [] sorted_k = new BigInteger[k];
 		
 		boolean activation;
 		for (int i = 0; i < k; i++) {
@@ -669,9 +620,13 @@ public class alice extends socialist_millionaires implements alice_interface {
 				toBob.writeBoolean(true);
 				toBob.flush();
 				activation = this.Protocol2(arr.get(j), arr.get(j + 1));
+
+				if(smallest_first) {
+					activation = !activation;
+				}
 				
 				// Originally arr[j] > arr[j + 1]
-				if (!activation) {
+				if (activation) {
 					// swap temp and arr[i]
 					BigInteger temp = arr.get(j);
 					arr.set(j, arr.get(j + 1));
@@ -682,12 +637,17 @@ public class alice extends socialist_millionaires implements alice_interface {
 		
 		// Get last K-elements of arr!! 
 		for (int i = 0; i < k; i++) {
-			min[i] = arr.get(arr.size() - 1 - i);
+			if (smallest_first) {
+				sorted_k[i] = arr.get(arr.size() - 1 - i);
+			}
+			else {
+				sorted_k[k - 1 - i] = arr.get(arr.size() - 1 - i);
+			}
 		}
 		
 		// Close Bob
 		toBob.writeBoolean(false);
 		toBob.flush();
-		return min;
+		return sorted_k;
 	}
 }

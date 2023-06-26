@@ -92,7 +92,7 @@ public class test_alice implements Runnable, constants
 			}
 		}
 
-		min = Niu.getKMin(toSort, 3);
+		min = Niu.getKValues(toSort, 3, true);
 		for (int i = 0; i < min.length; i++) {
 			if (dgk_mode) {
 				min[i] = BigInteger.valueOf(DGKOperations.decrypt(min[i], dgk_private));

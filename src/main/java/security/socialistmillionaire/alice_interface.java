@@ -4,6 +4,7 @@ import security.misc.HomomorphicException;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
 
 public interface alice_interface {
 
@@ -19,4 +20,11 @@ public interface alice_interface {
     BigInteger multiplication(BigInteger x, BigInteger y)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException;
 
+    void receivePublicKeys() throws IOException, ClassNotFoundException;
+
+    BigInteger[] getKValues(BigInteger [] input, int k, boolean biggest_first)
+            throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException;
+
+    BigInteger[] getKValues(List<BigInteger> input, int k, boolean smallest_first)
+            throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException;
 }

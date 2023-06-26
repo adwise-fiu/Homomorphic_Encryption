@@ -20,7 +20,7 @@ import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;
 import security.paillier.PaillierPrivateKey;
 
-public class bob extends socialist_millionaires implements Runnable, bob_interface
+public class bob extends socialist_millionaires implements bob_interface
 {
 	public bob(KeyPair first, KeyPair second, KeyPair third) {
 		parse_key_pairs(first, second, third);
@@ -33,8 +33,7 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 	 */
 	public bob (Socket socket,
 			KeyPair first, KeyPair second, KeyPair third)
-					throws IOException, IllegalArgumentException
-	{
+					throws IOException, IllegalArgumentException {
 		set_socket(socket);
 		parse_key_pairs(first, second, third);
 	}
@@ -99,7 +98,7 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 	 * if Alice wants to sort a list of encrypted numbers, use this method if you 
 	 * will consistently sort using Protocol 2
 	 */
-	private void repeat_Protocol2()
+	public void sort()
 			throws IOException, ClassNotFoundException, HomomorphicException {
 		long start_time = System.nanoTime();
 		int counter = 0;
@@ -128,6 +127,7 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 		Object in;
 		int deltaB = 0;
 		BigInteger [] C;
+		BigInteger temp;
 
 		//Step 1: Bob sends encrypted bits to Alice
 		BigInteger [] EncY = new BigInteger[y.bitLength()];
@@ -147,7 +147,16 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 			C = (BigInteger []) in;
 		}
 		else if (in instanceof BigInteger) {
-			return false;
+			temp = (BigInteger) in;
+			if (temp.equals(BigInteger.ONE)) {
+				return true;
+			}
+			else if (temp.equals(BigInteger.ZERO)) {
+				return false;
+			}
+			else {
+				throw new IllegalArgumentException("This shouldn't be possible...");
+			}
 		}
 		else {
 			throw new IllegalArgumentException("Protocol 1, Step 6: Invalid object: " + in.getClass().getName());
@@ -459,15 +468,5 @@ public class bob extends socialist_millionaires implements Runnable, bob_interfa
 			toAlice.writeObject(BigInteger.ZERO);
 		}
 		toAlice.flush();
-	}
-	
-	public void run() 
-	{
-		try {
-			repeat_Protocol2();
-		}
-		catch (ClassNotFoundException | IOException | IllegalArgumentException | HomomorphicException e) {
-			e.printStackTrace();
-		}
 	}
 }

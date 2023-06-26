@@ -19,6 +19,7 @@ public class alice_joye extends alice {
         return Protocol0(x);
     }
 
+    // Rest of Protocol
     public boolean test(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
         // Step 1 by Bob
         Object o = fromBob.readObject();

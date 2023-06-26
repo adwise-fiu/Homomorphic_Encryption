@@ -22,128 +22,6 @@ public class bob_veugen extends bob {
         super(clientSocket, a, b, c);
     }
 
-    /**
-     * Please review "Improving the DGK comparison protocol" - Protocol 3
-     * Note: Bob already has the private keys upon initialization
-     *
-     * @param y - plaintext value
-     */
-
-    public boolean Protocol1(BigInteger y)
-            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
-        // Constraint...
-        if(y.bitLength() > dgk_public.getL()) {
-            throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
-        }
-        Object x;
-        BigInteger [] C;
-        int deltaB = 0;
-
-        //Step 1: Bob sends encrypted bits to Alice
-        BigInteger [] EncY = new BigInteger[y.bitLength()];
-        for (int i = 0; i < y.bitLength(); i++) {
-            EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
-        }
-        toAlice.writeObject(EncY);
-        toAlice.flush();
-
-        //Step 2: Wait for Alice to compute x XOR y
-
-        //Step 3: Wait for Alice to compute set L and gamma A
-
-        //Step 4: Wait for Alice to compute the array of C_i
-
-        //Step 5: After blinding, Alice sends C_i to Bob
-
-        //Step 6: Bob checks if there is a 0 in C_i and set deltaB accordingly
-
-        /*
-         * Currently by design of the program
-         * 1- Alice KNOWS that bob will assume deltaB = 0.
-         *
-         * Alice knows the protocol should be paillier_private if
-         * the bit length is NOT equal.
-         *
-         * Case 1:
-         * y has more bits than x IMPLIES that y is bigger
-         * x <= y is 1 (true)
-         * given deltaB is 0 by default...
-         * deltaA must be 1
-         * answer = 1 XOR 0 = 1
-         *
-         * Case 2:
-         * x has more bits than x IMPLIES that x is bigger
-         * x <= y is 0 (false)
-         * given deltaB is 0 by default...
-         * deltaA must be 0
-         * answer = 0 XOR 0 = 0
-         */
-
-        x = fromAlice.readObject();
-        // Number of bits are the same for both numbers
-        if (x instanceof BigInteger []) {
-            C = (BigInteger []) x;
-            for (BigInteger C_i: C) {
-                if (DGKOperations.decrypt(C_i, dgk_private) == 0) {
-                    deltaB = 1;
-                    break;
-                }
-            }
-        }
-        // Number of bits gives away the answer!
-        else if (x instanceof BigInteger) {
-            // Case 1 delta B is 0
-            // 1 XOR 0 = 0
-            // x <= y -> 1 (true)
-
-            // Case 2, delta B is 0
-            // 0 XOR 0 = 0
-            // x <= y -> 0 (false)
-            return false;
-        }
-        else {
-            throw new IllegalArgumentException("Protocol 3, Step 4: Invalid object! " + x.getClass().getName());
-        }
-
-        // Step 7: Return Gamma B to Alice, Alice will compute GammaA XOR GammaB
-        toAlice.writeInt(deltaB);
-        toAlice.flush();
-
-        // Step 8: UNOFFICIAL
-        // Alice sends the answer, decrypt it and keep it for yourself
-        // This is best used in situations like an auction where Bob needs to know
-        x = fromAlice.readObject();
-        if (x instanceof BigInteger) {
-            return DGKOperations.decrypt((BigInteger) x, dgk_private) == 1;
-        }
-        else {
-            throw new IllegalArgumentException("Invalid response from Alice in Step 8! " + x.getClass().getName());
-        }
-    }
-
-    // Used for Regular Modified Protocol 3 ONLY
-    public boolean Modified_Protocol3(BigInteger z)
-            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
-        BigInteger beta;
-        boolean answer;
-
-        // Constraint...
-        if(z.bitLength() > dgk_public.getL()) {
-            throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, x is: " + z.bitLength() + " bits");
-        }
-        if(isDGK) {
-            beta = z.mod(powL);
-            answer = Modified_Protocol3(beta, z);
-        }
-        else {
-            isDGK = true;
-            beta = z.mod(powL);
-            answer = Modified_Protocol3(beta, z);
-            isDGK = false;
-        }
-        return answer;
-    }
-
     // Use this for Using Modified Protocol3 within Protocol 4
     private boolean Modified_Protocol3(BigInteger beta, BigInteger z)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
@@ -175,12 +53,6 @@ public class bob_veugen extends bob {
 
         // Step B: Send the encrypted Beta bits
         for (int i = 0; i < beta_bits.length;i++) {
-            if(beta.testBit(i)) {
-                beta_bits[i] = DGKOperations.encrypt(1, dgk_public);
-            }
-            else {
-                beta_bits[i] = DGKOperations.encrypt(0, dgk_public);
-            }
             beta_bits[i] = DGKOperations.encrypt(NTL.bit(beta, i), dgk_public);
         }
         toAlice.writeObject(beta_bits);
@@ -276,7 +148,9 @@ public class bob_veugen extends bob {
         // true --> run Modified protocol 3
 
         if(fromAlice.readBoolean()) {
-            Modified_Protocol3(beta, z);
+            if(Modified_Protocol3(beta, z)) {
+                System.out.println("Modified Protocol 3 selected");
+            }
         }
         else {
             Protocol1(beta);

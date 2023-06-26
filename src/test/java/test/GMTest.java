@@ -21,9 +21,9 @@ public class GMTest implements constants {
     public static void generate_keys() {
         GMKeyPairGenerator pa = new GMKeyPairGenerator();
         pa.initialize(KEY_SIZE, null);
-        KeyPair paillier = pa.generateKeyPair();
-        public_key = (GMPublicKey) paillier.getPublic();
-        private_key = (GMPrivateKey) paillier.getPrivate();
+        KeyPair goldwasser = pa.generateKeyPair();
+        public_key = (GMPublicKey) goldwasser.getPublic();
+        private_key = (GMPrivateKey) goldwasser.getPrivate();
     }
 
     @Test

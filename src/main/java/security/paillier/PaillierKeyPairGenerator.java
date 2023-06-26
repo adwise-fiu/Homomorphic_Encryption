@@ -65,7 +65,7 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 			rnd = new SecureRandom();
 		}
 
-		System.out.println("Paillier has key size" + key_size);
+		System.out.println("Paillier Keys have " + key_size + " bits");
 		
 		// Chooses a random prime of length k2. The probability that
 		// p is not prime is at most 2^(-k2)

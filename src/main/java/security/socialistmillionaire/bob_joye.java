@@ -8,11 +8,12 @@ import java.math.BigInteger;
 import java.net.Socket;
 import java.security.KeyPair;
 
-public class bob_joye extends bob{
+public class bob_joye extends bob {
     public bob_joye(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
         super(a, b, c);
     }
 
+    // Rest of Protocol...
     public boolean test(BigInteger y) throws IOException, HomomorphicException, ClassNotFoundException {
         // Step 1 by Bob
         int delta_b;

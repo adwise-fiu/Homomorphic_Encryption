@@ -115,7 +115,7 @@ public class IntegrationTests implements constants
 		
 		// Build Additive El-Gamal Key
 		ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator(true);
-		pg.initialize(KEY_SIZE/2, null);
+		pg.initialize(EL_GAMAL_KEY_SIZE, null);
 		el_gamal = pg.generateKeyPair();
 	}
 

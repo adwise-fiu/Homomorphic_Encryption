@@ -4,6 +4,7 @@ import security.misc.HomomorphicException;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.Socket;
 
 public interface bob_interface {
 
@@ -20,4 +21,9 @@ public interface bob_interface {
     void multiplication()
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException;
 
+    void sort() throws IOException, ClassNotFoundException, HomomorphicException;
+
+    void sendPublicKeys() throws IOException;
+
+    void set_socket(Socket socket) throws IOException;
 }

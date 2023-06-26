@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 public interface constants {
     int KEY_SIZE = 2048;
+    int EL_GAMAL_KEY_SIZE = 1024;
     BigInteger TWO = new BigInteger("2");
     BigInteger THREE = new BigInteger("3");
     BigInteger FOUR = new BigInteger("4");

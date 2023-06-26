@@ -153,7 +153,7 @@ public class test_bob implements Runnable
 		}
 	}
 
-	public void test_sorting(boolean dgk_mode) {
+	public void test_sorting(boolean dgk_mode) throws HomomorphicException, IOException, ClassNotFoundException {
 		System.out.println("Bob: Testing Sorting, DGK Mode:" + dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		if (dgk_mode) {
@@ -161,10 +161,10 @@ public class test_bob implements Runnable
 				System.out.println("Bob: Skipping Sorting because will crash with this alice version...");
 				return;
 			}
-			andrew.run();
+			andrew.sort();
 		}
 		else {
-			andrew.run();
+			andrew.sort();
 		}
 	}
 }
