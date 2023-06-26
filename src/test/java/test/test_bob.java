@@ -88,7 +88,7 @@ public class test_bob implements Runnable
 		andrew.division(25);
 	}
 
-	public synchronized void test_protocol_one(boolean dgk_mode)
+	public void test_protocol_one(boolean dgk_mode)
 			throws IOException, ClassNotFoundException, HomomorphicException {
 		System.out.println("Bob: Testing Protocol 1, DGK Mode:" + dgk_mode);
 		andrew.setDGKMode(dgk_mode);
@@ -97,19 +97,19 @@ public class test_bob implements Runnable
 			// X <= Y is true
 			answer = andrew.Protocol1(l);
 			//System.out.println(answer);
-			//assertTrue(answer);
+			assertTrue(answer);
 		}
 		for(BigInteger l: mid) {
 			// X <= Y is true
 			answer = andrew.Protocol1(l);
 			//System.out.println(answer);
-			//assertTrue(answer);
+			assertTrue(answer);
 		}
 		for(BigInteger l: mid) {
 			// X <= Y is false
 			answer = andrew.Protocol1(l);
 			//System.out.println(answer);
-			//assertFalse(answer);
+			assertFalse(answer);
 		}
 	}
 
@@ -122,16 +122,18 @@ public class test_bob implements Runnable
 
 		if (dgk_mode) {
 			if (andrew.getClass() == security.socialistmillionaire.bob_veugen.class) {
-				// X > Y is false
-				for(int i = 0; i < mid.length * 2; i++) {
+				for (int i = 0; i < mid.length; i++) {
+					// X > Y is false
 					answer = andrew.Protocol2();
-					//assertFalse(answer);
-				}
+					assertFalse(answer);
 
-				// X > Y is true
-				for(int i = 0; i < mid.length; i++) {
+					// X > Y is false
 					answer = andrew.Protocol2();
-					//assertTrue(answer);
+					assertFalse(answer);
+
+					// X > Y is true
+					answer = andrew.Protocol2();
+					assertTrue(answer);
 				}
 			}
 		}

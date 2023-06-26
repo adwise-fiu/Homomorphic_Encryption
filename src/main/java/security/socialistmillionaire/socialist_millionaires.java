@@ -76,8 +76,7 @@ public abstract class socialist_millionaires implements CipherConstants
 		return el_gamal_public;
 	}
 	
-	public void writeObject(Object o) throws IOException
-	{
+	protected void writeObject(Object o) throws IOException {
 		if(toBob != null) {
 			toBob.writeObject(o);
 			toBob.flush();
