@@ -16,7 +16,7 @@ import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 
 public abstract class socialist_millionaires implements CipherConstants
 {
-	protected final SecureRandom rnd = new SecureRandom();
+	protected static final SecureRandom rnd = new SecureRandom();
 	protected final static int SIGMA = 80;
 
 	protected boolean FAST_DIVIDE = false;

@@ -13,6 +13,7 @@ public class bob_joye extends bob_veugen {
         super(a, b, c);
     }
 
+    /*
     public boolean Protocol1(BigInteger y) throws IOException, HomomorphicException, ClassNotFoundException {
         // Step 1 by Bob
         int delta_b;
@@ -62,8 +63,15 @@ public class bob_joye extends bob_veugen {
             throw new HomomorphicException("Invalid Object: " + o.getClass().getName());
         }
     }
+     */
+    public boolean Protocol1(BigInteger y)
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
+        return Protocol0(y);
+    }
 
-    private int Protocol0(BigInteger y)
+    // Based on Figure 1 from Joye paper
+    // This had modifications so I can test leq and recover delta b
+    private boolean Protocol0(BigInteger y)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         // Constraint...
         if(y.bitLength() > dgk_public.getL()) {
@@ -97,11 +105,13 @@ public class bob_joye extends bob_veugen {
             temp = (BigInteger) in;
             if (temp.equals(BigInteger.ONE)) {
                 // x <= y is true, so I need delta_a XOR delta_b == 1
-                return 1;
+                // You are given the expected delta_b
+                return true;
             }
             else if (temp.equals(BigInteger.ZERO)) {
                 // x <= y is true, so I need delta_a XOR delta_b == 1
-                return 0;
+                // You are given the expected delta_b
+                return false;
             }
             else {
                 throw new IllegalArgumentException("This shouldn't be possible, value is + " + temp);
@@ -117,6 +127,16 @@ public class bob_joye extends bob_veugen {
                 break;
             }
         }
-        return deltaB;
+
+        toAlice.writeInt(deltaB);
+        toAlice.flush();
+
+        in = fromAlice.readObject();
+        if (in instanceof BigInteger) {
+            return DGKOperations.decrypt((BigInteger) in, dgk_private) == 1;
+        }
+        else {
+            throw new HomomorphicException("Invalid object received: " + in.getClass().getName());
+        }
     }
 }

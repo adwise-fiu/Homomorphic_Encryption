@@ -15,6 +15,7 @@ public class alice_joye extends alice_veugen {
 
     }
 
+    /*
     public boolean Protocol1(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
         // Step 1 by Bob
         Object o = fromBob.readObject();
@@ -63,17 +64,20 @@ public class alice_joye extends alice_veugen {
         toBob.flush();
         return answer == 1;
     }
+    */
+    public boolean Protocol1(BigInteger x)  throws IOException, ClassNotFoundException, HomomorphicException {
+        int delta_a_prime = compute_delta_a(x);
+        return Protocol0(x, delta_a_prime);
+    }
 
     // This function is the equivalent of the protocol on Figure 1 on Joye and Salehi's paper
-    private int Protocol0(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
+    private boolean Protocol0(BigInteger x, int delta_a) throws IOException, ClassNotFoundException, HomomorphicException {
         Object in = fromBob.readObject();
+        int delta_b;
         BigInteger [] Encrypted_Y;
         BigInteger [] C;
         BigInteger [] XOR;
         List<Integer> set_l = new ArrayList<>();
-        int t_bits;
-        int hamming_weight;
-        int delta_a;
 
         // Step 1: Get Y bits from Bob
         if (in instanceof BigInteger[]) {
@@ -83,38 +87,22 @@ public class alice_joye extends alice_veugen {
             throw new IllegalArgumentException("Protocol 1 Step 1: Missing Y-bits!");
         }
 
-        // Step 2, Compute Hamming Weight and Select delta A
-        hamming_weight = hamming_weight(x);
-        t_bits = x.bitLength();
-        double ceiling = Math.ceil(t_bits/2.0);
-        double floor = Math.floor(t_bits/2.0);
-
-        if (hamming_weight > floor) {
-            delta_a = 0;
-        }
-        else if (hamming_weight < ceiling) {
-            delta_a = 1;
-        }
-        else {
-            delta_a = rnd.nextInt(2);
-        }
+        // Step 2 done already...
 
         // Let bob know the correct delta b
         if (x.bitLength() < Encrypted_Y.length) {
             // x <= y is true, so I need delta_a XOR delta_b == 1
-            // delta_b = 1 XOR delta_a
-            toBob.writeObject(BigInteger.valueOf(1 ^ delta_a));
+            toBob.writeObject(BigInteger.ONE);
             toBob.flush();
             //System.out.println("Shouldn't be here: x <= y bits");
-            return delta_a;
+            return true;
         }
         else if(x.bitLength() > Encrypted_Y.length) {
             // x <= y is false, so I need delta_a XOR delta_b == 0
-            // delta_b = 0 XOR delta_a = delta_a
-            toBob.writeObject(BigInteger.valueOf(delta_a));
+            toBob.writeObject(BigInteger.ZERO);
             toBob.flush();
             //System.out.println("Shouldn't be here: x > y bits");
-            return delta_a;
+            return false;
         }
 
         // Step 3: Form Set L
@@ -152,7 +140,7 @@ public class alice_joye extends alice_veugen {
                 // 1 + (1 - 2 * delta_a) * x_i
                 first_term = 1 + ((1 - 2 * delta_a) * NTL.bit(x, i));
                 // (2 * delta_a - 1) * y_i
-                second_term = DGKOperations.multiply(Encrypted_Y[i], (2 * delta_a) - 1 , dgk_public);
+                second_term = DGKOperations.multiply(Encrypted_Y[i], (2L * delta_a) - 1 , dgk_public);
                 // Combine terms..
                 temp = DGKOperations.add_plaintext(second_term, first_term, dgk_public);
 
@@ -174,6 +162,34 @@ public class alice_joye extends alice_veugen {
         C = shuffle_bits(C);
         toBob.writeObject(C);
         toBob.flush();
+
+        // Get Delta B from Bob
+        delta_b = fromBob.readInt();
+        int answer = delta_a ^ delta_b;
+
+        toBob.writeObject(DGKOperations.encrypt(answer, dgk_public));
+        toBob.flush();
+
+        return answer == 1;
+    }
+
+    private static int compute_delta_a(BigInteger x) throws HomomorphicException {
+        // Step 2, Compute Hamming Weight and Select delta A
+        int delta_a;
+        int hamming_weight = hamming_weight(x);
+        int t_bits = x.bitLength();
+        double ceiling = Math.ceil(t_bits/2.0);
+        double floor = Math.floor(t_bits/2.0);
+
+        if (hamming_weight > floor) {
+            delta_a = 0;
+        }
+        else if (hamming_weight < ceiling) {
+            delta_a = 1;
+        }
+        else {
+            delta_a = rnd.nextInt(2);
+        }
         return delta_a;
     }
 
