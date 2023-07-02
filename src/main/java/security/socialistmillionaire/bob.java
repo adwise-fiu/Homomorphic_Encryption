@@ -10,10 +10,8 @@ import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import security.dgk.DGKOperations;
 import security.dgk.DGKPrivateKey;
 import security.dgk.DGKPublicKey;
-import security.elgamal.ElGamalCipher;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
-import security.elgamal.ElGamal_Ciphertext;
 import security.misc.HomomorphicException;
 import security.misc.NTL;
 import security.paillier.PaillierCipher;
@@ -244,123 +242,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		}
 	}
 
-	// Support addition and subtraction
-	public void addition(boolean addition)
-			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
-		if (el_gamal_public.additive) {
-			throw new HomomorphicException("El Gamal Keys already support addition over cipher-text. " +
-					"Don't outsource it.");
-		}
 
-		Object in;
-		ElGamal_Ciphertext enc_x_prime;
-		ElGamal_Ciphertext enc_y_prime;
-		BigInteger x_prime;
-		BigInteger y_prime;
-		
-		// Step 2
-		in = fromAlice.readObject();
-		if(in instanceof ElGamal_Ciphertext) {
-			enc_x_prime = (ElGamal_Ciphertext) in;
-		}
-		else {
-			throw new IllegalArgumentException("Didn't get [[x']] from Alice: " + in.getClass().getName());
-		}
-		
-		in = fromAlice.readObject();
-		if(in instanceof ElGamal_Ciphertext) {
-			enc_y_prime = (ElGamal_Ciphertext) in;
-		}
-		else {
-			throw new IllegalArgumentException("Didn't get [[y']] from Alice: " + in.getClass().getName());		
-		}
-		
-		// Step 3
-		x_prime = ElGamalCipher.decrypt(enc_x_prime, el_gamal_private);
-		y_prime = ElGamalCipher.decrypt(enc_y_prime, el_gamal_private);
-		if(addition) {
-			toAlice.writeObject(ElGamalCipher.encrypt(x_prime.add(y_prime), el_gamal_public));	
-		}
-		else {
-			toAlice.writeObject(ElGamalCipher.encrypt(x_prime.subtract(y_prime), el_gamal_public));
-		}
-		toAlice.flush();
-	}
-
-	public void ElGamal_division(long divisor)
-			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
-
-		if (!el_gamal_public.additive) {
-			throw new HomomorphicException("El Gamal Keys are not using additive version, so you can't " +
-					"outsource division");
-		}
-
-		BigInteger c;
-		BigInteger z;
-		ElGamal_Ciphertext enc_z;
-		Object alice = fromAlice.readObject();
-		if(alice instanceof ElGamal_Ciphertext) {
-			enc_z = (ElGamal_Ciphertext) alice;
-		}
-		else {
-			throw new IllegalArgumentException("Division: No ElGamal Ciphertext found! " + alice.getClass().getName());
-		}
-	
-		z = ElGamalCipher.decrypt(enc_z, el_gamal_private);
-		if(!FAST_DIVIDE) {
-			Protocol1(z.mod(BigInteger.valueOf(divisor)));
-		}
-		
-		c = z.divide(BigInteger.valueOf(divisor));
-		toAlice.writeObject(ElGamalCipher.encrypt(c, el_gamal_public));
-		toAlice.flush();
-		/*
-		 *  Unlike Comparison, it is decided Bob shouldn't know the answer.
-		 *  This is because Bob KNOWS d, and can decrypt [x/d]
-		 *  
-		 *  Since the idea is not leak the numbers themselves, 
-		 *  it is decided Bob shouldn't receive [x/d]
-		 */
-	}
-	
-	public void ElGamal_multiplication() 
-			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
-	{
-		if (!el_gamal_public.additive) {
-			throw new HomomorphicException("El Gamal Keys are not using additive version, so you can't " +
-					"outsource multiply");
-		}
-
-		Object in;
-		ElGamal_Ciphertext enc_x_prime;
-		ElGamal_Ciphertext enc_y_prime;
-		BigInteger x_prime;
-		BigInteger y_prime;
-		
-		// Step 2
-		in = fromAlice.readObject();
-		if(in instanceof ElGamal_Ciphertext) {
-			enc_x_prime = (ElGamal_Ciphertext) in;
-		}
-		else {
-			throw new IllegalArgumentException("Didn't get [[x']] from Alice: " + in.getClass().getName());
-		}
-		
-		in = fromAlice.readObject();
-		if(in instanceof ElGamal_Ciphertext) {
-			enc_y_prime = (ElGamal_Ciphertext) in;
-		}
-		else {
-			throw new IllegalArgumentException("Didn't get [[y']] from Alice: " + in.getClass().getName());		
-		}
-		
-		// Step 3
-		x_prime = ElGamalCipher.decrypt(enc_x_prime, el_gamal_private);
-		y_prime = ElGamalCipher.decrypt(enc_y_prime, el_gamal_private);
-		toAlice.writeObject(ElGamalCipher.encrypt(x_prime.multiply(y_prime), el_gamal_public));
-		toAlice.flush();
-	}
-	
 	public void multiplication() 
 			throws IOException, ClassNotFoundException, HomomorphicException
 	{

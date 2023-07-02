@@ -219,7 +219,7 @@ public class test_alice implements Runnable, constants
 		for(BigInteger l: high) {
 			// X <= Y is false
 			answer = Niu.Protocol1(l);
-			//System.out.println(!answer);
+			System.out.println(!answer);
 			assertFalse(answer);
 		}
 	}

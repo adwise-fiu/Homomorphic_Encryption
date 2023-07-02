@@ -9,10 +9,9 @@ import java.util.ArrayList;
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import security.dgk.DGKOperations;
 import security.dgk.DGKPublicKey;
-import security.elgamal.ElGamalCipher;
+
 import security.elgamal.ElGamalPublicKey;
-import security.elgamal.ElGamal_Ciphertext;
-import security.misc.CipherConstants;
+
 import security.misc.HomomorphicException;
 import security.misc.NTL;
 import security.paillier.PaillierCipher;
@@ -82,11 +81,13 @@ public class alice extends socialist_millionaires implements alice_interface {
 		if (x.bitLength() < Encrypted_Y.length) {
 			toBob.writeObject(BigInteger.ONE);
 			toBob.flush();
+			System.out.println("Shouldn't be here: x <= y bits");
 			return true;
 		}
 		else if(x.bitLength() > Encrypted_Y.length) {
 			toBob.writeObject(BigInteger.ZERO);
 			toBob.flush();
+			System.out.println("Shouldn't be here: x > y bits");
 			return false;
 		}
 
@@ -335,46 +336,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 		return answer;
 	}
-	
-	// What to do if you want to subtract two El-Gamal texts?
-	public ElGamal_Ciphertext addition(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
-			throws IOException, ClassNotFoundException, IllegalArgumentException
-	{
-		if(el_gamal_public.additive) {
-			// Can add both ciphertexts by default
-			return ElGamalCipher.add(x, y, el_gamal_public);
-		}
-		// Must outsource this operation
-		Object in;
-		ElGamal_Ciphertext x_prime;
-		ElGamal_Ciphertext y_prime;
-		BigInteger plain_a = NTL.RandomBnd(dgk_public.getU());
-		ElGamal_Ciphertext a = ElGamalCipher.encrypt(plain_a, el_gamal_public);
-		ElGamal_Ciphertext result;
-
-		// Step 1
-		x_prime = ElGamalCipher.multiply(x, a, el_gamal_public);
-		y_prime = ElGamalCipher.multiply(y, a, el_gamal_public);
-
-		toBob.writeObject(x_prime);
-		toBob.flush();
-
-		toBob.writeObject(y_prime);
-		toBob.flush();
-
-		// Step 2
-
-		// Step 3
-		in = fromBob.readObject();
-		if (in instanceof ElGamal_Ciphertext) {
-			result = (ElGamal_Ciphertext) in;
-			result = ElGamalCipher.divide(result, a ,el_gamal_public);
-		}
-		else {
-			throw new IllegalArgumentException("Didn't get [[x' * y']] from Bob: " + in.getClass().getName());
-		}
-		return result;
-	}
 
 	public BigInteger multiplication(BigInteger x, BigInteger y) 
 			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
@@ -427,96 +388,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 				// To avoid throwing an exception to myself of encrypt range [0, N), mod it now!
 				result = PaillierCipher.subtract_plaintext(result, a.multiply(b).mod(paillier_public.getN()), paillier_public);
 			}
-		}
-		else {
-			throw new IllegalArgumentException("Didn't get [[x' * y']] from Bob: " + in.getClass().getName());
-		}
-		return result;
-	}
-	
-	public ElGamal_Ciphertext division(ElGamal_Ciphertext x, long d)
-			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
-	{
-		if(!el_gamal_public.additive) {
-			ElGamalCipher.divide(x, ElGamalCipher.encrypt(BigInteger.valueOf(d), el_gamal_public), el_gamal_public);
-			return x;
-		}
-		Object in;
-		ElGamal_Ciphertext answer;
-		ElGamal_Ciphertext c;
-		ElGamal_Ciphertext z;
-		BigInteger r;
-		int t = 0;
-		
-		// Step 1
-		r = NTL.generateXBitRandom(16 - 1);
-		z = ElGamalCipher.add(x, ElGamalCipher.encrypt(r, el_gamal_public), el_gamal_public);
-		toBob.writeObject(z);
-		toBob.flush();
-		
-		// Step 2: Executed by Bob
-		
-		// Step 3: Compute secure comparison Protocol 
-		if(!FAST_DIVIDE) {
-			// FLIP IT
-			if(!Protocol1(r.mod(BigInteger.valueOf(d)))) {
-				t = 1;
-			}
-		}
-		
-		// Step 4: Bob computes c and Alice receives it
-		in = fromBob.readObject();
-		if (in instanceof ElGamal_Ciphertext) {
-			c = (ElGamal_Ciphertext) in;
-		}
-		else {
-			throw new IllegalArgumentException("Alice: ElGamal Ciphertext not found! " + in.getClass().getName());
-		}
-		
-		// Step 5: Alice computes [x/d]
-		// [[z/d - r/d]]
-		// [[z/d - r/d - t]]
-		answer = ElGamalCipher.subtract(c, ElGamalCipher.encrypt(r.divide(BigInteger.valueOf(d)), el_gamal_public), el_gamal_public);
-		if(t == 1) {
-			answer = ElGamalCipher.subtract(answer, ElGamalCipher.encrypt(t, el_gamal_public), el_gamal_public);
-		}
-		return answer;
-	}
-	
-	public ElGamal_Ciphertext multiplication(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
-			throws IOException, ClassNotFoundException, IllegalArgumentException
-	{
-		if(!el_gamal_public.additive) {
-			return ElGamalCipher.multiply(x, y, el_gamal_public);
-		}
-		Object in;
-		ElGamal_Ciphertext result;
-		ElGamal_Ciphertext x_prime;
-		ElGamal_Ciphertext y_prime;
-		BigInteger a;
-		BigInteger b;
-		BigInteger N = CipherConstants.FIELD_SIZE;
-		
-		// Step 1
-		a = NTL.RandomBnd(N);
-		b = NTL.RandomBnd(N);
-		x_prime = ElGamalCipher.add(x, ElGamalCipher.encrypt(a, el_gamal_public), el_gamal_public);
-		y_prime = ElGamalCipher.add(y, ElGamalCipher.encrypt(b, el_gamal_public), el_gamal_public);
-		toBob.writeObject(x_prime);
-		toBob.flush();
-		
-		toBob.writeObject(y_prime);
-		toBob.flush();
-		
-		// Step 2
-		
-		// Step 3
-		in = fromBob.readObject();
-		if (in instanceof ElGamal_Ciphertext) {
-			result = (ElGamal_Ciphertext) in;
-			result = ElGamalCipher.subtract(result, ElGamalCipher.multiply_scalar(x, b, el_gamal_public), el_gamal_public);
-			result = ElGamalCipher.subtract(result, ElGamalCipher.multiply_scalar(y, a, el_gamal_public), el_gamal_public);
-			result = ElGamalCipher.subtract(result, ElGamalCipher.encrypt(a.multiply(b), el_gamal_public), el_gamal_public);
 		}
 		else {
 			throw new IllegalArgumentException("Didn't get [[x' * y']] from Bob: " + in.getClass().getName());

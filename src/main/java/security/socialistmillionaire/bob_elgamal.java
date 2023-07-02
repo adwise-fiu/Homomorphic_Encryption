@@ -1,0 +1,221 @@
+package security.socialistmillionaire;
+
+import security.elgamal.ElGamalCipher;
+import security.elgamal.ElGamal_Ciphertext;
+import security.misc.HomomorphicException;
+import security.misc.NTL;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyPair;
+
+public class bob_elgamal extends bob_veugen {
+
+    public bob_elgamal(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
+        super(a, b, c);
+    }
+
+    // Support addition and subtraction
+    public void addition(boolean addition)
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
+        if (el_gamal_public.additive) {
+            throw new HomomorphicException("El Gamal Keys already support addition over cipher-text. " +
+                    "Don't outsource it.");
+        }
+
+        Object in;
+        ElGamal_Ciphertext enc_x_prime;
+        ElGamal_Ciphertext enc_y_prime;
+        BigInteger x_prime;
+        BigInteger y_prime;
+
+        // Step 2
+        in = fromAlice.readObject();
+        if(in instanceof ElGamal_Ciphertext) {
+            enc_x_prime = (ElGamal_Ciphertext) in;
+        }
+        else {
+            throw new IllegalArgumentException("Didn't get [[x']] from Alice: " + in.getClass().getName());
+        }
+
+        in = fromAlice.readObject();
+        if(in instanceof ElGamal_Ciphertext) {
+            enc_y_prime = (ElGamal_Ciphertext) in;
+        }
+        else {
+            throw new IllegalArgumentException("Didn't get [[y']] from Alice: " + in.getClass().getName());
+        }
+
+        // Step 3
+        x_prime = ElGamalCipher.decrypt(enc_x_prime, el_gamal_private);
+        y_prime = ElGamalCipher.decrypt(enc_y_prime, el_gamal_private);
+        if(addition) {
+            toAlice.writeObject(ElGamalCipher.encrypt(x_prime.add(y_prime), el_gamal_public));
+        }
+        else {
+            toAlice.writeObject(ElGamalCipher.encrypt(x_prime.subtract(y_prime), el_gamal_public));
+        }
+        toAlice.flush();
+    }
+
+    public void multiplication()
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
+    {
+        if (!el_gamal_public.additive) {
+            throw new HomomorphicException("El Gamal Keys are not using additive version, so you can't " +
+                    "outsource multiply");
+        }
+
+        Object in;
+        ElGamal_Ciphertext enc_x_prime;
+        ElGamal_Ciphertext enc_y_prime;
+        BigInteger x_prime;
+        BigInteger y_prime;
+
+        // Step 2
+        in = fromAlice.readObject();
+        if(in instanceof ElGamal_Ciphertext) {
+            enc_x_prime = (ElGamal_Ciphertext) in;
+        }
+        else {
+            throw new IllegalArgumentException("Didn't get [[x']] from Alice: " + in.getClass().getName());
+        }
+
+        in = fromAlice.readObject();
+        if(in instanceof ElGamal_Ciphertext) {
+            enc_y_prime = (ElGamal_Ciphertext) in;
+        }
+        else {
+            throw new IllegalArgumentException("Didn't get [[y']] from Alice: " + in.getClass().getName());
+        }
+
+        // Step 3
+        x_prime = ElGamalCipher.decrypt(enc_x_prime, el_gamal_private);
+        y_prime = ElGamalCipher.decrypt(enc_y_prime, el_gamal_private);
+        toAlice.writeObject(ElGamalCipher.encrypt(x_prime.multiply(y_prime), el_gamal_public));
+        toAlice.flush();
+    }
+
+    public void division(long divisor)
+            throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
+
+        if (!el_gamal_public.additive) {
+            throw new HomomorphicException("El Gamal Keys are not using additive version, so you can't " +
+                    "outsource division");
+        }
+
+        BigInteger c;
+        BigInteger z;
+        ElGamal_Ciphertext enc_z;
+        Object alice = fromAlice.readObject();
+        if(alice instanceof ElGamal_Ciphertext) {
+            enc_z = (ElGamal_Ciphertext) alice;
+        }
+        else {
+            throw new IllegalArgumentException("Division: No ElGamal Ciphertext found! " + alice.getClass().getName());
+        }
+
+        z = ElGamalCipher.decrypt(enc_z, el_gamal_private);
+        if(!FAST_DIVIDE) {
+            Protocol1(z.mod(BigInteger.valueOf(divisor)));
+        }
+
+        c = z.divide(BigInteger.valueOf(divisor));
+        toAlice.writeObject(ElGamalCipher.encrypt(c, el_gamal_public));
+        toAlice.flush();
+        /*
+         *  Unlike Comparison, it is decided Bob shouldn't know the answer.
+         *  This is because Bob KNOWS d, and can decrypt [x/d]
+         *
+         *  Since the idea is not leak the numbers themselves,
+         *  it is decided Bob shouldn't receive [x/d]
+         */
+    }
+
+
+    /**
+     * if Alice wants to sort a list of encrypted numbers, use this method if you
+     * will consistently sort using Protocol 4
+     */
+    public void sort()
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
+        long start_time = System.nanoTime();
+        int counter = 0;
+        while(fromAlice.readBoolean()) {
+            ++counter;
+            this.Protocol2();
+        }
+        System.out.println("ElGamal Protocol 4 was used " + counter + " times!");
+        System.out.println("ElGamal Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
+    }
+
+    public boolean Protocol2()
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
+
+        if (!this.getElGamalPublicKey().additive) {
+            throw new HomomorphicException("Encrypted Integer can't work on this version of EL Gamal");
+        }
+
+        int answer;
+        Object x;
+        BigInteger beta;
+        BigInteger z;
+        ElGamal_Ciphertext enc_z;
+        ElGamal_Ciphertext zeta_one;
+        ElGamal_Ciphertext zeta_two;
+        BigInteger N = el_gamal_public.getP().subtract(BigInteger.ONE);
+
+        //Step 1: get [[z]] from Alice
+        x = fromAlice.readObject();
+        if (x instanceof ElGamal_Ciphertext) {
+            enc_z = (ElGamal_Ciphertext) x;
+        }
+        else {
+            throw new IllegalArgumentException("Protocol 4: No ElGamal_Ciphertext found! " + x.getClass().getName());
+        }
+        z = ElGamalCipher.decrypt(enc_z, el_gamal_private);
+
+        // Step 2: compute Beta = z (mod 2^l),
+        beta = NTL.POSMOD(z, powL);
+
+        // Step 3: Alice computes r (mod 2^l) (Alpha)
+
+        // Step 4: Run Modified DGK Comparison Protocol
+        // true --> run Modified protocol 3
+        if(fromAlice.readBoolean()) {
+            Modified_Protocol3(beta, z);
+        }
+        else {
+            Protocol1(beta);
+        }
+
+        //Step 5" Send [[z/2^l]], Alice has the solution from Protocol 3 already
+        zeta_one = ElGamalCipher.encrypt(z.divide(powL), el_gamal_public);
+        if(z.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) < 0) {
+            zeta_two = ElGamalCipher.encrypt(z.add(N).divide(powL), el_gamal_public);
+        }
+        else {
+            zeta_two = ElGamalCipher.encrypt(z.divide(powL), el_gamal_public);
+        }
+        toAlice.writeObject(zeta_one);
+        toAlice.writeObject(zeta_two);
+        toAlice.flush();
+
+        //Step 6 - 7: Alice Computes [[x >= y]]
+        //Step 8 (UNOFFICIAL): Alice needs the answer...
+        x = fromAlice.readObject();
+        if (x instanceof ElGamal_Ciphertext) {
+            answer = ElGamalCipher.decrypt((ElGamal_Ciphertext) x, el_gamal_private).intValue();
+            toAlice.writeInt(answer);
+            toAlice.flush();
+        }
+        else {
+            throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
+        }
+        // IF SOMETHING HAPPENS...GET POST MORTEM HERE
+        if (answer != 0 && answer != 1) {
+            throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
+        }
+        return answer == 1;
+    }
+}

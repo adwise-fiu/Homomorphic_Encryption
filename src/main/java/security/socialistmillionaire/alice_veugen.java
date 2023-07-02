@@ -1,9 +1,6 @@
 package security.socialistmillionaire;
 
 import security.dgk.DGKOperations;
-import security.elgamal.ElGamalCipher;
-import security.elgamal.ElGamal_Ciphertext;
-import security.misc.CipherConstants;
 import security.misc.HomomorphicException;
 import security.misc.NTL;
 import security.paillier.PaillierCipher;
@@ -11,8 +8,7 @@ import security.paillier.PaillierCipher;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+
 
 public class alice_veugen extends alice {
     public alice_veugen(Socket clientSocket) throws IOException {
@@ -28,7 +24,7 @@ public class alice_veugen extends alice {
         return Protocol3(x, rnd.nextInt(2));
     }
 
-    private boolean Protocol3(BigInteger x, int deltaA)
+    boolean Protocol3(BigInteger x, int deltaA)
             throws ClassNotFoundException, IOException, HomomorphicException {
         if(x.bitLength() > dgk_public.getL()) {
             throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, x is: " + x.bitLength() + " bits");
@@ -79,6 +75,7 @@ public class alice_veugen extends alice {
             toBob.writeObject(BigInteger.ONE);
             toBob.flush();
             // x <= y -> 1 (true)
+            System.out.println("Shouldn't be here: x <= y bits");
             return true;
         }
 
@@ -88,6 +85,7 @@ public class alice_veugen extends alice {
             toBob.writeObject(BigInteger.ZERO);
             toBob.flush();
             // x <= y -> 0 (false)
+            System.out.println("Shouldn't be here: x > y bits");
             return false;
         }
 
@@ -171,7 +169,7 @@ public class alice_veugen extends alice {
     /**
      * Primarily used in Protocol 4.
      */
-    private boolean Modified_Protocol3(BigInteger alpha, BigInteger r, int deltaA)
+    boolean Modified_Protocol3(BigInteger alpha, BigInteger r, int deltaA)
             throws ClassNotFoundException, IOException, HomomorphicException
     {
         int answer;
@@ -487,164 +485,5 @@ public class alice_veugen extends alice {
             throw new IllegalArgumentException("Invalid Comparison result --> " + comparison);
         }
         return comparison == 1;
-    }
-
-    public boolean Protocol4(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
-            throws IOException, ClassNotFoundException, HomomorphicException
-    {
-        int deltaB;
-        int x_leq_y;
-        int comparison;
-        int deltaA = rnd.nextInt(2);
-        Object bob;
-        ElGamal_Ciphertext alpha_lt_beta;
-        ElGamal_Ciphertext z;
-        ElGamal_Ciphertext zeta_one;
-        ElGamal_Ciphertext zeta_two;
-        ElGamal_Ciphertext result;
-        BigInteger r;
-        BigInteger alpha;
-        BigInteger N = el_gamal_public.getP().subtract(BigInteger.ONE);
-
-        // Step 1: 0 <= r < N
-        r = NTL.RandomBnd(CipherConstants.FIELD_SIZE);
-
-        /*
-         * Step 2: Alice computes [[z]] = [[x - y + 2^l + r]]
-         * Send Z to Bob
-         * [[x + 2^l + r]]
-         * [[z]] = [[x - y + 2^l + r]]
-         */
-        z = ElGamalCipher.add(x, ElGamalCipher.encrypt(r.add(powL), el_gamal_public), el_gamal_public);
-        z = ElGamalCipher.subtract(z, y, el_gamal_public);
-        toBob.writeObject(z);
-        toBob.flush();
-
-        // Step 2: Bob decrypts[[z]] and computes beta = z (mod 2^l)
-
-        // Step 3: alpha = r (mod 2^l)
-        alpha = NTL.POSMOD(r, powL);
-
-        // Step 4: Modified Protocol 3 or Protocol 3
-
-        // See Optimization 3: true --> Use Modified Protocol 3
-        if(r.add(TWO.pow(dgk_public.getL() + 1)).compareTo(N) < 0) {
-            toBob.writeBoolean(false);
-            toBob.flush();
-            if(Protocol3(alpha, deltaA)) {
-                x_leq_y = 1;
-            }
-            else {
-                x_leq_y = 0;
-            }
-        }
-        else {
-            toBob.writeBoolean(true);
-            toBob.flush();
-            if(Modified_Protocol3(alpha, r, deltaA)) {
-                x_leq_y = 1;
-            }
-            else {
-                x_leq_y = 0;
-            }
-        }
-
-        // Step 5: get Delta B and [[z_1]] and [[z_2]]
-        if(deltaA == x_leq_y) {
-            deltaB = 0;
-        }
-        else {
-            deltaB = 1;
-        }
-
-        bob = fromBob.readObject();
-        if (bob instanceof ElGamal_Ciphertext) {
-            zeta_one = (ElGamal_Ciphertext) bob;
-        }
-        else {
-            System.err.println("Invalid Object received: " + bob.getClass().getName());
-            throw new IllegalArgumentException("Protocol 4, Step 5: BigInteger z_1 not found!");
-        }
-
-        bob = fromBob.readObject();
-        if (bob instanceof ElGamal_Ciphertext) {
-            zeta_two = (ElGamal_Ciphertext) bob;
-        }
-        else {
-            System.err.println("Invalid Object received: " + bob.getClass().getName());
-            throw new IllegalArgumentException("Protocol 4, Step 5: BigInteger z_2 not found!");
-        }
-
-        // Step 6: Compute [[beta <= alpha]]
-        if(deltaA == 1) {
-            alpha_lt_beta = ElGamalCipher.encrypt(deltaB, el_gamal_public);
-        }
-        else {
-            alpha_lt_beta = ElGamalCipher.encrypt(1 - deltaB, el_gamal_public);
-        }
-
-        // Step 7: Compute [[x <= y]]
-        if(r.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) < 0) {
-            result = ElGamalCipher.subtract(zeta_one, ElGamalCipher.encrypt(r.divide(powL), el_gamal_public), el_gamal_public);
-        }
-        else {
-            result = ElGamalCipher.subtract(zeta_two, ElGamalCipher.encrypt(r.divide(powL), el_gamal_public), el_gamal_public);
-        }
-        result = ElGamalCipher.subtract(result, alpha_lt_beta, el_gamal_public);
-
-        /*
-         * Unofficial Step 8:
-         * Since the result is encrypted...I need to send
-         * this back to Bob (Android Phone) to decrypt the solution...
-         *
-         * Bob by definition would know the answer as well.
-         */
-
-        toBob.writeObject(result);
-        toBob.flush();
-        comparison = fromBob.readInt();
-        // IF SOMETHING HAPPENS...GET POST MORTEM HERE
-        if (comparison != 0 && comparison != 1) {
-            throw new IllegalArgumentException("Invalid Comparison result --> " + comparison);
-        }
-        return comparison == 1;
-    }
-
-    public List<ElGamal_Ciphertext> getKMin_ElGamal(List<ElGamal_Ciphertext> input, int k)
-            throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
-    {
-        if(k > input.size() || k <= 0) {
-            throw new IllegalArgumentException("Invalid k value! " + k);
-        }
-        // deep copy
-        List<ElGamal_Ciphertext> arr = new ArrayList<>(input);
-
-        ElGamal_Ciphertext temp;
-        List<ElGamal_Ciphertext> min = new ArrayList<>();
-
-        for (int i = 0; i < k; i++) {
-            for (int j = 0; j < arr.size() - i - 1; j++) {
-                toBob.writeBoolean(true);
-                toBob.flush();
-
-                // Originally arr[j] > arr[j + 1]
-                if (!this.Protocol4(arr.get(j), arr.get(j + 1))) {
-                    // swap temp and arr[i]
-                    temp = arr.get(j);
-                    arr.set(j, arr.get(j + 1));
-                    arr.set(j + 1, temp);
-                }
-            }
-        }
-
-        // Get last K-elements of arr!!
-        for (int i = 0; i < k; i++) {
-            min.add(arr.get(arr.size() - 1 - i));
-        }
-
-        // Close Bob
-        toBob.writeBoolean(false);
-        toBob.flush();
-        return min;
     }
 }

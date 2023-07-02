@@ -175,7 +175,7 @@ public class IntegrationTests implements constants
 	// Test El Gamal version of Alice and Bob
 	@Test
 	public void el_gamal_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		bob_veugen bob_version_two = new bob_veugen(paillier, dgk, el_gamal);
+		bob_elgamal bob_version_two = new bob_elgamal(paillier, dgk, el_gamal);
 		Thread andrew = new Thread(new test_el_gamal_bob(bob_version_two, 9202));
 		andrew.start();
 
@@ -184,7 +184,7 @@ public class IntegrationTests implements constants
 		Thread.sleep(2 * 1000);
 		System.out.println("Alice starting...");
 
-		alice_veugen Niu = new alice_veugen(new Socket("127.0.0.1", 9202));
+		alice_elgamal Niu = new alice_elgamal(new Socket("127.0.0.1", 9202));
 		Niu.receivePublicKeys();
 
 		Thread yujia = new Thread(new test_el_gamal_alice(Niu, (ElGamalPrivateKey) el_gamal.getPrivate()));
@@ -199,7 +199,6 @@ public class IntegrationTests implements constants
 	}
 
 	// Test Joye and Salehi Implementation of Alice and Bob
-	/*
 	@Test
 	public void joye_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
 
@@ -225,5 +224,4 @@ public class IntegrationTests implements constants
 			e.printStackTrace();
 		}
 	}
-	 */
 }

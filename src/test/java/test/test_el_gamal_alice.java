@@ -6,6 +6,7 @@ import security.elgamal.ElGamalPublicKey;
 import security.elgamal.ElGamal_Ciphertext;
 import security.misc.HomomorphicException;
 import security.misc.NTL;
+import security.socialistmillionaire.alice_elgamal;
 import security.socialistmillionaire.alice_veugen;
 
 import java.io.IOException;
@@ -17,12 +18,12 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class test_el_gamal_alice implements constants, Runnable {
-    public test_el_gamal_alice(alice_veugen Niu, ElGamalPrivateKey el_gamal_private) {
+    public test_el_gamal_alice(alice_elgamal Niu, ElGamalPrivateKey el_gamal_private) {
         this.Niu = Niu;
         this.el_gamal_private = el_gamal_private;
     }
 
-    private final alice_veugen Niu;
+    private final alice_elgamal Niu;
     private ElGamalPublicKey el_gamal_public;
     private final ElGamalPrivateKey el_gamal_private;
 
@@ -63,7 +64,7 @@ public class test_el_gamal_alice implements constants, Runnable {
             t.add(ElGamalCipher.encrypt(toSort[i], el_gamal_public));
         }
         if(el_gamal_public.additive) {
-            min = Niu.getKMin_ElGamal(t, 3);
+            min = Niu.getKMin(t, 3);
             for (int i = 0; i < 3; i++) {
                 plain_min[i] = ElGamalCipher.decrypt(min.get(i), el_gamal_private);
             }

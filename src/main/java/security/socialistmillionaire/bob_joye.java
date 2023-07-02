@@ -8,7 +8,7 @@ import java.math.BigInteger;
 import java.net.Socket;
 import java.security.KeyPair;
 
-public class bob_joye extends bob {
+public class bob_joye extends bob_veugen {
     public bob_joye(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
         super(a, b, c);
     }

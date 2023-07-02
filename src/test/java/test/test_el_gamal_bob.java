@@ -1,7 +1,7 @@
 package test;
 
 import security.misc.HomomorphicException;
-import security.socialistmillionaire.bob_veugen;
+import security.socialistmillionaire.bob_elgamal;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -10,10 +10,10 @@ import java.net.Socket;
 public class test_el_gamal_bob implements Runnable {
     private static ServerSocket bob_socket = null;
     private static Socket bob_client = null;
-    private final bob_veugen andrew;
+    private final bob_elgamal andrew;
     private final int port;
 
-    public test_el_gamal_bob(bob_veugen andrew, int port) {
+    public test_el_gamal_bob(bob_elgamal andrew, int port) {
         this.andrew = andrew;
         this.port = port;
     }
@@ -57,27 +57,27 @@ public class test_el_gamal_bob implements Runnable {
     }
 
     public void test_sorting() throws IOException, ClassNotFoundException, HomomorphicException {
-        andrew.repeat_ElGamal_Protocol4();
+        andrew.sort();
     }
 
     public void test_protocol_two() throws IOException, ClassNotFoundException, HomomorphicException {
         for(int i = 0; i < 16 * 3; i++) {
-            andrew.ElGamal_Protocol4();
+            andrew.sort();
         }
     }
 
     public void test_outsourced_multiply() throws IOException, ClassNotFoundException, HomomorphicException {
         for(int i = 0; i < 3; i++) {
-            andrew.ElGamal_multiplication();
+            andrew.multiplication();
         }
     }
 
     public void test_outsourced_divide() throws IOException, ClassNotFoundException, HomomorphicException {
-        andrew.ElGamal_division(2);
-        andrew.ElGamal_division(3);
-        andrew.ElGamal_division(4);
-        andrew.ElGamal_division(5);
-        andrew.ElGamal_division(25);
+        andrew.division(2);
+        andrew.division(3);
+        andrew.division(4);
+        andrew.division(5);
+        andrew.division(25);
     }
 
     public void test_addition() throws ClassNotFoundException, IOException, HomomorphicException {

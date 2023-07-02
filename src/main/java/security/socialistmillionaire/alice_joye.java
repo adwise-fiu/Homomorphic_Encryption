@@ -10,7 +10,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class alice_joye extends alice {
+public class alice_joye extends alice_veugen {
     public alice_joye(Socket socket) throws IOException {
         super(socket);
     }
@@ -84,11 +84,13 @@ public class alice_joye extends alice {
         if (x.bitLength() < Encrypted_Y.length) {
             toBob.writeObject(BigInteger.ONE);
             toBob.flush();
+            //System.out.println("Shouldn't be here: x <= y bits");
             return true;
         }
         else if(x.bitLength() > Encrypted_Y.length) {
             toBob.writeObject(BigInteger.ZERO);
             toBob.flush();
+            //System.out.println("Shouldn't be here: x > y bits");
             return false;
         }
 
@@ -133,23 +135,61 @@ public class alice_joye extends alice {
 
         int first_term;
         BigInteger second_term;
-        int index;
-        for (int i = 0; i < set_l.size(); i++) {
-            index = set_l.get(i);
+        /*
+        System.out.println("x in bits: " + x.toString(2) + " x is " + x);
+        System.out.println("Hamming Weight: " + hamming_weight);
+        System.out.println("Ceiling: " + ceiling + " and floor: " + floor);
+        System.out.println("delta A is: " + delta_a);
+        System.out.println("Elements in L are: " + set_l);
+        */
 
-            C[i] = DGKOperations.sum(XOR, dgk_public, Encrypted_Y.length - 1 - index);
+        // Want to go from Right to left...
+        int set_l_index = 0;
+        for (int i = 0; i < Encrypted_Y.length; i++) {
+            /*
+            System.out.println("Selected Index: " + index);
+            System.out.println("Adjusted Index: " + (Encrypted_Y.length - 1 - index));
+            System.out.println("Selecting x-bit: " + NTL.bit(x, index));
+            System.out.println("Selecting Adjusted x-bit: " + NTL.bit(x, (Encrypted_Y.length - 1 - index)));
+            */
+
+            BigInteger temp;
+            BigInteger sum;
+            if (delta_a == NTL.bit(x, i)) {
+                // right to left
+                // 1 + (1 - 2 * delta_a) * x_i
+                first_term = 1 + ((1 - 2 * delta_a) * NTL.bit(x, i));
+                // (2 * delta_a - 1) * y_i
+                second_term = DGKOperations.multiply(Encrypted_Y[i], (2 * delta_a) - 1 , dgk_public);
+                // Combine terms..
+                temp = DGKOperations.add_plaintext(second_term, first_term, dgk_public);
+
+                // Now add with C_i
+                sum = DGKOperations.sum(XOR, dgk_public, i);
+                temp = DGKOperations.add(temp, sum, dgk_public);
+                // Blind the term and save it
+                temp = DGKOperations.multiply(temp, rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
+                C[set_l_index] = temp;
+                ++set_l_index;
+            }
+            /*
+            // Keep this the same as Veugen...
+            C[i] = DGKOperations.sum(XOR, dgk_public, Encrypted_Y.length - 1 - i);
             // 1 + (1 - 2 * delta_a) * x_i
-            first_term = 1 + ((1 - 2 * delta_a) * NTL.bit(x, Encrypted_Y.length - 1 - index));
+            first_term = 1 + ((1 - 2 * delta_a) * NTL.bit(x, index));
             // (2 * delta_a + 1) * y_i
-            second_term = DGKOperations.multiply(Encrypted_Y[Encrypted_Y.length - 1 - index],
-                    (2 * delta_a) - 1 , dgk_public);
+            second_term = DGKOperations.multiply(Encrypted_Y[index], (2 * delta_a) - 1 , dgk_public);
             // Combine terms...
             C[i] = DGKOperations.add_plaintext(C[i], first_term, dgk_public);
             C[i] = DGKOperations.add(C[i], second_term, dgk_public);
+            // Blind the term
+            C[i] = DGKOperations.multiply(C[i], rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
+            */
         }
-        // Use the same trick as from Veugen
+        // Use the same trick as from Veugen, including blinding
         C[set_l.size()] = DGKOperations.sum(XOR, dgk_public);
         C[set_l.size()] = DGKOperations.add_plaintext(C[set_l.size()], delta_a, dgk_public);
+        C[set_l.size()] = DGKOperations.multiply(C[set_l.size()], rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
 
         // Step 4: send shuffled bits to Bob
         C = shuffle_bits(C);
