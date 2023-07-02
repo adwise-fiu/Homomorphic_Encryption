@@ -109,6 +109,11 @@ public class test_alice implements Runnable, constants
 				toSort[i] = PaillierCipher.decrypt(toSort[i], paillier_private);
 			}
 		}
+		// Use assert to sort array
+		Arrays.sort(toSort);
+		for (int i = 0; i < min.length; i++) {
+			assertEquals(toSort[i], min[i]);
+		}
 		System.out.println("General List: " + Arrays.toString(toSort));
 		System.out.println("Three minimum numbers: " + Arrays.toString(min));
 	}
@@ -232,7 +237,7 @@ public class test_alice implements Runnable, constants
 		Niu.setDGKMode(dgk_mode);
 		boolean answer;
 		if (dgk_mode) {
-			if (Niu.getClass() == security.socialistmillionaire.alice_veugen.class) {
+			if (Niu.getClass() != security.socialistmillionaire.alice.class) {
 				for (int i = 0; i < low.length; i++) {
 					// X >= Y is false
 					answer = Niu.Protocol2(DGKOperations.encrypt(low[i], dgk_public_key),

@@ -14,7 +14,6 @@ Feel free to use this code as you like.
  */
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 
 public final class NTL implements CipherConstants
 {
@@ -24,6 +23,9 @@ public final class NTL implements CipherConstants
 
 	// Ensure it is n-bit Large number and positive as well
 	public static BigInteger generateXBitRandom (int bits) {
+		if (bits == 0) {
+			return BigInteger.ZERO;
+		}
 		BigInteger r = new BigInteger(bits, rnd);
 		r = r.setBit(bits - 1);
 		return r;

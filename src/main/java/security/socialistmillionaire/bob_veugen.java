@@ -7,17 +7,12 @@ import security.paillier.PaillierCipher;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.Socket;
 import java.security.KeyPair;
 
 public class bob_veugen extends bob {
 
     public bob_veugen(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
         super(a, b, c);
-    }
-
-    public bob_veugen(Socket clientSocket, KeyPair a, KeyPair b, KeyPair c) throws IOException, IllegalArgumentException {
-        super(clientSocket, a, b, c);
     }
 
     // Use this for Using Modified Protocol3 within Protocol 4

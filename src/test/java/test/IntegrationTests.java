@@ -21,84 +21,25 @@ public class IntegrationTests implements constants
 	private static KeyPair paillier = null;
 	private static KeyPair el_gamal = null;
 
-	public static BigInteger [] generate_low() {
+	public static BigInteger [] generate_values(BigInteger offset) {
 		BigInteger [] test_set = new BigInteger[16];
-		test_set[0] = new BigInteger("1");
-		test_set[1] = new BigInteger("2");
-		test_set[2] = new BigInteger("4");
-		test_set[3] = new BigInteger("8");
-		test_set[4] = new BigInteger("16");
-		test_set[5] = new BigInteger("32");
-		test_set[6] = new BigInteger("64");
-		test_set[7] = new BigInteger("128");
-		test_set[8] = new BigInteger("256");
-		test_set[9] = new BigInteger("512");
-
-		test_set[10] = new BigInteger("1024");
-		test_set[11] = new BigInteger("2048");
-		test_set[12] = new BigInteger("4096");
-		test_set[13] = new BigInteger("8192");
-		test_set[14] = new BigInteger("16384");
-		test_set[15] = new BigInteger("32768");
-
-		BigInteger t = BigInteger.ZERO;
-		for (int i = 0; i < test_set.length;i++) {
-			test_set[i] = test_set[i].add(t);
+		for (int i = 0; i < test_set.length; i++) {
+			test_set[i] = TWO.pow(i);
+			test_set[i] = test_set[i].add(offset);
 		}
 		return test_set;
+	}
+
+	public static BigInteger [] generate_low() {
+		return generate_values(BigInteger.ZERO);
 	}
 
 	public static BigInteger[] generate_mid() {
-		BigInteger [] test_set = new BigInteger[16];
-		test_set[0] = new BigInteger("1");
-		test_set[1] = new BigInteger("2");
-		test_set[2] = new BigInteger("4");
-		test_set[3] = new BigInteger("8");
-		test_set[4] = new BigInteger("16");
-		test_set[5] = new BigInteger("32");
-		test_set[6] = new BigInteger("64");
-		test_set[7] = new BigInteger("128");
-		test_set[8] = new BigInteger("256");
-		test_set[9] = new BigInteger("512");
-
-		test_set[10] = new BigInteger("1024");
-		test_set[11] = new BigInteger("2048");
-		test_set[12] = new BigInteger("4096");
-		test_set[13] = new BigInteger("8192");
-		test_set[14] = new BigInteger("16384");
-		test_set[15] = new BigInteger("32768");
-
-		for (int i = 0; i < test_set.length; i++) {
-			test_set[i] = test_set[i].add(FIVE);
-		}
-		return test_set;
+		return generate_values(FIVE);
 	}
 
 	public static BigInteger[] generate_high() {
-		BigInteger [] test_set = new BigInteger[16];
-
-		test_set[0] = new BigInteger("1");
-		test_set[1] = new BigInteger("2");
-		test_set[2] = new BigInteger("4");
-		test_set[3] = new BigInteger("8");
-		test_set[4] = new BigInteger("16");
-		test_set[5] = new BigInteger("32");
-		test_set[6] = new BigInteger("64");
-		test_set[7] = new BigInteger("128");
-		test_set[8] = new BigInteger("256");
-		test_set[9] = new BigInteger("512");
-
-		test_set[10] = new BigInteger("1024");
-		test_set[11] = new BigInteger("2048");
-		test_set[12] = new BigInteger("4096");
-		test_set[13] = new BigInteger("8192");
-		test_set[14] = new BigInteger("16384");
-		test_set[15] = new BigInteger("32768");
-
-		for (int i = 0; i < test_set.length; i++) {
-			test_set[i] = test_set[i].add(BigInteger.TEN);
-		}
-		return test_set;
+		return generate_values(BigInteger.TEN);
 	}
 
 	@BeforeClass
@@ -121,7 +62,7 @@ public class IntegrationTests implements constants
 
 	@Test
 	public void all_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		bob [] all_bobs = { new bob(paillier, dgk, el_gamal), new bob_veugen(paillier, dgk, el_gamal)};
+		bob [] all_bobs = { new bob(paillier, dgk, el_gamal), new bob_veugen(paillier, dgk, el_gamal) };
 		alice [] all_alice = { new alice(), new alice_veugen() };
 
 		for (int i = 0; i < all_bobs.length; i++) {
@@ -175,4 +116,31 @@ public class IntegrationTests implements constants
 			e.printStackTrace();
 		}
 	}
+
+	/*
+	@Test
+	public void joye_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
+		bob_joye bob_version_three = new bob_joye(paillier, dgk, el_gamal);
+		Thread andrew = new Thread(new test_bob(bob_version_three, 9203));
+		andrew.start();
+
+		// Wait then connect!
+		System.out.println("Sleep to give bob time to make keys...");
+		Thread.sleep(2 * 1000);
+		System.out.println("Alice starting...");
+
+		alice Niu = new alice_joye();
+		Niu.set_socket(new Socket("127.0.0.1", 9203));
+		Niu.receivePublicKeys();
+
+		Thread yujia = new Thread(new test_alice(Niu, paillier, dgk));
+		yujia.start();
+		try {
+			andrew.join();
+			yujia.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	 */
 }

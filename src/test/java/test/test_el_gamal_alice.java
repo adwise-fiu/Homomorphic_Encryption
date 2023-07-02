@@ -68,6 +68,11 @@ public class test_el_gamal_alice implements constants, Runnable {
                 plain_min[i] = ElGamalCipher.decrypt(min.get(i), el_gamal_private);
             }
         }
+        // Use assert to sort array
+        Arrays.sort(toSort);
+        for (int i = 0; i < plain_min.length; i++) {
+            assertEquals(toSort[i], plain_min[i]);
+        }
         System.out.println("General List: " + Arrays.toString(toSort));
         System.out.println("Three minimum numbers: " + Arrays.toString(plain_min));
     }

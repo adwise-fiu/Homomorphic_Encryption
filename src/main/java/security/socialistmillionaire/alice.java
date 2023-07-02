@@ -71,8 +71,8 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 
 		int answer;
-		int deltaB ;
-		int deltaA = rnd.nextInt(2);
+		int delta_b;
+		int delta_a = rnd.nextInt(2);
 		Object in;
 		BigInteger [] Encrypted_Y;
 		BigInteger [] C;
@@ -123,14 +123,14 @@ public class alice extends socialist_millionaires implements alice_interface {
 
 		for (int i = 0; i < Encrypted_Y.length;i++) {
 			C[i] = DGKOperations.multiply(DGKOperations.sum(XOR, dgk_public, i), 3, dgk_public);
-			C[i] = DGKOperations.add_plaintext(C[i], 1 - 2 * deltaA, dgk_public);
+			C[i] = DGKOperations.add_plaintext(C[i], 1 - 2 * delta_a, dgk_public);
 			C[i] = DGKOperations.subtract(C[i], Encrypted_Y[i], dgk_public);
 			C[i] = DGKOperations.add_plaintext(C[i], NTL.bit(x, i), dgk_public);
 		}
 
 		//This is c_{-1}
 		C[Encrypted_Y.length] = DGKOperations.sum(XOR, dgk_public);
-		C[Encrypted_Y.length] = DGKOperations.add_plaintext(C[Encrypted_Y.length], deltaA, dgk_public);
+		C[Encrypted_Y.length] = DGKOperations.add_plaintext(C[Encrypted_Y.length], delta_a, dgk_public);
 
 		// Step 5: Blinds C_i, Shuffle it and send to Bob
 		for (int i = 0; i < C.length; i++) {
@@ -143,16 +143,10 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Step 6: Bob looks for any 0's in C_i and computes DeltaB
 
 		// Step 7: Obtain Delta B from Bob
-		deltaB = fromBob.readInt();
+		delta_b = fromBob.readInt();
 
 		// 1 XOR 1 = 0 and 0 XOR 0 = 0, so X > Y
-		if (deltaA == deltaB) {
-			answer = 0;
-		}
-		// 1 XOR 0 = 1 and 0 XOR 1 = 1, so X <= Y
-		else {
-			answer = 1;
-		}
+		answer = delta_a ^ delta_b;
 
 		/*
 		 * Step 8: Bob has the Private key anyway
