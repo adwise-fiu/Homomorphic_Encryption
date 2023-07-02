@@ -70,7 +70,7 @@ public class bob_joye extends bob_veugen {
         int [] bits = new int[2];
         boolean answer = Protocol0(y, bits);
         int xor = bits[0] ^ bits[1];
-        //assert answer == (xor == 1);
+        assert answer == (xor == 1);
         return answer;
     }
 
