@@ -66,20 +66,27 @@ public class bob_joye extends bob_veugen {
      */
     public boolean Protocol1(BigInteger y)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
-        return Protocol0(y);
+
+        int [] bits = new int[2];
+        boolean answer = Protocol0(y, bits);
+        int xor = bits[0] ^ bits[1];
+        //assert answer == (xor == 1);
+        return answer;
     }
 
     // Based on Figure 1 from Joye paper
-    // This had modifications so I can test leq and recover delta b
-    private boolean Protocol0(BigInteger y)
+    // This had modifications, so I can test leq and recover delta b
+    private boolean Protocol0(BigInteger y, int [] bits)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         // Constraint...
         if(y.bitLength() > dgk_public.getL()) {
             throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
         }
 
+        boolean answer;
         Object in;
-        int deltaB = 0;
+        int delta_b = 0;
+        int delta_a;
         BigInteger [] C;
         BigInteger temp;
 
@@ -91,7 +98,9 @@ public class bob_joye extends bob_veugen {
         toAlice.writeObject(EncY);
         toAlice.flush();
 
-        // Step 2: Alice...
+        // Step 2: Alice computes delta_a and just sends now...
+        delta_a = fromAlice.readInt();
+
         // Step 3: Alice...
         // Step 4: Alice...
         // Step 5: Alice...
@@ -105,16 +114,23 @@ public class bob_joye extends bob_veugen {
             temp = (BigInteger) in;
             if (temp.equals(BigInteger.ONE)) {
                 // x <= y is true, so I need delta_a XOR delta_b == 1
-                // You are given the expected delta_b
+                // Alice will give you the delta_a for you to compute delta_b
+                // delta_b = 1 XOR delta_a
+                delta_b = 1 ^ delta_a;
+                bits[0] = delta_a;
+                bits[1] = delta_b;
                 return true;
             }
             else if (temp.equals(BigInteger.ZERO)) {
-                // x <= y is true, so I need delta_a XOR delta_b == 1
-                // You are given the expected delta_b
+                // x <= y is false, so I need delta_a XOR delta_b == 0
+                // delta_b = 0 XOR delta_a = delta_a
+                delta_b = delta_a;
+                bits[0] = delta_a;
+                bits[1] = delta_b;
                 return false;
             }
             else {
-                throw new IllegalArgumentException("This shouldn't be possible, value is + " + temp);
+                throw new IllegalArgumentException("This shouldn't be possible, value is: " + temp);
             }
         }
         else {
@@ -123,20 +139,17 @@ public class bob_joye extends bob_veugen {
 
         for (BigInteger C_i: C) {
             if (DGKOperations.decrypt(C_i, dgk_private) == 0) {
-                deltaB = 1;
+                delta_b = 1;
                 break;
             }
         }
 
-        toAlice.writeInt(deltaB);
+        toAlice.writeInt(delta_b);
         toAlice.flush();
 
-        in = fromAlice.readObject();
-        if (in instanceof BigInteger) {
-            return DGKOperations.decrypt((BigInteger) in, dgk_private) == 1;
-        }
-        else {
-            throw new HomomorphicException("Invalid object received: " + in.getClass().getName());
-        }
+        answer = (delta_a ^ delta_b) == 1;
+        bits[0] = delta_a;
+        bits[1] = delta_b;
+        return answer;
     }
 }

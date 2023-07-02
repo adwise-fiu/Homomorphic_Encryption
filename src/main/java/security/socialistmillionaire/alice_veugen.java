@@ -145,15 +145,7 @@ public class alice_veugen extends alice {
 
         // Step 7: Obtain Delta B from Bob
         deltaB = fromBob.readInt();
-
-        // 1 XOR 1 = 0 and 0 XOR 0 = 0, so X > Y
-        if (deltaA == deltaB) {
-            answer = 0;
-        }
-        // 1 XOR 0 = 1 and 0 XOR 1 = 1, so X <= Y
-        else {
-            answer = 1;
-        }
+        answer = deltaA ^ deltaB;
 
         /*
          * Step 8: Bob has the Private key anyway...
@@ -389,7 +381,7 @@ public class alice_veugen extends alice {
         if(r.add(TWO.pow(dgk_public.getL() + 1)).compareTo(N) < 0) {
             toBob.writeBoolean(false);
             toBob.flush();
-            if(Protocol3(alpha, deltaA)) {
+            if(Protocol1(alpha)) {
                 x_leq_y = 1;
             }
             else {

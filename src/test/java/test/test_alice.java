@@ -59,7 +59,6 @@ public class test_alice implements Runnable, constants
 			test_protocol_two(true);
 			test_protocol_two(false);
 
-			// This function isn't thread-safe. But either way Protocol2 is well tested...
 			test_sorting(true);
 			test_sorting(false);
 		}

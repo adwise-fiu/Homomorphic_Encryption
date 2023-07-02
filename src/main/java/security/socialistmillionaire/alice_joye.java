@@ -14,8 +14,7 @@ public class alice_joye extends alice_veugen {
     public alice_joye() {
 
     }
-
-    /*
+/*
     public boolean Protocol1(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
         // Step 1 by Bob
         Object o = fromBob.readObject();
@@ -44,7 +43,7 @@ public class alice_joye extends alice_veugen {
         toBob.flush();
 
         // Figure 1 compare
-        delta_a_prime = Protocol0(x_prime);
+        delta_a_prime = get_delta_a_prime(x_prime);
 
         // Step 3 Alice
         if (big_z_star.mod(TWO).equals(BigInteger.ZERO)) {
@@ -64,15 +63,45 @@ public class alice_joye extends alice_veugen {
         toBob.flush();
         return answer == 1;
     }
-    */
-    public boolean Protocol1(BigInteger x)  throws IOException, ClassNotFoundException, HomomorphicException {
+*/
+
+    public boolean Protocol1(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
         int delta_a_prime = compute_delta_a(x);
-        return Protocol0(x, delta_a_prime);
+        int delta_b_prime;
+        int xor;
+        boolean answer = Protocol0(x, delta_a_prime);
+        if (answer) {
+            delta_b_prime = 1 ^ delta_a_prime;
+        }
+        else {
+            delta_b_prime = delta_a_prime;
+        }
+        xor = delta_a_prime ^ delta_b_prime;
+        assert answer == (xor == 1);
+        return answer;
     }
+
+    /*
+    private int get_delta_a_prime(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
+        int delta_a_prime = compute_delta_a(x);
+        int delta_b_prime;
+        int xor;
+        boolean answer = Protocol0(x, delta_a_prime);
+        if (answer) {
+            delta_b_prime = 1 ^ delta_a_prime;
+        }
+        else {
+            delta_b_prime = delta_a_prime;
+        }
+        xor = delta_a_prime ^ delta_b_prime;
+        // Confirm the delta is correct before continuing
+        assert answer == (xor == 1);
+        return delta_a_prime;
+    }
+     */
 
     // This function is the equivalent of the protocol on Figure 1 on Joye and Salehi's paper
     private boolean Protocol0(BigInteger x, int delta_a) throws IOException, ClassNotFoundException, HomomorphicException {
-        Object in = fromBob.readObject();
         int delta_b;
         BigInteger [] Encrypted_Y;
         BigInteger [] C;
@@ -80,6 +109,7 @@ public class alice_joye extends alice_veugen {
         List<Integer> set_l = new ArrayList<>();
 
         // Step 1: Get Y bits from Bob
+        Object in = fromBob.readObject();
         if (in instanceof BigInteger[]) {
             Encrypted_Y = (BigInteger []) in;
         }
@@ -87,19 +117,22 @@ public class alice_joye extends alice_veugen {
             throw new IllegalArgumentException("Protocol 1 Step 1: Missing Y-bits!");
         }
 
-        // Step 2 done already...
+        // Step 2 done already, but tell Bob now.
+        toBob.writeInt(delta_a);
+        toBob.flush();
 
         // Let bob know the correct delta b
         if (x.bitLength() < Encrypted_Y.length) {
             // x <= y is true, so I need delta_a XOR delta_b == 1
             toBob.writeObject(BigInteger.ONE);
+            //I also need to tell what my delta_a is so Bob can correctly pick delta_b
             toBob.flush();
-            //System.out.println("Shouldn't be here: x <= y bits");
             return true;
         }
         else if(x.bitLength() > Encrypted_Y.length) {
             // x <= y is false, so I need delta_a XOR delta_b == 0
             toBob.writeObject(BigInteger.ZERO);
+            //I also need to tell what my delta_a is so Bob can correctly pick delta_b
             toBob.flush();
             //System.out.println("Shouldn't be here: x > y bits");
             return false;
@@ -166,10 +199,6 @@ public class alice_joye extends alice_veugen {
         // Get Delta B from Bob
         delta_b = fromBob.readInt();
         int answer = delta_a ^ delta_b;
-
-        toBob.writeObject(DGKOperations.encrypt(answer, dgk_public));
-        toBob.flush();
-
         return answer == 1;
     }
 
