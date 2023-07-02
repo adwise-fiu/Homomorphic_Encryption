@@ -119,64 +119,41 @@ public class IntegrationTests implements constants
 		el_gamal = pg.generateKeyPair();
 	}
 
-	// Test Basic Implementation of Alice and Bob
 	@Test
-	public void integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		bob bob_version_one = new bob(paillier, dgk, el_gamal);
-		Thread andrew = new Thread(new test_bob(bob_version_one, 9200));
-		andrew.start();
+	public void all_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
+		bob [] all_bobs = { new bob(paillier, dgk, el_gamal), new bob_veugen(paillier, dgk, el_gamal)};
+		alice [] all_alice = { new alice(), new alice_veugen() };
 
-		// Wait then connect!
-		System.out.println("Sleep to give bob time to make keys...");
-		Thread.sleep(2 * 1000);
-		System.out.println("Alice starting...");
+		for (int i = 0; i < all_bobs.length; i++) {
+			Thread andrew = new Thread(new test_bob(all_bobs[i], 9200 + i));
+			andrew.start();
 
-		alice Niu = new alice(new Socket("127.0.0.1", 9200));
-		Niu.receivePublicKeys();
+			// Wait then connect!
+			System.out.println("Sleep to give bob time to make keys...");
+			Thread.sleep(2 * 1000);
+			System.out.println("Alice starting...");
 
-		Thread yujia = new Thread(new test_alice(Niu, paillier, dgk));
-		yujia.start();
-		try {
-			andrew.join();
-			yujia.join();
-		}
-		catch (InterruptedException e) {
-			e.printStackTrace();
+			all_alice[i].set_socket(new Socket("127.0.0.1", 9200 + i));
+			all_alice[i].receivePublicKeys();
+
+			Thread yujia = new Thread(new test_alice(all_alice[i], paillier, dgk));
+			yujia.start();
+			try {
+				andrew.join();
+				yujia.join();
+			}
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
-	// Test Veugen implementation of Alice and Bob
-	@Test
-	public void veugen_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-
-		bob_veugen bob_version_two = new bob_veugen(paillier, dgk, el_gamal);
-		Thread andrew = new Thread(new test_bob(bob_version_two, 9201));
-		andrew.start();
-
-		// Wait then connect!
-		System.out.println("Sleep to give bob time to make keys...");
-		Thread.sleep(2 * 1000);
-		System.out.println("Alice starting...");
-
-		alice Niu = new alice_veugen(new Socket("127.0.0.1", 9201));
-		Niu.receivePublicKeys();
-
-		Thread yujia = new Thread(new test_alice(Niu, paillier, dgk));
-		yujia.start();
-		try {
-			andrew.join();
-			yujia.join();
-		}
-		catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
 
 	// Test El Gamal version of Alice and Bob
 	@Test
 	public void el_gamal_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
 		bob_elgamal bob_version_two = new bob_elgamal(paillier, dgk, el_gamal);
-		Thread andrew = new Thread(new test_el_gamal_bob(bob_version_two, 9202));
+		Thread andrew = new Thread(new test_el_gamal_bob(bob_version_two, 10000));
 		andrew.start();
 
 		// Wait then connect!
@@ -184,37 +161,11 @@ public class IntegrationTests implements constants
 		Thread.sleep(2 * 1000);
 		System.out.println("Alice starting...");
 
-		alice_elgamal Niu = new alice_elgamal(new Socket("127.0.0.1", 9202));
+		alice_elgamal Niu = new alice_elgamal();
+		Niu.set_socket(new Socket("127.0.0.1", 10000));
 		Niu.receivePublicKeys();
 
 		Thread yujia = new Thread(new test_el_gamal_alice(Niu, (ElGamalPrivateKey) el_gamal.getPrivate()));
-		yujia.start();
-		try {
-			andrew.join();
-			yujia.join();
-		}
-		catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	// Test Joye and Salehi Implementation of Alice and Bob
-	@Test
-	public void joye_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-
-		bob_joye bob_version_three = new bob_joye(paillier, dgk, el_gamal);
-		Thread andrew = new Thread(new test_bob(bob_version_three, 9203));
-		andrew.start();
-
-		// Wait then connect!
-		System.out.println("Sleep to give bob time to make keys...");
-		Thread.sleep(2 * 1000);
-		System.out.println("Alice starting...");
-
-		alice Niu = new alice_joye(new Socket("127.0.0.1", 9203));
-		Niu.receivePublicKeys();
-
-		Thread yujia = new Thread(new test_alice(Niu, paillier, dgk));
 		yujia.start();
 		try {
 			andrew.join();

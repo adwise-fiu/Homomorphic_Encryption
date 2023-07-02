@@ -4,16 +4,22 @@ import security.misc.HomomorphicException;
 import security.socialistmillionaire.bob_elgamal;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class test_el_gamal_bob implements Runnable {
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+public class test_el_gamal_bob extends test_bob implements Runnable {
     private static ServerSocket bob_socket = null;
     private static Socket bob_client = null;
     private final bob_elgamal andrew;
     private final int port;
+    private static final BigInteger[] mid = IntegrationTests.generate_mid();
 
     public test_el_gamal_bob(bob_elgamal andrew, int port) {
+        super(andrew, port);
         this.andrew = andrew;
         this.port = port;
     }
@@ -28,10 +34,10 @@ public class test_el_gamal_bob implements Runnable {
             andrew.set_socket(bob_client);
             andrew.sendPublicKeys();
 
-            test_sorting();
-            test_protocol_two();
-            test_outsourced_multiply();
-            test_outsourced_divide();
+            test_sorting(false);
+            test_protocol_two(false);
+            test_outsourced_multiply(false);
+            test_outsourced_division(false);
 
             //andrew.set_el_gamal_additive(false);
             //test_addition();
@@ -54,30 +60,6 @@ public class test_el_gamal_bob implements Runnable {
                 e.printStackTrace();
             }
         }
-    }
-
-    public void test_sorting() throws IOException, ClassNotFoundException, HomomorphicException {
-        andrew.sort();
-    }
-
-    public void test_protocol_two() throws IOException, ClassNotFoundException, HomomorphicException {
-        for(int i = 0; i < 16 * 3; i++) {
-            andrew.sort();
-        }
-    }
-
-    public void test_outsourced_multiply() throws IOException, ClassNotFoundException, HomomorphicException {
-        for(int i = 0; i < 3; i++) {
-            andrew.multiplication();
-        }
-    }
-
-    public void test_outsourced_divide() throws IOException, ClassNotFoundException, HomomorphicException {
-        andrew.division(2);
-        andrew.division(3);
-        andrew.division(4);
-        andrew.division(5);
-        andrew.division(25);
     }
 
     public void test_addition() throws ClassNotFoundException, IOException, HomomorphicException {

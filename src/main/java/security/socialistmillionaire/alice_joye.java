@@ -11,6 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class alice_joye extends alice_veugen {
+
+    public alice_joye() {
+
+    }
+
     public alice_joye(Socket socket) throws IOException {
         super(socket);
     }

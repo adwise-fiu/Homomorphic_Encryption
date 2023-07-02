@@ -20,28 +20,37 @@ import security.paillier.PaillierPublicKey;
 import java.util.List;
 
 public class alice extends socialist_millionaires implements alice_interface {
+
+	public alice() {
+		this.isDGK = false;
+	}
+
 	public alice (Socket clientSocket) throws IOException {
 		if(clientSocket != null) {
-			toBob = new ObjectOutputStream(clientSocket.getOutputStream());
-			fromBob = new ValidatingObjectInputStream(clientSocket.getInputStream());
-			this.fromBob.accept(
-					security.paillier.PaillierPublicKey.class,
-					security.dgk.DGKPublicKey.class,
-					security.elgamal.ElGamalPublicKey.class,
-					security.gm.GMPublicKey.class,
-					java.math.BigInteger.class,
-					java.lang.Number.class,
-					security.elgamal.ElGamal_Ciphertext.class,
-					java.util.HashMap.class,
-					java.lang.Long.class
-			);
-			this.fromBob.accept("[B");
-			this.fromBob.accept("[L*");
+			set_socket(clientSocket);
 		}
 		else {
 			throw new NullPointerException("Client Socket is null!");
 		}
 		this.isDGK = false;
+	}
+
+	public void set_socket(Socket socket) throws IOException {
+		toBob = new ObjectOutputStream(socket.getOutputStream());
+		fromBob = new ValidatingObjectInputStream(socket.getInputStream());
+		this.fromBob.accept(
+				security.paillier.PaillierPublicKey.class,
+				security.dgk.DGKPublicKey.class,
+				security.elgamal.ElGamalPublicKey.class,
+				security.gm.GMPublicKey.class,
+				java.math.BigInteger.class,
+				java.lang.Number.class,
+				security.elgamal.ElGamal_Ciphertext.class,
+				java.util.HashMap.class,
+				java.lang.Long.class
+		);
+		this.fromBob.accept("[B");
+		this.fromBob.accept("[L*");
 	}
 
 	/**

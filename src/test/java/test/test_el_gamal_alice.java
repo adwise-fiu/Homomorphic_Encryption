@@ -7,7 +7,6 @@ import security.elgamal.ElGamal_Ciphertext;
 import security.misc.HomomorphicException;
 import security.misc.NTL;
 import security.socialistmillionaire.alice_elgamal;
-import security.socialistmillionaire.alice_veugen;
 
 import java.io.IOException;
 import java.math.BigInteger;

@@ -121,7 +121,7 @@ public class test_bob implements Runnable
 		boolean answer;
 
 		if (dgk_mode) {
-			if (andrew.getClass() == security.socialistmillionaire.bob_veugen.class) {
+			if (andrew.getClass() != security.socialistmillionaire.bob.class) {
 				for (int i = 0; i < mid.length; i++) {
 					// X > Y is false
 					answer = andrew.Protocol2();

@@ -13,8 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class alice_elgamal extends alice_veugen {
-    public alice_elgamal(Socket clientSocket) throws IOException {
-        super(clientSocket);
+
+    public alice_elgamal() {
+        super();
     }
 
     public ElGamal_Ciphertext addition(ElGamal_Ciphertext x, ElGamal_Ciphertext y)

@@ -4,6 +4,7 @@ import security.misc.HomomorphicException;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.Socket;
 import java.util.List;
 
 public interface alice_interface {
@@ -27,4 +28,6 @@ public interface alice_interface {
 
     BigInteger[] getKValues(List<BigInteger> input, int k, boolean smallest_first)
             throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException;
+
+    void set_socket(Socket socket) throws IOException;
 }
