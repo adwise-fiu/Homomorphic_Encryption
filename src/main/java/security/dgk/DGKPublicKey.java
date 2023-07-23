@@ -26,6 +26,7 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 	final int l;
 	final int t;
 	final int k;
+	public final BigInteger ONE;
 
 	//DGK Constructor with ALL parameters
 	public DGKPublicKey(BigInteger n, BigInteger g, BigInteger h, BigInteger u,
@@ -38,26 +39,23 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		this.l = l; 
 		this.t = t;
 		this.k = k;
+		ONE = DGKOperations.encrypt(BigInteger.ONE, this);
 	}
 
-	public void writeKey(String dgk_public_key_file) {
+	public void writeKey(String dgk_public_key_file)  throws IOException {
 		// clear hashmaps
 		hLUT.clear();
 		gLUT.clear();
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dgk_public_key_file))) {
 			oos.writeObject(this);
 			oos.flush();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
-	public static DGKPublicKey readKey(String dgk_public_key) {
+	public static DGKPublicKey readKey(String dgk_public_key) throws IOException, ClassNotFoundException {
 		DGKPublicKey pk;
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dgk_public_key))) {
 			pk = (DGKPublicKey) ois.readObject();
-		} catch (IOException | ClassNotFoundException e) {
-			throw new RuntimeException(e);
 		}
 		pk.generategLUT();
 		pk.generatehLUT();
@@ -66,10 +64,6 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 
 	public BigInteger ZERO() {
 		return DGKOperations.encrypt(0, this);
-	}
-	
-	public BigInteger ONE() {
-		return DGKOperations.encrypt(1, this);
 	}
 
 	/**

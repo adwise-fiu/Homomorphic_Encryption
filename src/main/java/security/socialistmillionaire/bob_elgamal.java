@@ -156,7 +156,6 @@ public class bob_elgamal extends bob_veugen {
             throw new HomomorphicException("Encrypted Integer can't work on this version of EL Gamal");
         }
 
-        int answer;
         Object x;
         BigInteger beta;
         BigInteger z;
@@ -203,6 +202,12 @@ public class bob_elgamal extends bob_veugen {
 
         //Step 6 - 7: Alice Computes [[x >= y]]
         //Step 8 (UNOFFICIAL): Alice needs the answer...
+        return decrypt_protocol_two();
+    }
+
+    protected boolean decrypt_protocol_two() throws IOException, ClassNotFoundException {
+        Object x;
+        int answer;
         x = fromAlice.readObject();
         if (x instanceof ElGamal_Ciphertext) {
             answer = ElGamalCipher.decrypt((ElGamal_Ciphertext) x, el_gamal_private).intValue();

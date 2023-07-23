@@ -24,7 +24,6 @@ public class bob_veugen extends bob {
         BigInteger deltaA;
         BigInteger d;
         BigInteger N;
-        int answer;
         int deltaB = 0;
 
         if(isDGK) {
@@ -84,19 +83,8 @@ public class bob_veugen extends bob {
                 break;
             }
         }
-        toAlice.writeInt(deltaB);
-        toAlice.flush();
-
-        // Extra step...Bob gets the answer from Alice
-        in = fromAlice.readObject();
-        if(in instanceof BigInteger) {
-            answer = (int) DGKOperations.decrypt((BigInteger) in, dgk_private);
-        }
-        else {
-            throw new IllegalArgumentException("Modified_Protocol 3, Step 8 Invalid Object! " + in.getClass().getName());
-        }
-        toAlice.flush();
-        return answer == 1;
+        // Run Extra steps to help Alice decrypt Delta
+        return decrypt_protocol_one(deltaB);
     }
 
     /**
@@ -110,7 +98,6 @@ public class bob_veugen extends bob {
             throw new IllegalArgumentException("Constraint violated: l + 2 < log_2(N)");
         }
 
-        int answer = -1;
         Object x;
         BigInteger beta;
         BigInteger z;
@@ -176,36 +163,6 @@ public class bob_veugen extends bob {
         //Step 6 - 7: Alice Computes [[x >= y]]
 
         //Step 8 (UNOFFICIAL): Alice needs the answer...
-        x = fromAlice.readObject();
-        if (x instanceof BigInteger) {
-            if(isDGK) {
-                long decrypt = DGKOperations.decrypt((BigInteger) x, dgk_private);
-                // IF SOMETHING HAPPENS...GET POST MORTEM HERE
-                if (decrypt != 0 && dgk_public.getU().longValue() - 1 != decrypt) {
-                    throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
-                }
-
-                if (dgk_public.getu() - 1 == decrypt) {
-                    answer = 0;
-                }
-                else {
-                    answer = 1;
-                }
-            }
-            else {
-                answer = PaillierCipher.decrypt((BigInteger) x, paillier_private).intValue();
-            }
-            toAlice.writeInt(answer);
-            toAlice.flush();
-        }
-        else {
-            throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
-        }
-        // IF SOMETHING HAPPENS...GET POST MORTEM HERE
-        if (answer != 0 && answer != 1) {
-            throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
-        }
-        return answer == 1;
+        return decrypt_protocol_two();
     }
-
 }

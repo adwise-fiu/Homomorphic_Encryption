@@ -9,6 +9,7 @@ import security.paillier.PaillierKeyPairGenerator;
 import security.paillier.PaillierPrivateKey;
 import security.paillier.PaillierPublicKey;
 
+import java.io.IOException;
 import java.security.KeyPair;
 
 import static org.junit.Assert.assertEquals;
@@ -37,7 +38,7 @@ public class UtilTest implements constants {
     }
 
     @Test
-    public void test_store_dgk() {
+    public void test_store_dgk() throws IOException, ClassNotFoundException {
         dgk_public_key.writeKey("dgk.pub");
         dgk_private_key.writeKey("dgk");
         System.out.println("DGK Write Key");
@@ -53,7 +54,7 @@ public class UtilTest implements constants {
     }
 
     @Test
-    public void test_store_paillier() {
+    public void test_store_paillier() throws IOException, ClassNotFoundException {
         paillier_public_key.writeKey("paillier.pub");
         paillier_private_key.writeKey("paillier");
 

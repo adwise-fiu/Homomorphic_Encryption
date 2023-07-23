@@ -34,8 +34,6 @@ public class alice_veugen extends alice {
         BigInteger [] XOR;
         BigInteger [] C;
         BigInteger [] Encrypted_Y;
-        int deltaB;
-        int answer;
 
         //Step 1: Receive y_i bits from Bob
         in = fromBob.readObject();
@@ -94,7 +92,7 @@ public class alice_veugen extends alice {
         XOR = new BigInteger[Encrypted_Y.length];
         for (int i = 0; i < Encrypted_Y.length; i++) {
             if (NTL.bit(x, i) == 1) {
-                XOR[i] = DGKOperations.subtract(dgk_public.ONE(), Encrypted_Y[i], dgk_public);
+                XOR[i] = DGKOperations.subtract(dgk_public.ONE, Encrypted_Y[i], dgk_public);
             }
             else {
                 XOR[i] = Encrypted_Y[i];
@@ -143,18 +141,8 @@ public class alice_veugen extends alice {
         toBob.writeObject(C);
         toBob.flush();
 
-        // Step 7: Obtain Delta B from Bob
-        deltaB = fromBob.readInt();
-        answer = deltaA ^ deltaB;
-
-        /*
-         * Step 8: Bob has the Private key anyway...
-         * Send him the encrypted answer!
-         * Alice and Bob know now without revealing x or y!
-         */
-        toBob.writeObject(DGKOperations.encrypt(BigInteger.valueOf(answer), dgk_public));
-        toBob.flush();
-        return answer == 1;
+        // Run Extra steps to help Alice decrypt Delta
+        return decrypt_protocol_one(deltaA);
     }
 
 
@@ -164,7 +152,6 @@ public class alice_veugen extends alice {
     boolean Modified_Protocol3(BigInteger alpha, BigInteger r, int deltaA)
             throws ClassNotFoundException, IOException, HomomorphicException
     {
-        int answer;
         Object in;
         BigInteger [] beta_bits;
         BigInteger [] encAlphaXORBeta;
@@ -245,7 +232,7 @@ public class alice_veugen extends alice {
         encAlphaXORBeta = new BigInteger[beta_bits.length];
         for (int i = 0; i < encAlphaXORBeta.length; i++) {
             if (NTL.bit(alpha, i) == 1) {
-                encAlphaXORBeta[i] = DGKOperations.subtract(dgk_public.ONE(), beta_bits[i], dgk_public);
+                encAlphaXORBeta[i] = DGKOperations.subtract(dgk_public.ONE, beta_bits[i], dgk_public);
             }
             else {
                 encAlphaXORBeta[i] = beta_bits[i];
@@ -286,7 +273,7 @@ public class alice_veugen extends alice {
 
         for (int i = 0; i < beta_bits.length;i++) {
             if(deltaA != NTL.bit(alpha, i) && deltaA != NTL.bit(alpha_hat, i)) {
-                C[i] = dgk_public.ONE();
+                C[i] = dgk_public.ONE;
             }
             else {
                 exponent = NTL.bit(alpha_hat, i) - NTL.bit(alpha, i);
@@ -309,18 +296,8 @@ public class alice_veugen extends alice {
         }
         toBob.writeObject(C);
         toBob.flush();
-
-        // Step J: Bob checks whether a C_i has a zero or not...get delta B.
-        int deltaB = fromBob.readInt();
-        if (deltaA == deltaB) {
-            answer = 0;
-        }
-        else {
-            answer = 1;
-        }
-        toBob.writeObject(DGKOperations.encrypt(answer, dgk_public));
-        toBob.flush();
-        return answer == 1;
+        // Run Extra steps to help Alice decrypt Delta
+        return decrypt_protocol_one(deltaA);
     }
 
     /**
@@ -469,13 +446,6 @@ public class alice_veugen extends alice {
          *
          * Bob by definition would know the answer as well.
          */
-
-        toBob.writeObject(result);
-        comparison = fromBob.readInt();// x <= y
-        // IF SOMETHING HAPPENS...GET POST MORTEM HERE
-        if (comparison != 0 && comparison != 1) {
-            throw new IllegalArgumentException("Invalid Comparison result --> " + comparison);
-        }
-        return comparison == 1;
+        return decrypt_protocol_two(result);
     }
 }

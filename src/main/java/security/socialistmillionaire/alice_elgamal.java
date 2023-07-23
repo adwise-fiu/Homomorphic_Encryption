@@ -8,7 +8,6 @@ import security.misc.NTL;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,7 +151,6 @@ public class alice_elgamal extends alice_veugen {
     {
         int deltaB;
         int x_leq_y;
-        int comparison;
         int deltaA = rnd.nextInt(2);
         Object bob;
         ElGamal_Ciphertext alpha_lt_beta;
@@ -257,7 +255,11 @@ public class alice_elgamal extends alice_veugen {
          *
          * Bob by definition would know the answer as well.
          */
+        return decrypt_protocol_two(result);
+    }
 
+    protected boolean decrypt_protocol_two(ElGamal_Ciphertext result) throws IOException {
+        int comparison;
         toBob.writeObject(result);
         toBob.flush();
         comparison = fromBob.readInt();

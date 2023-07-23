@@ -35,21 +35,17 @@ public final class PaillierPrivateKey implements Serializable, PaillierKey, Priv
 		this.rho = PaillierCipher.L(this.g.modPow(this.lambda, this.modulus), this.n).modInverse(this.modulus);
 	}
 
-	public void writeKey(String paillier_private_key_file){
+	public void writeKey(String paillier_private_key_file) throws IOException {
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(paillier_private_key_file))) {
 			oos.writeObject(this);
 			oos.flush();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
-	public static PaillierPrivateKey readKey(String paillier_private_key) {
+	public static PaillierPrivateKey readKey(String paillier_private_key) throws IOException, ClassNotFoundException {
 		PaillierPrivateKey sk;
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(paillier_private_key))) {
 			sk = (PaillierPrivateKey) ois.readObject();
-		} catch (IOException | ClassNotFoundException e) {
-			throw new RuntimeException(e);
 		}
 		return sk;
 	}

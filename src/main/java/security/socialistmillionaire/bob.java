@@ -166,30 +166,77 @@ public class bob extends socialist_millionaires implements bob_interface
 				break;
 			}
 		}
+		// Run Extra steps to help Alice decrypt Delta
+		return decrypt_protocol_one(deltaB);
+	}
+
+	protected boolean decrypt_protocol_one(int deltaB) throws IOException, ClassNotFoundException, HomomorphicException {
+		Object o;
+		BigInteger delta;
 
 		// Step 7: UNOFFICIAL
 		// Inform Alice what deltaB is
-		toAlice.writeInt(deltaB);
+
+		// Party B encrypts delta_B using his public key and sends it to Alice. Upon receiving
+		// delta_B, party A computes the encryption of delta as
+		// 1- delta = delta_b if delta_a = 0
+		// 2- delta = 1 - delta_b otherwise if delta_a = 1.
+		toAlice.writeObject(DGKOperations.encrypt(deltaB, dgk_public));
 		toAlice.flush();
 
 		// Step 8: UNOFFICIAL
-		// Alice sends the answer, decrypt it and keep it for yourself
-		// This is best used in situations like an auction where Bob needs to know
-		in = fromAlice.readObject();
-		if (in instanceof BigInteger) {
-			return DGKOperations.decrypt((BigInteger) in, dgk_private) == 1;
+		// Alice sends the encrypted answer...
+		// For now, Bob doesn't need to know the decryption, so Alice did blind it.
+		// So just decrypt and return the value.
+		o = fromAlice.readObject();
+		if (o instanceof BigInteger) {
+			delta = BigInteger.valueOf(DGKOperations.decrypt((BigInteger) o, dgk_private));
+			toAlice.writeObject(delta);
+			toAlice.flush();
+			return delta.equals(BigInteger.ONE);
 		}
 		else {
-			throw new IllegalArgumentException("Invalid response from Alice in Step 8: " + in.getClass().getName());
+			throw new IllegalArgumentException("Invalid response from Alice in Step 8: " + o.getClass().getName());
 		}
 	}
-	
-	/**
-	 * Please review "Improving the DGK comparison protocol" - Protocol 1
-	 * NOTE: The paper has a typo!
-	 * This protocol computes X >= Y NOT X <= Y
-	 */
-	
+
+	// Bob gets encrypted input from alice to decrypt comparison result
+	protected boolean decrypt_protocol_two() throws IOException, ClassNotFoundException, HomomorphicException {
+		Object x;
+		int answer = -1;
+
+		x = fromAlice.readObject();
+		if (x instanceof BigInteger) {
+			if(isDGK) {
+				long decrypt = DGKOperations.decrypt((BigInteger) x, dgk_private);
+				// IF SOMETHING HAPPENS...GET POST MORTEM HERE
+				if (decrypt != 0 && dgk_public.getU().longValue() - 1 != decrypt) {
+					throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
+				}
+
+				if (dgk_public.getu() - 1 == decrypt) {
+					answer = 0;
+				}
+				else {
+					answer = 1;
+				}
+			}
+			else {
+				answer = PaillierCipher.decrypt((BigInteger) x, paillier_private).intValue();
+			}
+			toAlice.writeInt(answer);
+			toAlice.flush();
+		}
+		else {
+			throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
+		}
+		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
+		if (answer != 0 && answer != 1) {
+			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
+		}
+		return answer == 1;
+	}
+
 	public boolean Protocol2()
 			throws ClassNotFoundException, IOException, HomomorphicException {
 		// Step 1: Receive z from Alice
@@ -227,19 +274,10 @@ public class bob extends socialist_millionaires implements bob_interface
 		toAlice.writeObject(PaillierCipher.encrypt(z.divide(powL), paillier_public));
 		toAlice.flush();
 		
-		// Step 6 - 7: Alice Computes [[x <= y]]
+		// Step 6 - 7: Alice Computes [[x >= y]]
 		
-		// Step 8 (UNOFFICIAL): Alice needs the answer for [[x <= y]]
-		x = fromAlice.readObject();
-		if (x instanceof BigInteger) {
-			answer = PaillierCipher.decrypt((BigInteger) x, paillier_private).intValue();
-			toAlice.writeInt(answer);
-			toAlice.flush();
-			return answer == 1;
-		}
-		else {
-			throw new IllegalArgumentException("Invalid response from Alice in Step 8! " + x.getClass().getName());
-		}
+		// Step 8 (UNOFFICIAL): Alice needs the answer for [[x >= y]]
+		return decrypt_protocol_two();
 	}
 
 

@@ -152,7 +152,7 @@ public class alice_joye extends alice_veugen {
         XOR = new BigInteger[Encrypted_Y.length];
         for (int i = 0; i < Encrypted_Y.length; i++) {
             if (NTL.bit(x, i) == 1) {
-                XOR[i] = DGKOperations.subtract(dgk_public.ONE(), Encrypted_Y[i], dgk_public);
+                XOR[i] = DGKOperations.subtract(dgk_public.ONE, Encrypted_Y[i], dgk_public);
             }
             else {
                 XOR[i] = Encrypted_Y[i];

@@ -31,22 +31,18 @@ public final class PaillierPublicKey implements Serializable, PaillierKey, Publi
 		return answer;
 	}
 
-	public void writeKey(String paillier_public_key_file) {
+	public void writeKey(String paillier_public_key_file) throws IOException {
 		// Write the key to a file
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(paillier_public_key_file))) {
 			oos.writeObject(this);
 			oos.flush();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
-	public static PaillierPublicKey readKey(String paillier_public_key) {
+	public static PaillierPublicKey readKey(String paillier_public_key) throws IOException, ClassNotFoundException {
 		PaillierPublicKey pk;
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(paillier_public_key))) {
 			pk = (PaillierPublicKey) ois.readObject();
-		} catch (IOException | ClassNotFoundException e) {
-			throw new RuntimeException(e);
 		}
 		return pk;
 	}

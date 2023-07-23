@@ -61,22 +61,18 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 		this.generategLUT();
 	}
 
-	public void writeKey(String dgk_private_key_file) {
+	public void writeKey(String dgk_private_key_file) throws IOException {
 		LUT.clear();
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dgk_private_key_file))) {
 			oos.writeObject(this);
 			oos.flush();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
-	public static DGKPrivateKey readKey(String dgk_private_key) {
+	public static DGKPrivateKey readKey(String dgk_private_key) throws IOException, ClassNotFoundException {
 		DGKPrivateKey sk;
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dgk_private_key))) {
 			sk = (DGKPrivateKey) ois.readObject();
-		} catch (IOException | ClassNotFoundException e) {
-			throw new RuntimeException(e);
 		}
 		sk.generategLUT();
 		return sk;

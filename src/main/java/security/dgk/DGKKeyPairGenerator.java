@@ -1,5 +1,6 @@
 package security.dgk;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGeneratorSpi;
@@ -16,7 +17,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	private int t = 160;
 	private int k = KEY_SIZE;
 
-	public static void main(String []  args) {
+	public static void main(String []  args) throws IOException {
 		System.out.println("Creating DGK Key pair");
 		String dgk_private_key_file = "dgk";
 		String dgk_public_key_file = "dgk.pub";

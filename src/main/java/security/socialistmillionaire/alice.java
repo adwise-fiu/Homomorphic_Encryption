@@ -70,10 +70,9 @@ public class alice extends socialist_millionaires implements alice_interface {
 			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, x is: " + x.bitLength() + " bits");
 		}
 
-		int answer;
-		int delta_b;
 		int delta_a = rnd.nextInt(2);
 		Object in;
+
 		BigInteger [] Encrypted_Y;
 		BigInteger [] C;
 		BigInteger [] XOR;
@@ -106,7 +105,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		for (int i = 0; i < Encrypted_Y.length; i++)
 		{
 			if (NTL.bit(x, i) == 1) {
-				XOR[i] = DGKOperations.subtract(dgk_public.ONE(), Encrypted_Y[i], dgk_public);	
+				XOR[i] = DGKOperations.subtract(dgk_public.ONE, Encrypted_Y[i], dgk_public);
 			}
 			else {
 				XOR[i] = Encrypted_Y[i];
@@ -120,7 +119,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 
 		// Compute the Product of XOR, add s and compute x - y
 		// C_i = sum(XOR) + s + x_i - y_i
-
 		for (int i = 0; i < Encrypted_Y.length;i++) {
 			C[i] = DGKOperations.multiply(DGKOperations.sum(XOR, dgk_public, i), 3, dgk_public);
 			C[i] = DGKOperations.add_plaintext(C[i], 1 - 2 * delta_a, dgk_public);
@@ -139,23 +137,68 @@ public class alice extends socialist_millionaires implements alice_interface {
 		C = shuffle_bits(C);
 		toBob.writeObject(C);
 		toBob.flush();
+		// Run Extra steps to help Alice decrypt Delta
+		return decrypt_protocol_one(delta_a);
+	}
+
+	protected boolean decrypt_protocol_one(int delta_a) throws IOException, ClassNotFoundException, HomomorphicException {
+		Object o;
+		BigInteger delta;
+		BigInteger blind = BigInteger.ZERO;
 
 		// Step 6: Bob looks for any 0's in C_i and computes DeltaB
 
 		// Step 7: Obtain Delta B from Bob
-		delta_b = fromBob.readInt();
-
-		// 1 XOR 1 = 0 and 0 XOR 0 = 0, so X > Y
-		answer = delta_a ^ delta_b;
+		// Party B encrypts delta_B using his public key and sends it to Alice. Upon receiving
+		// delta_B, party A computes the encryption of delta as
+		// 1- delta = delta_b if delta_a = 0
+		// 2- delta = 1 - delta_b otherwise if delta_a = 1.
+		o = fromBob.readObject();
+		if (o instanceof BigInteger) {
+			if (delta_a == 0) {
+				delta = (BigInteger) o;
+			}
+			else {
+				delta = DGKOperations.subtract(dgk_public.ONE, (BigInteger) o, dgk_public);
+			}
+		}
+		else {
+			throw new HomomorphicException("Invalid Object found here: " + o.getClass().getName());
+		}
 
 		/*
 		 * Step 8: Bob has the Private key anyway
 		 * Send him the encrypted answer!
 		 * Alice and Bob know now without revealing x or y!
+		 *
+		 * You can blind it for safety, but I will assume Bob is nice
+		 * Plus the info doesn't really reveal anything to Bob.
 		 */
-		toBob.writeObject(DGKOperations.encrypt(answer, dgk_public));
+		// blind = NTL.RandomBnd(dgk_public.getU());
+		toBob.writeObject(DGKOperations.add_plaintext(delta, blind, dgk_public));
 		toBob.flush();
-		return answer == 1;
+
+		o = fromBob.readObject();
+		if (o instanceof BigInteger) {
+			delta = (BigInteger) o;
+			delta = delta.subtract(blind);
+			return delta.equals(BigInteger.ONE);
+		}
+		else {
+			throw new HomomorphicException("Invalid Object found here: " + o.getClass().getName());
+		}
+	}
+
+	protected boolean decrypt_protocol_two(BigInteger result) throws IOException {
+		int comparison;
+		toBob.writeObject(result);
+		toBob.flush();
+		comparison = fromBob.readInt();// x <= y
+		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
+		if (comparison != 0 && comparison != 1) {
+			throw new IllegalArgumentException("Invalid Comparison output! --> " + comparison);
+		}
+		return comparison == 1;
 	}
 
 	/**
@@ -171,7 +214,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 		int deltaB;
 		int deltaA = rnd.nextInt(2);
 		int x_leq_y;
-		int comparison;
 		BigInteger alpha_lt_beta;
 		BigInteger z;
 		BigInteger zdiv2L;
@@ -260,15 +302,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		 * 
 		 * Bob by definition would know the answer as well.
 		 */
-
-		toBob.writeObject(result);
-		toBob.flush();
-		comparison = fromBob.readInt();// x <= y
-		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
-		if (comparison != 0 && comparison != 1) {
-			throw new IllegalArgumentException("Invalid Comparison output! --> " + comparison);
-		}
-		return comparison == 1;
+		return decrypt_protocol_two(result);
 	}
 
 	/**
