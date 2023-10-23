@@ -27,7 +27,7 @@ public class bob_joye extends bob_veugen {
         toAlice.flush();
 
         // Step 2 by Alice
-        Object o = fromAlice.readObject();
+        Object o = readObject();
         BigInteger little_z_star;
         BigInteger y_prime;
         if (o instanceof BigInteger) {
@@ -55,7 +55,7 @@ public class bob_joye extends bob_veugen {
         toAlice.writeInt(delta_b);
         toAlice.flush();
 
-        o = fromAlice.readObject();
+        o = readObject();
         if (o instanceof BigInteger) {
             return DGKOperations.decrypt((BigInteger) o, dgk_private) == 1;
         }
@@ -106,7 +106,7 @@ public class bob_joye extends bob_veugen {
         // Step 5: Alice...
 
         // Step 6: Check if one of the numbers in C_i is decrypted to 0.
-        in = fromAlice.readObject();
+        in = readObject();
         if(in instanceof BigInteger[]) {
             C = (BigInteger []) in;
         }

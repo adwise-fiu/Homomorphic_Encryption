@@ -65,7 +65,7 @@ public class bob_veugen extends bob {
         // Step I: Alice blinds C_i
 
         // Step J: Get C_i and look for zeros
-        in = fromAlice.readObject();
+        in = readObject();
         if(in instanceof BigInteger[]) {
             C = (BigInteger []) in;
         }
@@ -105,7 +105,7 @@ public class bob_veugen extends bob {
         BigInteger zeta_two;
 
         //Step 1: get [[z]] from Alice
-        x = fromAlice.readObject();
+        x = readObject();
         if (x instanceof BigInteger) {
             z = (BigInteger) x;
         }

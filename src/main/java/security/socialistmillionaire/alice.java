@@ -47,7 +47,8 @@ public class alice extends socialist_millionaires implements alice_interface {
 				java.lang.Number.class,
 				security.elgamal.ElGamal_Ciphertext.class,
 				java.util.HashMap.class,
-				java.lang.Long.class
+				java.lang.Long.class,
+				java.lang.String.class
 		);
 		this.fromBob.accept("[B");
 		this.fromBob.accept("[L*");
@@ -78,7 +79,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		BigInteger [] XOR;
 
 		// Step 1: Get Y bits from Bob
-		in = fromBob.readObject();
+		in = readObject();
 		if (in instanceof BigInteger[]) {
 			Encrypted_Y = (BigInteger []) in;
 		}
@@ -153,7 +154,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// delta_B, party A computes the encryption of delta as
 		// 1- delta = delta_b if delta_a = 0
 		// 2- delta = 1 - delta_b otherwise if delta_a = 1.
-		o = fromBob.readObject();
+		o = readObject();
 		if (o instanceof BigInteger) {
 			if (delta_a == 0) {
 				delta = (BigInteger) o;
@@ -171,14 +172,14 @@ public class alice extends socialist_millionaires implements alice_interface {
 		 * Send him the encrypted answer!
 		 * Alice and Bob know now without revealing x or y!
 		 *
-		 * You can blind it for safety, but I will assume Bob is nice
+		 * You can blind it for safety, but I will assume Bob is nice,
 		 * Plus the info doesn't really reveal anything to Bob.
 		 */
-		// blind = NTL.RandomBnd(dgk_public.getU());
+		// Blind = NTL.RandomBnd(dgk_public.getU());
 		toBob.writeObject(DGKOperations.add_plaintext(delta, blind, dgk_public));
 		toBob.flush();
 
-		o = fromBob.readObject();
+		o = readObject();
 		if (o instanceof BigInteger) {
 			delta = (BigInteger) o;
 			delta = delta.subtract(blind);
@@ -194,7 +195,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		toBob.writeObject(result);
 		toBob.flush();
 		comparison = fromBob.readInt();// x <= y
-		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
+		// IF SOMETHING HAPPENS...GET THE POST MORTEM HERE
 		if (comparison != 0 && comparison != 1) {
 			throw new IllegalArgumentException("Invalid Comparison output! --> " + comparison);
 		}
@@ -223,7 +224,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 
 		// Step 1: 0 <= r < N
 		// Pick Number of l + 1 + sigma bits
-		// Considering DGK is an option, just stick with size of Zu		
+		// Considering DGK is an option, stick with the size of Zu
 		if (isDGK) {
 			throw new IllegalArgumentException("Protocol 2 is NOT allowed with DGK! Used Protocol 4!");
 		}
@@ -275,7 +276,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 
 		// Step 5B: Bob sends z/2^l 
-		bob = fromBob.readObject();
+		bob = readObject();
 		if (bob instanceof BigInteger) {
 			zdiv2L = (BigInteger) bob;
 		}
@@ -347,7 +348,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 		
 		// Step 4: Bob computes c and Alice receives it
-		in = fromBob.readObject();
+		in = readObject();
 		if (in instanceof BigInteger) {
 			c = (BigInteger) in;
 		}
@@ -408,7 +409,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Step 2
 		
 		// Step 3
-		in = fromBob.readObject();
+		in = readObject();
 		if (in instanceof BigInteger) {
 			// (x + a)(y + b) = xy + xb + ya + ab
 			// xy = (x + a)(y + b) - xb - ya - ab
@@ -416,13 +417,13 @@ public class alice extends socialist_millionaires implements alice_interface {
 			if(isDGK) {
 				result = DGKOperations.subtract(result, DGKOperations.multiply(x, b, dgk_public), dgk_public);
 				result = DGKOperations.subtract(result, DGKOperations.multiply(y, a, dgk_public), dgk_public);
-				// To avoid throwing an exception to myself of encrypt range [0, U), mod it now!
+				// To avoid throwing an exception to myself of encrypted range [0, U), mod it now!
 				result = DGKOperations.subtract_plaintext(result, a.multiply(b).mod(dgk_public.getU()), dgk_public);
 			}
 			else {
 				result = PaillierCipher.subtract(result, PaillierCipher.multiply(x, b, paillier_public), paillier_public);
 				result = PaillierCipher.subtract(result, PaillierCipher.multiply(y, a, paillier_public), paillier_public);
-				// To avoid throwing an exception to myself of encrypt range [0, N), mod it now!
+				// To avoid throwing an exception to myself of encrypted range [0, N), mod it now!
 				result = PaillierCipher.subtract_plaintext(result, a.multiply(b).mod(paillier_public.getN()), paillier_public);
 			}
 		}
@@ -435,7 +436,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 	public void receivePublicKeys()
 			throws IOException, ClassNotFoundException {
 		Object x;
-		x = fromBob.readObject();
+		x = readObject();
 		if (x instanceof DGKPublicKey) {
 			System.out.println("Alice Received DGK Public key from Bob");
 			this.setDGKPublicKey((DGKPublicKey) x);
@@ -444,7 +445,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 			dgk_public = null;
 		}
 		
-		x = fromBob.readObject();
+		x = readObject();
 		if(x instanceof PaillierPublicKey) {
 			System.out.println("Alice Received Paillier Public key from Bob");
 			this.setPaillierPublicKey((PaillierPublicKey) x);
@@ -453,7 +454,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 			paillier_public = null;
 		}
 	
-		x = fromBob.readObject();
+		x = readObject();
 		if(x instanceof ElGamalPublicKey) {
 			System.out.println("Alice Received ElGamal Public key from Bob");
 			this.setElGamalPublicKey((ElGamalPublicKey) x);
@@ -477,8 +478,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		boolean activation;
 		for (int i = 0; i < k; i++) {
 			for (int j = 0; j < arr.length - 1 - i; j++) {
-				toBob.writeBoolean(true);
-				toBob.flush();
+				writeBoolean(true);
 				// Might need a K-Max test as well!
 				activation = this.Protocol2(arr[j], arr[j + 1]);
 				if (smallest_first) {
@@ -506,8 +506,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 		
 		// Close Bob
-		toBob.writeBoolean(false);
-		toBob.flush();
+		writeBoolean(false);
 		return sorted_k;
 	}
 	
@@ -525,8 +524,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		boolean activation;
 		for (int i = 0; i < k; i++) {
 			for (int j = 0; j < arr.size() - i - 1; j++) {
-				toBob.writeBoolean(true);
-				toBob.flush();
+				writeBoolean(true);
 				activation = this.Protocol2(arr.get(j), arr.get(j + 1));
 
 				if(smallest_first) {
@@ -554,8 +552,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 		
 		// Close Bob
-		toBob.writeBoolean(false);
-		toBob.flush();
+		writeBoolean(false);
 		return sorted_k;
 	}
 }

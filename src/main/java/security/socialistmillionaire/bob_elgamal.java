@@ -30,7 +30,7 @@ public class bob_elgamal extends bob_veugen {
         BigInteger y_prime;
 
         // Step 2
-        in = fromAlice.readObject();
+        in = readObject();
         if(in instanceof ElGamal_Ciphertext) {
             enc_x_prime = (ElGamal_Ciphertext) in;
         }
@@ -38,7 +38,7 @@ public class bob_elgamal extends bob_veugen {
             throw new IllegalArgumentException("Didn't get [[x']] from Alice: " + in.getClass().getName());
         }
 
-        in = fromAlice.readObject();
+        in = readObject();
         if(in instanceof ElGamal_Ciphertext) {
             enc_y_prime = (ElGamal_Ciphertext) in;
         }
@@ -73,7 +73,7 @@ public class bob_elgamal extends bob_veugen {
         BigInteger y_prime;
 
         // Step 2
-        in = fromAlice.readObject();
+        in = readObject();
         if(in instanceof ElGamal_Ciphertext) {
             enc_x_prime = (ElGamal_Ciphertext) in;
         }
@@ -81,7 +81,7 @@ public class bob_elgamal extends bob_veugen {
             throw new IllegalArgumentException("Didn't get [[x']] from Alice: " + in.getClass().getName());
         }
 
-        in = fromAlice.readObject();
+        in = readObject();
         if(in instanceof ElGamal_Ciphertext) {
             enc_y_prime = (ElGamal_Ciphertext) in;
         }
@@ -107,7 +107,7 @@ public class bob_elgamal extends bob_veugen {
         BigInteger c;
         BigInteger z;
         ElGamal_Ciphertext enc_z;
-        Object alice = fromAlice.readObject();
+        Object alice = readObject();
         if(alice instanceof ElGamal_Ciphertext) {
             enc_z = (ElGamal_Ciphertext) alice;
         }
@@ -165,7 +165,7 @@ public class bob_elgamal extends bob_veugen {
         BigInteger N = el_gamal_public.getP().subtract(BigInteger.ONE);
 
         //Step 1: get [[z]] from Alice
-        x = fromAlice.readObject();
+        x = readObject();
         if (x instanceof ElGamal_Ciphertext) {
             enc_z = (ElGamal_Ciphertext) x;
         }
@@ -208,7 +208,7 @@ public class bob_elgamal extends bob_veugen {
     protected boolean decrypt_protocol_two() throws IOException, ClassNotFoundException {
         Object x;
         int answer;
-        x = fromAlice.readObject();
+        x = readObject();
         if (x instanceof ElGamal_Ciphertext) {
             answer = ElGamalCipher.decrypt((ElGamal_Ciphertext) x, el_gamal_private).intValue();
             toAlice.writeInt(answer);

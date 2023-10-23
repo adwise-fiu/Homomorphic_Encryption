@@ -16,6 +16,7 @@ import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 
 public abstract class socialist_millionaires implements CipherConstants
 {
+	protected boolean uses_tls_socket = false;
 	protected static final SecureRandom rnd = new SecureRandom();
 	protected final static int SIGMA = 80;
 
@@ -27,7 +28,7 @@ public abstract class socialist_millionaires implements CipherConstants
 	protected DGKPublicKey dgk_public = null;
 	protected ElGamalPublicKey el_gamal_public = null;
 	
-	// Key Master
+	// Hold keys
 	protected PaillierPrivateKey paillier_private = null;
 	protected DGKPrivateKey dgk_private = null;
 	protected ElGamalPrivateKey el_gamal_private = null;
@@ -74,6 +75,35 @@ public abstract class socialist_millionaires implements CipherConstants
 
 	public ElGamalPublicKey getElGamalPublicKey() {
 		return el_gamal_public;
+	}
+
+	protected boolean readBoolean() throws IOException {
+		if(fromBob != null) {
+			return fromBob.readBoolean();
+		}
+		else {
+			return fromAlice.readBoolean();
+		}
+	}
+
+	protected void writeBoolean(boolean value) throws IOException {
+		if(toBob != null) {
+			toBob.writeBoolean(value);
+			toBob.flush();
+		}
+		else {
+			toAlice.writeBoolean(value);
+			toAlice.flush();
+		}
+	}
+
+	protected Object readObject() throws IOException, ClassNotFoundException {
+		if(fromBob != null) {
+			return fromBob.readObject();
+		}
+		else {
+			return fromAlice.readObject();
+		}
 	}
 	
 	protected void writeObject(Object o) throws IOException {

@@ -83,7 +83,8 @@ public class bob extends socialist_millionaires implements bob_interface
 					java.lang.Number.class,
 					java.util.HashMap.class,
 					java.lang.Long.class,
-					security.elgamal.ElGamal_Ciphertext.class
+					security.elgamal.ElGamal_Ciphertext.class,
+					java.lang.String.class
 			);
 			this.fromAlice.accept("[B");
 			this.fromAlice.accept("[L*");
@@ -100,7 +101,7 @@ public class bob extends socialist_millionaires implements bob_interface
 			throws IOException, ClassNotFoundException, HomomorphicException {
 		long start_time = System.nanoTime();
 		int counter = 0;
-		while(fromAlice.readBoolean()) {
+		while(readBoolean()) {
 			++counter;
 			this.Protocol2();
 		}
@@ -132,7 +133,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		for (int i = 0; i < y.bitLength(); i++) {
 			EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
 		}
-		toAlice.writeObject(EncY);
+		writeObject(EncY);
 		toAlice.flush();
 		
 		// Step 2: Alice...
@@ -181,17 +182,17 @@ public class bob extends socialist_millionaires implements bob_interface
 		// delta_B, party A computes the encryption of delta as
 		// 1- delta = delta_b if delta_a = 0
 		// 2- delta = 1 - delta_b otherwise if delta_a = 1.
-		toAlice.writeObject(DGKOperations.encrypt(deltaB, dgk_public));
+		writeObject(DGKOperations.encrypt(deltaB, dgk_public));
 		toAlice.flush();
 
 		// Step 8: UNOFFICIAL
 		// Alice sends the encrypted answer...
 		// For now, Bob doesn't need to know the decryption, so Alice did blind it.
-		// So just decrypt and return the value.
+		// So decrypt and return the value.
 		o = fromAlice.readObject();
 		if (o instanceof BigInteger) {
 			delta = BigInteger.valueOf(DGKOperations.decrypt((BigInteger) o, dgk_private));
-			toAlice.writeObject(delta);
+			writeObject(delta);
 			toAlice.flush();
 			return delta.equals(BigInteger.ONE);
 		}
@@ -200,7 +201,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		}
 	}
 
-	// Bob gets encrypted input from alice to decrypt comparison result
+	// Bob gets encrypted input from alice to a decrypt comparison result
 	protected boolean decrypt_protocol_two() throws IOException, ClassNotFoundException, HomomorphicException {
 		Object x;
 		int answer = -1;
@@ -209,7 +210,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		if (x instanceof BigInteger) {
 			if(isDGK) {
 				long decrypt = DGKOperations.decrypt((BigInteger) x, dgk_private);
-				// IF SOMETHING HAPPENS...GET POST MORTEM HERE
+				// IF SOMETHING HAPPENS...GET TO POST MORTEM HERE
 				if (decrypt != 0 && dgk_public.getU().longValue() - 1 != decrypt) {
 					throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
 				}
@@ -230,7 +231,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		else {
 			throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
 		}
-		// IF SOMETHING HAPPENS...GET POST MORTEM HERE
+		// IF SOMETHING HAPPENS...GET TO POST MORTEM HERE
 		if (answer != 0 && answer != 1) {
 			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
 		}
@@ -241,7 +242,6 @@ public class bob extends socialist_millionaires implements bob_interface
 			throws ClassNotFoundException, IOException, HomomorphicException {
 		// Step 1: Receive z from Alice
 		// Get the input and output streams
-		int answer;
 		Object x;
 		BigInteger beta;
 		BigInteger z;
@@ -271,7 +271,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		Protocol1(beta);
 		
 		// Step 5: Send [[z/2^l]], Alice has the solution from Protocol 3 already...
-		toAlice.writeObject(PaillierCipher.encrypt(z.divide(powL), paillier_public));
+		writeObject(PaillierCipher.encrypt(z.divide(powL), paillier_public));
 		toAlice.flush();
 		
 		// Step 6 - 7: Alice Computes [[x >= y]]
@@ -310,13 +310,13 @@ public class bob extends socialist_millionaires implements bob_interface
 			x_prime = BigInteger.valueOf(DGKOperations.decrypt(x_prime, dgk_private));
 			y_prime = BigInteger.valueOf(DGKOperations.decrypt(y_prime, dgk_private));
 			// To avoid myself throwing errors of encryption must be [0, U), mod it now!
-			toAlice.writeObject(DGKOperations.encrypt(x_prime.multiply(y_prime).mod(dgk_public.getU()), dgk_public));
+			writeObject(DGKOperations.encrypt(x_prime.multiply(y_prime).mod(dgk_public.getU()), dgk_public));
 		}
 		else {
 			x_prime = PaillierCipher.decrypt(x_prime, paillier_private);
 			y_prime = PaillierCipher.decrypt(y_prime, paillier_private);
 			// To avoid myself throwing errors of encryption must be [0, N), mod it now!
-			toAlice.writeObject(PaillierCipher.encrypt(x_prime.multiply(y_prime).mod(paillier_public.getN()), paillier_public));
+			writeObject(PaillierCipher.encrypt(x_prime.multiply(y_prime).mod(paillier_public.getN()), paillier_public));
 		}
 		toAlice.flush();
 	}
@@ -349,10 +349,10 @@ public class bob extends socialist_millionaires implements bob_interface
 	
 		c = z.divide(BigInteger.valueOf(divisor));
 		if(isDGK) {
-			toAlice.writeObject(DGKOperations.encrypt(c, dgk_public));	
+			writeObject(DGKOperations.encrypt(c, dgk_public));	
 		}
 		else {
-			toAlice.writeObject(PaillierCipher.encrypt(c, paillier_public));
+			writeObject(PaillierCipher.encrypt(c, paillier_public));
 		}
 		toAlice.flush();
 		/*
@@ -367,25 +367,25 @@ public class bob extends socialist_millionaires implements bob_interface
 	public void sendPublicKeys() throws IOException
 	{
 		if(dgk_public != null) {
-			toAlice.writeObject(dgk_public);
+			writeObject(dgk_public);
 			System.out.println("Bob sent DGK Public Key to Alice");
 		}
 		else {
-			toAlice.writeObject(BigInteger.ZERO);
+			writeObject(BigInteger.ZERO);
 		}
 		if(paillier_public != null) {
-			toAlice.writeObject(paillier_public);
+			writeObject(paillier_public);
 			System.out.println("Bob sent Paillier Public Key to Alice");
 		}
 		else {
-			toAlice.writeObject(BigInteger.ZERO);
+			writeObject(BigInteger.ZERO);
 		}
 		if(el_gamal_public != null) {
-			toAlice.writeObject(el_gamal_public);
+			writeObject(el_gamal_public);
 			System.out.println("Bob sent ElGamal Public Key to Alice");
 		}
 		else {
-			toAlice.writeObject(BigInteger.ZERO);
+			writeObject(BigInteger.ZERO);
 		}
 		toAlice.flush();
 	}

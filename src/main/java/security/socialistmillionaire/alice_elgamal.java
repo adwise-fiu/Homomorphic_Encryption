@@ -45,7 +45,7 @@ public class alice_elgamal extends alice_veugen {
         // Step 2
 
         // Step 3
-        in = fromBob.readObject();
+        in = readObject();
         if (in instanceof ElGamal_Ciphertext) {
             result = (ElGamal_Ciphertext) in;
             result = ElGamalCipher.divide(result, a ,el_gamal_public);
@@ -84,7 +84,7 @@ public class alice_elgamal extends alice_veugen {
         // Step 2
 
         // Step 3
-        in = fromBob.readObject();
+        in = readObject();
         if (in instanceof ElGamal_Ciphertext) {
             result = (ElGamal_Ciphertext) in;
             result = ElGamalCipher.subtract(result, ElGamalCipher.multiply_scalar(x, b, el_gamal_public), el_gamal_public);
@@ -128,7 +128,7 @@ public class alice_elgamal extends alice_veugen {
         }
 
         // Step 4: Bob computes c and Alice receives it
-        in = fromBob.readObject();
+        in = readObject();
         if (in instanceof ElGamal_Ciphertext) {
             c = (ElGamal_Ciphertext) in;
         }
@@ -213,7 +213,7 @@ public class alice_elgamal extends alice_veugen {
             deltaB = 1;
         }
 
-        bob = fromBob.readObject();
+        bob = readObject();
         if (bob instanceof ElGamal_Ciphertext) {
             zeta_one = (ElGamal_Ciphertext) bob;
         }
@@ -222,7 +222,7 @@ public class alice_elgamal extends alice_veugen {
             throw new IllegalArgumentException("Protocol 4, Step 5: BigInteger z_1 not found!");
         }
 
-        bob = fromBob.readObject();
+        bob = readObject();
         if (bob instanceof ElGamal_Ciphertext) {
             zeta_two = (ElGamal_Ciphertext) bob;
         }
@@ -263,7 +263,7 @@ public class alice_elgamal extends alice_veugen {
         toBob.writeObject(result);
         toBob.flush();
         comparison = fromBob.readInt();
-        // IF SOMETHING HAPPENS...GET POST MORTEM HERE
+        // IF SOMETHING HAPPENS...GET THE POST MORTEM HERE
         if (comparison != 0 && comparison != 1) {
             throw new IllegalArgumentException("Invalid Comparison result --> " + comparison);
         }

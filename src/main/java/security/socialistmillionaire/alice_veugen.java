@@ -36,7 +36,7 @@ public class alice_veugen extends alice {
         BigInteger [] Encrypted_Y;
 
         //Step 1: Receive y_i bits from Bob
-        in = fromBob.readObject();
+        in = readObject();
         if (in instanceof BigInteger[]) {
             Encrypted_Y = (BigInteger []) in;
         }
@@ -171,7 +171,7 @@ public class alice_veugen extends alice {
         }
 
         // Step A: get d from Bob
-        in = fromBob.readObject();
+        in = readObject();
         if (in instanceof BigInteger) {
             d = (BigInteger) in;
         }
@@ -181,7 +181,7 @@ public class alice_veugen extends alice {
         }
 
         // Step B: get beta_bits from Bob
-        in = fromBob.readObject();
+        in = readObject();
         if (in instanceof BigInteger[]) {
             beta_bits = (BigInteger []) in;
         }
@@ -385,7 +385,7 @@ public class alice_veugen extends alice {
             deltaB = 1;
         }
 
-        bob = fromBob.readObject();
+        bob = readObject();
         if (bob instanceof BigInteger) {
             zeta_one = (BigInteger) bob;
         }
@@ -393,7 +393,7 @@ public class alice_veugen extends alice {
             throw new IllegalArgumentException("Protocol 4, Step 5: BigInteger z_1 not found, Invalid object: " +  bob.getClass().getName());
         }
 
-        bob = fromBob.readObject();
+        bob = readObject();
         if (bob instanceof BigInteger) {
             zeta_two = (BigInteger) bob;
         }

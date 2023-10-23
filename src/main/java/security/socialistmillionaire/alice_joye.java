@@ -17,7 +17,7 @@ public class alice_joye extends alice_veugen {
 /*
     public boolean Protocol1(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
         // Step 1 by Bob
-        Object o = fromBob.readObject();
+        Object o = readObject();
         BigInteger little_y_star;
         int answer;
         int delta_a;
@@ -109,7 +109,7 @@ public class alice_joye extends alice_veugen {
         List<Integer> set_l = new ArrayList<>();
 
         // Step 1: Get Y bits from Bob
-        Object in = fromBob.readObject();
+        Object in = readObject();
         if (in instanceof BigInteger[]) {
             Encrypted_Y = (BigInteger []) in;
         }
