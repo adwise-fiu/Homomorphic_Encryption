@@ -138,10 +138,6 @@ public class bob_joye extends bob_veugen {
         }
 
         for (BigInteger C_i: C) {
-            // I need to find out why Alice_joye is sending nulls...
-            if (C_i == null) {
-                continue;
-            }
             if (DGKOperations.decrypt(C_i, dgk_private) == 0) {
                 delta_b = 1;
                 break;

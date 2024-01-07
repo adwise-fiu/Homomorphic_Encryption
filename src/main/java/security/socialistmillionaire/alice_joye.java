@@ -159,7 +159,6 @@ public class alice_joye extends alice_veugen {
         }
         // Confirm the value #L = floor(t/2), no more, no less.
         assert floor_t_div_two == set_l.size();
-
         C = new BigInteger[set_l.size() + 1];
 
         // if equal bits, proceed!
@@ -183,12 +182,12 @@ public class alice_joye extends alice_veugen {
 
             BigInteger temp;
             BigInteger sum;
-            if (delta_a == NTL.bit(x, i)) {
+            if (set_l.contains(i)) {
                 // right to left
                 // 1 + (1 - 2 * delta_a) * x_i
                 first_term = 1 + ((1 - 2 * delta_a) * NTL.bit(x, i));
                 // (2 * delta_a - 1) * y_i
-                second_term = DGKOperations.multiply(Encrypted_Y[i], (2L * delta_a) - 1 , dgk_public);
+                second_term = DGKOperations.multiply(Encrypted_Y[i], (2L * delta_a) - 1, dgk_public);
                 // Combine terms.
                 temp = DGKOperations.add_plaintext(second_term, first_term, dgk_public);
 
