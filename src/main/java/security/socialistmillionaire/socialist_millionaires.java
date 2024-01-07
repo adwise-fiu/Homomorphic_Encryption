@@ -76,7 +76,7 @@ public abstract class socialist_millionaires implements CipherConstants
 		return el_gamal_public;
 	}
 
-	protected boolean readBoolean() throws IOException {
+	public boolean readBoolean() throws IOException {
 		if(fromBob != null) {
 			return fromBob.readBoolean();
 		}
@@ -85,13 +85,33 @@ public abstract class socialist_millionaires implements CipherConstants
 		}
 	}
 
-	protected void writeBoolean(boolean value) throws IOException {
+	public void writeBoolean(boolean value) throws IOException {
 		if(toBob != null) {
 			toBob.writeBoolean(value);
 			toBob.flush();
 		}
 		else {
 			toAlice.writeBoolean(value);
+			toAlice.flush();
+		}
+	}
+
+	public int readInt() throws IOException {
+		if (fromBob != null) {
+			return fromBob.readInt();
+		}
+		else {
+			return fromAlice.readInt();
+		}
+	}
+
+	public void writeInt(int value) throws IOException {
+		if (toBob != null) {
+			toBob.writeInt(value);
+			toBob.flush();
+		}
+		else {
+			toAlice.writeInt(value);
 			toAlice.flush();
 		}
 	}
