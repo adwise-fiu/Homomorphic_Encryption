@@ -137,6 +137,7 @@ public class alice_joye extends alice_veugen {
             //System.out.println("Shouldn't be here: x > y bits");
             return false;
         }
+        int floor_t_div_two = (int) Math.floor((float) Encrypted_Y.length/2);
 
         // Step 3: Form Set L
         for (int i = 0; i < Encrypted_Y.length; i++) {
@@ -145,6 +146,20 @@ public class alice_joye extends alice_veugen {
                 set_l.add(i);
             }
         }
+
+        // I need to confirm that #L = floor(t/2) always
+        // This is how I protect against timing attacks.
+        for (int i = 0; i < Encrypted_Y.length; i++) {
+            if (set_l.size() == floor_t_div_two) {
+                break;
+            }
+            if (!set_l.contains(i)) {
+                set_l.add(i);
+            }
+        }
+        // Confirm the value #L = floor(t/2), no more, no less.
+        assert floor_t_div_two == set_l.size();
+
         C = new BigInteger[set_l.size() + 1];
 
         // if equal bits, proceed!
@@ -174,7 +189,7 @@ public class alice_joye extends alice_veugen {
                 first_term = 1 + ((1 - 2 * delta_a) * NTL.bit(x, i));
                 // (2 * delta_a - 1) * y_i
                 second_term = DGKOperations.multiply(Encrypted_Y[i], (2L * delta_a) - 1 , dgk_public);
-                // Combine terms..
+                // Combine terms.
                 temp = DGKOperations.add_plaintext(second_term, first_term, dgk_public);
 
                 // Now add with C_i

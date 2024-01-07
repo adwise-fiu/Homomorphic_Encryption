@@ -16,7 +16,6 @@ import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 
 public abstract class socialist_millionaires implements CipherConstants
 {
-	protected boolean uses_tls_socket = false;
 	protected static final SecureRandom rnd = new SecureRandom();
 	protected final static int SIGMA = 80;
 
@@ -97,7 +96,7 @@ public abstract class socialist_millionaires implements CipherConstants
 		}
 	}
 
-	protected Object readObject() throws IOException, ClassNotFoundException {
+	public Object readObject() throws IOException, ClassNotFoundException {
 		if(fromBob != null) {
 			return fromBob.readObject();
 		}
@@ -106,7 +105,7 @@ public abstract class socialist_millionaires implements CipherConstants
 		}
 	}
 	
-	protected void writeObject(Object o) throws IOException {
+	public void writeObject(Object o) throws IOException {
 		if(toBob != null) {
 			toBob.writeObject(o);
 			toBob.flush();
@@ -116,14 +115,7 @@ public abstract class socialist_millionaires implements CipherConstants
 			toAlice.flush();	
 		}
 	}
-
-	public void set_el_gamal_additive(boolean additive){
-		this.el_gamal_public.set_additive(additive);
-		if (this.el_gamal_private != null) {
-			this.el_gamal_private.set_additive(additive);
-		}
-	}
-
+	
 	/**
 	 * Create deep copy of BigInteger array
 	 */
