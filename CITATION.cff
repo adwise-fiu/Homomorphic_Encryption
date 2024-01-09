@@ -6,20 +6,22 @@ authors:
   orcid: "https://orcid.org/0000-0002-6673-4934"
 - family-names: "Akkaya"
   given-names: "Kemal"
+  orcid: "https://orcid.org/0000-0002-7103-4545"
 title: "Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting"
 version: 2.0.0
 doi: 10.1109/MASSW.2019.00017
 date-released: 2017-12-18
 url: "https://github.com/AndrewQuijano/Homomorphic_Encryption"
 preferred-citation:
-  type: article
+  type: conference
   authors:
   - family-names: "Quijano"
     given-names: "Andrew"
     orcid: "https://orcid.org/0000-0002-6673-4934"
   - family-names: "Akkaya"
     given-names: "Kemal"
-  journal: " IEEE 16th International Conference on Mobile Ad Hoc and Sensor Systems Workshops"
+    orcid: "https://orcid.org/0000-0002-7103-4545"
+  journal: "IEEE 16th International Conference on Mobile Ad Hoc and Sensor Systems Workshops"
   month: 11
   start: 53 # First page number
   end: 57 # Last page number
