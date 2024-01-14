@@ -3,6 +3,7 @@ package security.socialistmillionaire;
 import security.dgk.DGKOperations;
 import security.misc.HomomorphicException;
 import security.misc.NTL;
+import security.paillier.PaillierCipher;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -64,6 +65,128 @@ public class alice_joye extends alice_veugen {
         return answer == 1;
     }
 */
+    public boolean Protocol2(BigInteger x, BigInteger y) throws IOException, HomomorphicException, ClassNotFoundException {
+        int deltaB;
+        int x_leq_y;
+        int deltaA = rnd.nextInt(2);
+        Object bob;
+        BigInteger alpha_lt_beta;
+        BigInteger z;
+        BigInteger zeta_one;
+        BigInteger zeta_two;
+        BigInteger result;
+        BigInteger r;
+        BigInteger alpha;
+
+        /*
+         * Step 1: 0 <= r < N
+         * N is the Paillier plain text space, which is 1024-bits usually
+         * u is the DGK plain text space, which is l bits
+         *
+         * Step 2: Alice computes [[z]] = [[x - y + 2^l + r]]
+         * Send Z to Bob
+         * [[x + 2^l + r]]
+         * [[z]] = [[x - y + 2^l + r]]
+         */
+        if (isDGK) {
+            r = NTL.RandomBnd(dgk_public.getU());
+            z = DGKOperations.add_plaintext(x, r.add(powL).mod(dgk_public.getU()), dgk_public);
+            z = DGKOperations.subtract(z, y, dgk_public);
+        }
+        else {
+            r = NTL.RandomBnd(paillier_public.getN());
+            z = PaillierCipher.add_plaintext(x, r.add(powL).mod(paillier_public.getN()), paillier_public);
+            z = PaillierCipher.subtract(z, y, paillier_public);
+        }
+        toBob.writeObject(z);
+        toBob.flush();
+
+        // Step 2: Bob decrypts[[z]] and computes beta = z (mod 2^l)
+
+        // Step 3: alpha = r (mod 2^l)
+        alpha = NTL.POSMOD(r, powL);
+
+        // Step 4: Modified Protocol 3 or Protocol 3
+
+        // See Optimization 3: true --> Use Modified Protocol 3
+        if(Protocol1(alpha)) {
+            x_leq_y = 1;
+        }
+        else {
+            x_leq_y = 0;
+        }
+
+        // Step 5: get Delta B and [[z_1]] and [[z_2]]
+        if(deltaA == x_leq_y) {
+            deltaB = 0;
+        }
+        else {
+            deltaB = 1;
+        }
+
+        bob = readObject();
+        if (bob instanceof BigInteger) {
+            zeta_one = (BigInteger) bob;
+        }
+        else {
+            throw new IllegalArgumentException("Protocol 4, Step 5: BigInteger z_1 not found, Invalid object: " +  bob.getClass().getName());
+        }
+
+        bob = readObject();
+        if (bob instanceof BigInteger) {
+            zeta_two = (BigInteger) bob;
+        }
+        else {
+            throw new IllegalArgumentException("Protocol 4, Step 5: BigInteger z_2 not found, Invalid object: " + bob.getClass().getName());
+        }
+
+        // Step 6: Compute [[beta <= alpha]]
+        if(isDGK) {
+            if(deltaA == 1) {
+                alpha_lt_beta = DGKOperations.encrypt(deltaB, dgk_public);
+            }
+            else {
+                alpha_lt_beta = DGKOperations.encrypt(1 - deltaB, dgk_public);
+            }
+
+            // Step 7: Compute [[x > y]]
+            if(r.compareTo(dgk_public.getU().subtract(BigInteger.ONE).divide(TWO)) < 0) {
+                result = DGKOperations.
+                        subtract(zeta_one, DGKOperations.encrypt(r.divide(powL), dgk_public), dgk_public);
+            }
+            else {
+                result = DGKOperations.subtract(zeta_two, DGKOperations.encrypt(r.divide(powL), dgk_public), dgk_public);
+            }
+            result = DGKOperations.subtract(result, alpha_lt_beta, dgk_public);
+        }
+        else
+        {
+            if(deltaA == 1) {
+                alpha_lt_beta = PaillierCipher.encrypt(deltaB, paillier_public);
+            }
+            else {
+                alpha_lt_beta = PaillierCipher.encrypt(1 - deltaB, paillier_public);
+            }
+
+            // Step 7: Compute [[x >= y]]
+            if(r.compareTo(paillier_public.getN().subtract(BigInteger.ONE).divide(TWO)) < 0) {
+                result = PaillierCipher.subtract(zeta_one, PaillierCipher.encrypt(r.divide(powL), paillier_public), paillier_public);
+            }
+            else {
+                result = PaillierCipher.subtract(zeta_two, PaillierCipher.encrypt(r.divide(powL), paillier_public), paillier_public);
+            }
+            result = PaillierCipher.subtract(result, alpha_lt_beta, paillier_public);
+        }
+
+        /*
+         * Unofficial Step 8:
+         * Since the result is encrypted...I need to send
+         * this back to Bob (Android Phone) to decrypt the solution...
+         *
+         * Bob by definition would know the answer as well.
+         */
+        return decrypt_protocol_two(result);
+    }
 
     public boolean Protocol1(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
         int delta_a_prime = compute_delta_a(x);
@@ -81,7 +204,7 @@ public class alice_joye extends alice_veugen {
         return answer;
     }
 
-    /*
+     /*
     private int get_delta_a_prime(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
         int delta_a_prime = compute_delta_a(x);
         int delta_b_prime;

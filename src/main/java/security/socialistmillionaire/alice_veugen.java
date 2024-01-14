@@ -310,7 +310,6 @@ public class alice_veugen extends alice {
             throws IOException, ClassNotFoundException, HomomorphicException {
         int deltaB;
         int x_leq_y;
-        int comparison;
         int deltaA = rnd.nextInt(2);
         Object bob;
         BigInteger alpha_lt_beta;
