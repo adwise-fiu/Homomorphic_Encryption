@@ -89,12 +89,12 @@ public class alice extends socialist_millionaires implements alice_interface {
 		int delta_b;
 
 		if (isDGK) {
-			x = PaillierCipher.subtract(a, b, paillier_public);
-			x = PaillierCipher.add_plaintext(x, r, paillier_public);
-		}
-		else {
 			x = DGKOperations.subtract(a, b, dgk_public);
 			x = DGKOperations.add_plaintext(x, r, dgk_public);
+		}
+		else {
+			x = PaillierCipher.subtract(a, b, paillier_public);
+			x = PaillierCipher.add_plaintext(x, r, paillier_public);
 		}
 		writeObject(x);
 
