@@ -232,7 +232,6 @@ public class bob extends socialist_millionaires implements bob_interface
 		// 1- delta = delta_b if delta_a = 0
 		// 2- delta = 1 - delta_b otherwise if delta_a = 1.
 		writeObject(DGKOperations.encrypt(deltaB, dgk_public));
-		toAlice.flush();
 
 		// Step 8: UNOFFICIAL
 		// Alice sends the encrypted answer...

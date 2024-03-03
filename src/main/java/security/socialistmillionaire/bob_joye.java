@@ -111,8 +111,7 @@ public class bob_joye extends bob_veugen {
                 zeta_two = DGKOperations.encrypt(z.divide(powL), dgk_public);
             }
         }
-        else
-        {
+        else {
             zeta_one = PaillierCipher.encrypt(z.divide(powL), paillier_public);
             if(z.compareTo(paillier_public.getN().subtract(BigInteger.ONE).divide(TWO)) < 0) {
                 zeta_two = PaillierCipher.encrypt(z.add(dgk_public.getN()).divide(powL), paillier_public);
