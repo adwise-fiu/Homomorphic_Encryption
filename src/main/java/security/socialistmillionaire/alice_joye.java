@@ -13,7 +13,7 @@ import java.util.List;
 public class alice_joye extends alice_veugen {
 
     public alice_joye() {
-
+        super();
     }
 /*
     public boolean Protocol1(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
@@ -244,22 +244,15 @@ public class alice_joye extends alice_veugen {
         toBob.writeInt(delta_a);
         toBob.flush();
 
-        // Let bob know the correct delta b
-        if (x.bitLength() < Encrypted_Y.length) {
-            // x <= y is true, so I need delta_a XOR delta_b == 1
-            toBob.writeObject(BigInteger.ONE);
-            //I also need to tell what my delta_a is so Bob can correctly pick delta_b
-            toBob.flush();
+
+        BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
+        if (early_terminate.equals(BigInteger.ONE)) {
             return true;
         }
-        else if(x.bitLength() > Encrypted_Y.length) {
-            // x <= y is false, so I need delta_a XOR delta_b == 0
-            toBob.writeObject(BigInteger.ZERO);
-            //I also need to tell what my delta_a is so Bob can correctly pick delta_b
-            toBob.flush();
-            //System.out.println("Shouldn't be here: x > y bits");
+        else if (early_terminate.equals(BigInteger.ZERO)) {
             return false;
         }
+        
         int floor_t_div_two = (int) Math.floor((float) Encrypted_Y.length/2);
 
         // Step 3: Form Set L
@@ -286,15 +279,7 @@ public class alice_joye extends alice_veugen {
 
         // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y
-        XOR = new BigInteger[Encrypted_Y.length];
-        for (int i = 0; i < Encrypted_Y.length; i++) {
-            if (NTL.bit(x, i) == 1) {
-                XOR[i] = DGKOperations.subtract(dgk_public.ONE, Encrypted_Y[i], dgk_public);
-            }
-            else {
-                XOR[i] = Encrypted_Y[i];
-            }
-        }
+        XOR = encrypted_xor(x, Encrypted_Y);
 
         int first_term;
         BigInteger second_term;
@@ -330,9 +315,8 @@ public class alice_joye extends alice_veugen {
 
         // Step 4: send shuffled bits to Bob
         C = shuffle_bits(C);
-        toBob.writeObject(C);
-        toBob.flush();
-
+        writeObject(C);
+   
         // Get Delta B from Bob
         delta_b = fromBob.readInt();
         int answer = delta_a ^ delta_b;
@@ -359,7 +343,7 @@ public class alice_joye extends alice_veugen {
         return delta_a;
     }
 
-    private static int hamming_weight(BigInteger value) throws HomomorphicException{
+    private static int hamming_weight(BigInteger value) throws HomomorphicException {
         if (value.signum() < 0) {
             throw new HomomorphicException("I'm unsure if Hamming weight is defined for negative");
         }

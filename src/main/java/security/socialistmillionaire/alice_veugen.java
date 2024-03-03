@@ -8,11 +8,10 @@ import security.paillier.PaillierCipher;
 import java.io.IOException;
 import java.math.BigInteger;
 
-
 public class alice_veugen extends alice {
 
     public alice_veugen() {
-
+        super();
     }
 
     /**
@@ -45,59 +44,17 @@ public class alice_veugen extends alice {
             throw new IllegalArgumentException("Protocol 3 Step 1: Missing Y-bits!");
         }
 
-        /*
-         * Currently by design of the program
-         * 1- Alice KNOWS that bob will assume deltaB = 0.
-         *
-         * Alice knows the protocol should be paillier_private if
-         * the bit length is NOT equal.
-         *
-         * Case 1:
-         * y has more bits than x IMPLIES that y is bigger
-         * x <= y is 1 (true)
-         * given deltaB is 0 by default...
-         * deltaA must be 1
-         * answer = 1 XOR 0 = 1
-         *
-         * Case 2:
-         * x has more bits than x IMPLIES that x is bigger
-         * x <= y is 0 (false)
-         * given deltaB is 0 by default...
-         * deltaA must be 0
-         * answer = 0 XOR 0 = 0
-         */
-
-        // Case 1, delta B is ALWAYS INITIALIZED TO 0
-        // y has more bits -> y is bigger
-        if (x.bitLength() < Encrypted_Y.length) {
-            toBob.writeObject(BigInteger.ONE);
-            toBob.flush();
-            // x <= y -> 1 (true)
-            System.out.println("Shouldn't be here: x <= y bits");
+        BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
+        if (early_terminate.equals(BigInteger.ONE)) {
             return true;
         }
-
-        // Case 2 delta B is 0
-        // x has more bits -> x is bigger
-        else if(x.bitLength() > Encrypted_Y.length) {
-            toBob.writeObject(BigInteger.ZERO);
-            toBob.flush();
-            // x <= y -> 0 (false)
-            System.out.println("Shouldn't be here: x > y bits");
+        else if (early_terminate.equals(BigInteger.ZERO)) {
             return false;
         }
 
         // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y
-        XOR = new BigInteger[Encrypted_Y.length];
-        for (int i = 0; i < Encrypted_Y.length; i++) {
-            if (NTL.bit(x, i) == 1) {
-                XOR[i] = DGKOperations.subtract(dgk_public.ONE, Encrypted_Y[i], dgk_public);
-            }
-            else {
-                XOR[i] = Encrypted_Y[i];
-            }
-        }
+        XOR = encrypted_xor(x, Encrypted_Y);
 
         // Step 3: delta A is computed on initialization, it is 0 or 1.
 

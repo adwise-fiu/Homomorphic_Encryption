@@ -5,6 +5,7 @@ import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.util.ArrayList;
+import javax.net.ssl.SSLSocket;
 
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import security.dgk.DGKOperations;
@@ -52,6 +53,42 @@ public class alice extends socialist_millionaires implements alice_interface {
 		);
 		this.fromBob.accept("[B");
 		this.fromBob.accept("[L*");
+	}
+
+	public void set_socket(SSLSocket socket) throws IOException {
+		toBob = new ObjectOutputStream(socket.getOutputStream());
+		fromBob = new ValidatingObjectInputStream(socket.getInputStream());
+		this.fromBob.accept(
+				security.paillier.PaillierPublicKey.class,
+				security.dgk.DGKPublicKey.class,
+				security.elgamal.ElGamalPublicKey.class,
+				security.gm.GMPublicKey.class,
+				java.math.BigInteger.class,
+				java.lang.Number.class,
+				security.elgamal.ElGamal_Ciphertext.class,
+				java.util.HashMap.class,
+				java.lang.Long.class,
+				java.lang.String.class
+		);
+		this.fromBob.accept("[B");
+		this.fromBob.accept("[L*");
+		this.tls_socket_in_use = true;
+	}
+
+	/*
+	 * Review "Protocol 1 EQT-1"
+	 * from the paper "Secure Equality Testing Protocols in the Two-Party Setting"
+	 */
+	public void encrypted_equals(BigInteger a, BigInteger b) {
+		// Party A generates a sufficiently large (ℓ + 1 + κ bits) random
+		// value r , computes [x] ← [a − b + r ], and sends [x] to B.
+		int delta_a = rnd.nextInt(2);
+
+
+	}
+
+	public void private_equals(BigInteger x) {
+
 	}
 
 	/**
@@ -554,5 +591,71 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Close Bob
 		writeBoolean(false);
 		return sorted_k;
+	}
+	
+	// ---------------------- Everything here is essentially utility functions all Alices will need ----------------
+	
+	// All comparison protocols seem to require encrypted xor, so just make it into a function
+	// Note, Encrypted Y is encrypted bits from Bob. x is an unencrytped number we must compare y with.
+	protected BigInteger [] encrypted_xor(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException {
+		BigInteger [] xor_bits = new BigInteger[Encrypted_Y.length];
+		for (int i = 0; i < Encrypted_Y.length; i++) {
+			if (NTL.bit(x, i) == 1) {
+				xor_bits[i] = DGKOperations.subtract(dgk_public.ONE, Encrypted_Y[i], dgk_public);
+			}
+			else {
+				xor_bits[i] = Encrypted_Y[i];
+			}
+		}
+		return xor_bits;
+	}
+
+		/*
+		 * This is an issue that can occur with all private integer comparison protocols.
+		 * What to do if the bit values are NOT the same?
+		 * Technically, there is a risk of timing attack as this protocol terminates early if bits aren't 
+		 * the same. But this is beyond my paygrade. Feel free to PR if you have an idea.
+		 * 
+         * Currently by design of the program
+         * 1- Alice KNOWS that bob will assume deltaB = 0.
+         *
+         * Case 1:
+         * y has more bits than x IMPLIES that y is bigger
+         * x <= y is 1 (true)
+         * given deltaB is 0 by default...
+         * deltaA must be 1
+         * answer = 1 XOR 0 = 1
+         *
+         * Case 2:
+         * x has more bits than x IMPLIES that x is bigger
+         * x <= y is 0 (false)
+         * given deltaB is 0 by default...
+         * deltaA must be 0
+         * answer = 0 XOR 0 = 0
+         */
+	protected BigInteger unequal_bit_check(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException, IOException {
+
+        // Case 1, delta B is ALWAYS INITIALIZED TO 0
+        // y has more bits -> y is bigger
+        if (x.bitLength() < Encrypted_Y.length) {
+            writeObject(BigInteger.ONE);
+            // x <= y -> 1 (true)
+            System.out.println("Shouldn't be here: x <= y bits");
+            return BigInteger.ONE;
+        }
+
+        // Case 2 delta B is 0
+        // x has more bits -> x is bigger
+        else if(x.bitLength() > Encrypted_Y.length) {
+            writeObject(BigInteger.ZERO);
+            // x <= y -> 0 (false)
+            System.out.println("Shouldn't be here: x > y bits");
+            return BigInteger.ZERO;
+        }
+
+		// Yay the bits are equal! Continue with the protocol!
+		else {
+			return TWO;
+		}
 	}
 }

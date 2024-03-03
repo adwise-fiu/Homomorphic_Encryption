@@ -15,6 +15,10 @@ public class bob_veugen extends bob {
         super(a, b, c);
     }
 
+    public bob_veugen(KeyPair a, KeyPair b) throws IllegalArgumentException {
+        super(a, b);
+    }
+
     // Use this for Using Modified Protocol3 within Protocol 4
     boolean Modified_Protocol3(BigInteger beta, BigInteger z)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {

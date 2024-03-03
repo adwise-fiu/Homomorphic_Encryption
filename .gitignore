@@ -8,6 +8,7 @@ codecov
 
 # Outputs from gradle creation
 gradle_user_home
+bin/ 
 
 #Any IntelliJ stuff
 .idea

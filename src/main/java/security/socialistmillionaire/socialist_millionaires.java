@@ -41,6 +41,9 @@ public abstract class socialist_millionaires implements CipherConstants
 	protected ObjectOutputStream toAlice = null;
 	protected ValidatingObjectInputStream fromAlice = null;
 
+	// Confirm if using TLS sockets (encryption in transit for last few steps)
+	protected boolean tls_socket_in_use = false;
+
 	public void setDGKMode(boolean isDGK) {
 		this.isDGK = isDGK;
 	}

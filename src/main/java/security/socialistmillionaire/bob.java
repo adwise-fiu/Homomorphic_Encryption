@@ -5,6 +5,7 @@ import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.security.KeyPair;
+import javax.net.ssl.SSLSocket;
 
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import security.dgk.DGKOperations;
@@ -23,17 +24,9 @@ public class bob extends socialist_millionaires implements bob_interface
 	public bob(KeyPair first, KeyPair second, KeyPair third) {
 		parse_key_pairs(first, second, third);
 	}
-	/**
-	 * Create a bob instance for running extending protocols such as comparing 
-	 * encrypted numbers
-	 * @throws IllegalArgumentException
-	 * If first is not a Paillier Keypair or second is not a DGK key pair or third is not ElGamal Keypair
-	 */
-	public bob (Socket socket,
-			KeyPair first, KeyPair second, KeyPair third)
-					throws IOException, IllegalArgumentException {
-		set_socket(socket);
-		parse_key_pairs(first, second, third);
+
+	public bob(KeyPair first, KeyPair second) {
+		parse_key_pairs(first, second, null);
 	}
 
 	private void parse_key_pairs(KeyPair first, KeyPair second, KeyPair third) {
@@ -93,6 +86,28 @@ public class bob extends socialist_millionaires implements bob_interface
 			throw new NullPointerException("Client Socket is null!");
 		}
 	}
+
+	public void set_socket(SSLSocket socket) throws IOException {
+		if(socket != null) {
+			this.toAlice = new ObjectOutputStream(socket.getOutputStream());
+			this.fromAlice = new ValidatingObjectInputStream(socket.getInputStream());
+			this.fromAlice.accept(
+					java.math.BigInteger.class,
+					java.lang.Number.class,
+					java.util.HashMap.class,
+					java.lang.Long.class,
+					security.elgamal.ElGamal_Ciphertext.class,
+					java.lang.String.class
+			);
+			this.fromAlice.accept("[B");
+			this.fromAlice.accept("[L*");
+		}
+		else {
+			throw new NullPointerException("Client Socket is null!");
+		}
+		this.tls_socket_in_use = true;
+	}
+
 	/**
 	 * if Alice wants to sort a list of encrypted numbers, use this method if you 
 	 * will consistently sort using Protocol 2
@@ -107,6 +122,18 @@ public class bob extends socialist_millionaires implements bob_interface
 		}
 		System.out.println("Protocol 2 was used " + counter + " times!");
 		System.out.println("Protocol 2 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
+	}
+	
+	/*
+	 * Review "Protocol 1 EQT-1"
+	 * from the paper "Secure Equality Testing Protocols in the Two-Party Setting"
+	 */
+	public void encrypted_equals() {
+
+	}
+
+	public void private_equals(BigInteger x) {
+
 	}
 
 	/**

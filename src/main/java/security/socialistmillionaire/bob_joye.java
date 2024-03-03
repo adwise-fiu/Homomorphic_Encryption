@@ -14,6 +14,10 @@ public class bob_joye extends bob_veugen {
         super(a, b, c);
     }
 
+    public bob_joye(KeyPair a, KeyPair b) throws IllegalArgumentException {
+        super(a, b);
+    }
+
     /*
     public boolean Protocol1(BigInteger y) throws IOException, HomomorphicException, ClassNotFoundException {
         // Step 1 by Bob
