@@ -206,9 +206,11 @@ public class bob extends socialist_millionaires implements bob_interface
 		boolean foundZero = false;
 		for (BigInteger C_i : C) {
 			long value = DGKOperations.decrypt(C_i, dgk_private);
-			foundZero |= (value == 0L);
+			if (value == 0) {
+				foundZero = true;
+			}
 		}
-		
+
 		// Perform constant-time comparison to update deltaB
 		if (foundZero) {
 			deltaB = 1;

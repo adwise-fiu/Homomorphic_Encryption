@@ -110,6 +110,7 @@ public class test_alice implements Runnable, constants
 		}
 		// Use assert to sort array
 		Arrays.sort(toSort);
+		System.out.println("Checking Arrays" + Arrays.toString(toSort));
 		for (int i = 0; i < min.length; i++) {
 			assertEquals(toSort[i], min[i]);
 		}

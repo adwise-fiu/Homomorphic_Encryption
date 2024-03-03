@@ -131,7 +131,7 @@ public class bob_veugen extends bob {
         // Step 4: Run Modified DGK Comparison Protocol
         // true --> run Modified protocol 3
 
-        if(fromAlice.readBoolean()) {
+        if(readBoolean()) {
             if(Modified_Protocol3(beta, z)) {
                 System.out.println("Modified Protocol 3 selected");
             }

@@ -371,9 +371,8 @@ public class alice extends socialist_millionaires implements alice_interface {
 			z = PaillierCipher.add_plaintext(x, r, paillier_public);
 			//N = paillier_public.n;
 		}
-		toBob.writeObject(z);
-		toBob.flush();
-		
+		writeObject(z);
+
 		// Step 2: Executed by Bob
 		
 		// Step 3: Compute secure comparison Protocol
