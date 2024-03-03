@@ -31,7 +31,6 @@ public class alice_veugen extends alice {
 
         BigInteger [] XOR;
         BigInteger [] C;
-
         BigInteger [] Encrypted_Y = get_encrypted_bits();
 
         BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
@@ -286,12 +285,8 @@ public class alice_veugen extends alice {
         }
 
         // Step 5: get Delta B and [[z_1]] and [[z_2]]
-        if(deltaA == x_leq_y) {
-            deltaB = 0;
-        }
-        else {
-            deltaB = 1;
-        }
+        deltaB = deltaA ^ x_leq_y;
+
 
         bob = readObject();
         if (bob instanceof BigInteger) {

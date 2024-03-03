@@ -101,8 +101,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Party B decrypts [x], computes the first l bits x_i, 0 ≤ i < l,
 		// encrypts them separately with DGK (for efficiency reason), and
 		// sends [x_i] to A.
-		// int delta_a = rnd.nextInt(2);
-		int delta_a = 0;
+		int delta_a = rnd.nextInt(2);
 		int delta;
 		int x_leq_r;
 
@@ -112,20 +111,24 @@ public class alice extends socialist_millionaires implements alice_interface {
 		else {
 			x_leq_r = 0;
 		}
-		
-		if(delta_a == x_leq_r) {
-            delta_b = 0;
-        }
-        else {
-            delta_b = 1;
-        }
-		delta = delta_a ^ delta_b;
+		delta_b = delta_a ^ x_leq_r;
 
 		if (isDGK) {
-			result = DGKOperations.encrypt(delta, dgk_public);
+			if (delta_a == 0) {
+				result = DGKOperations.encrypt(delta_b, dgk_public);
+			}
+			else {
+				result = DGKOperations.encrypt(1 - delta_b, dgk_public);
+			}
+
 		}
 		else {
-			result = PaillierCipher.encrypt(delta, paillier_public);
+			if (delta_a == 0) {
+				result = PaillierCipher.encrypt(delta_b, paillier_public);
+			}
+			else {
+				result = PaillierCipher.encrypt(1 - delta_b, paillier_public);
+			}
 		}
 
 		return decrypt_protocol_two(result);

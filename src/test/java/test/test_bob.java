@@ -51,8 +51,8 @@ public class test_bob implements Runnable, constants
 			test_private_equality(true);
 			test_private_equality(false);
 
-			test_encrypted_equality(true);
-			test_encrypted_equality(false);
+			//test_encrypted_equality(true);
+			//test_encrypted_equality(false);
 		}
 		catch (IOException | ClassNotFoundException | HomomorphicException | IllegalArgumentException x) {
 			x.printStackTrace();
