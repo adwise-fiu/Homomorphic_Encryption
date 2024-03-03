@@ -90,6 +90,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 
 		if (isDGK) {
 			x = DGKOperations.subtract(a, b, dgk_public);
+			r = r.mod(powL);
 			x = DGKOperations.add_plaintext(x, r, dgk_public);
 		}
 		else {
