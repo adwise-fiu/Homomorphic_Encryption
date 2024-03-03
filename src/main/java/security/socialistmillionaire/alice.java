@@ -19,6 +19,7 @@ import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
 public class alice extends socialist_millionaires implements alice_interface {
 
@@ -79,16 +80,102 @@ public class alice extends socialist_millionaires implements alice_interface {
 	 * Review "Protocol 1 EQT-1"
 	 * from the paper "Secure Equality Testing Protocols in the Two-Party Setting"
 	 */
-	public void encrypted_equals(BigInteger a, BigInteger b) {
+	public boolean encrypted_equals(BigInteger a, BigInteger b) throws HomomorphicException, IOException, ClassNotFoundException {
 		// Party A generates a sufficiently large (ℓ + 1 + κ bits) random
 		// value r , computes [x] ← [a − b + r ], and sends [x] to B.
+		BigInteger r = NTL.generateXBitRandom(dgk_public.getL() + 1 + SIGMA);
+		BigInteger x;
+		BigInteger result;
+		int delta_b;
+
+		if (isDGK) {
+			x = PaillierCipher.add(a, b, paillier_public);
+			x = PaillierCipher.add(x, r, paillier_public);
+		}
+		else {
+			x = DGKOperations.add(a, b, dgk_public);
+			x = DGKOperations.add(x, r, dgk_public);
+		}
+		writeObject(x);
+
+		// Party B decrypts [x], computes the first l bits x_i , 0 ≤ i < l,
+		// encrypts them separately with DGK (for efficiency reason), and
+		// sends [x_i] to A.
 		int delta_a = rnd.nextInt(2);
+		int delta;
+		int x_leq_r;
 
+		if (private_equals(r, delta_a)) {
+			x_leq_r = 1;
+		}
+		else {
+			x_leq_r = 0;
+		}
+		
+		if(delta_a == x_leq_r) {
+            delta_b = 0;
+        }
+        else {
+            delta_b = 1;
+        }
+		delta = delta_a ^ delta_b;
 
+		if (isDGK) {
+			result = DGKOperations.encrypt(delta, dgk_public);
+		}
+		else {
+			result = PaillierCipher.encrypt(delta, paillier_public);
+		}
+
+		return decrypt_protocol_two(result);
 	}
 
-	public void private_equals(BigInteger x) {
+	// Used only within encrypted_equals
+	private boolean private_equals(BigInteger r, int delta_a) throws HomomorphicException, IOException, ClassNotFoundException {
+		BigInteger [] x_bits = get_encrypted_bits();
 
+		BigInteger early_terminate = unequal_bit_check(r, x_bits);
+        if (early_terminate.equals(BigInteger.ONE)) {
+            return true;
+        }
+        else if (early_terminate.equals(BigInteger.ZERO)) {
+            return false;
+        }
+
+        // if equal bits, proceed!
+        // Step 2: compute Encrypted X XOR Y
+        BigInteger [] xor = encrypted_xor(r, x_bits);
+		BigInteger [] C = new BigInteger[r.bitLength()];
+
+		if (delta_a == 0) {
+			// Step 6: Sum XOR and multiply by random 2*t bit number
+			C[0] = DGKOperations.sum(xor, dgk_public);
+			BigInteger rho = NTL.generateXBitRandom(2 * dgk_public.getT());
+			C[0] = DGKOperations.multiply(C[0], rho, dgk_public);
+
+			// Step 7: Create lots of dummy encrypted numbers
+			for (int i = 0; i < r.bitLength(); i++) {
+				C[i] = DGKOperations.encrypt(NTL.RandomBnd(dgk_public.getU()), dgk_public);
+			}
+		}
+		else {
+			for (int i = 0; i < r.bitLength(); i++) {
+				// Sum XOR part and multiply by 2
+				C[i] = DGKOperations.multiply(DGKOperations.sum(xor, dgk_public, i), 2, dgk_public);
+				// subtract 1
+				C[i] = DGKOperations.subtract(C[i], dgk_public.ONE, dgk_public);
+				// Add XOR bit value at i
+				C[i] = DGKOperations.add(C[i], xor[i], dgk_public);
+			}
+		}
+		shuffle_bits(C);
+		writeObject(C);
+		// Bob just runs Protocol 1
+		return decrypt_protocol_one(delta_a);
+	}
+
+	public boolean private_equals(BigInteger r) throws HomomorphicException, IOException, ClassNotFoundException {
+		return private_equals(r, rnd.nextInt(2));
 	}
 
 	/**
@@ -116,39 +203,11 @@ public class alice extends socialist_millionaires implements alice_interface {
 		BigInteger [] XOR;
 
 		// Step 1: Get Y bits from Bob
-		in = readObject();
-		if (in instanceof BigInteger[]) {
-			Encrypted_Y = (BigInteger []) in;
-		}
-		else {
-			throw new IllegalArgumentException("Protocol 1 Step 1: Missing Y-bits! Got " + in.getClass().getName());
-		}
-
-		if (x.bitLength() < Encrypted_Y.length) {
-			toBob.writeObject(BigInteger.ONE);
-			toBob.flush();
-			System.out.println("Shouldn't be here: x <= y bits");
-			return true;
-		}
-		else if(x.bitLength() > Encrypted_Y.length) {
-			toBob.writeObject(BigInteger.ZERO);
-			toBob.flush();
-			System.out.println("Shouldn't be here: x > y bits");
-			return false;
-		}
+		Encrypted_Y = get_encrypted_bits();
 
 		// Otherwise, if the bit size is equal, proceed!
 		// Step 2: compute Encrypted X XOR Y
-		XOR = new BigInteger[Encrypted_Y.length];
-		for (int i = 0; i < Encrypted_Y.length; i++)
-		{
-			if (NTL.bit(x, i) == 1) {
-				XOR[i] = DGKOperations.subtract(dgk_public.ONE, Encrypted_Y[i], dgk_public);
-			}
-			else {
-				XOR[i] = Encrypted_Y[i];
-			}
-		}
+		XOR = encrypted_xor(x, Encrypted_Y);
 
 		// Step 3: Alice picks deltaA and computes s 
 
@@ -173,70 +232,10 @@ public class alice extends socialist_millionaires implements alice_interface {
 			C[i] = DGKOperations.multiply(C[i], rnd.nextInt(dgk_public.getU().intValue()) + 1, dgk_public);
 		}
 		C = shuffle_bits(C);
-		toBob.writeObject(C);
-		toBob.flush();
+		writeObject(C);
+
 		// Run Extra steps to help Alice decrypt Delta
 		return decrypt_protocol_one(delta_a);
-	}
-
-	protected boolean decrypt_protocol_one(int delta_a) throws IOException, ClassNotFoundException, HomomorphicException {
-		Object o;
-		BigInteger delta;
-		BigInteger blind = BigInteger.ZERO;
-
-		// Step 6: Bob looks for any 0's in C_i and computes DeltaB
-
-		// Step 7: Obtain Delta B from Bob
-		// Party B encrypts delta_B using his public key and sends it to Alice. Upon receiving
-		// delta_B, party A computes the encryption of delta as
-		// 1- delta = delta_b if delta_a = 0
-		// 2- delta = 1 - delta_b otherwise if delta_a = 1.
-		o = readObject();
-		if (o instanceof BigInteger) {
-			if (delta_a == 0) {
-				delta = (BigInteger) o;
-			}
-			else {
-				delta = DGKOperations.subtract(dgk_public.ONE, (BigInteger) o, dgk_public);
-			}
-		}
-		else {
-			throw new HomomorphicException("Invalid Object found here: " + o.getClass().getName());
-		}
-
-		/*
-		 * Step 8: Bob has the Private key anyway
-		 * Send him the encrypted answer!
-		 * Alice and Bob know now without revealing x or y!
-		 *
-		 * You can blind it for safety, but I will assume Bob is nice,
-		 * Plus the info doesn't really reveal anything to Bob.
-		 */
-		// Blind = NTL.RandomBnd(dgk_public.getU());
-		toBob.writeObject(DGKOperations.add_plaintext(delta, blind, dgk_public));
-		toBob.flush();
-
-		o = readObject();
-		if (o instanceof BigInteger) {
-			delta = (BigInteger) o;
-			delta = delta.subtract(blind);
-			return delta.equals(BigInteger.ONE);
-		}
-		else {
-			throw new HomomorphicException("Invalid Object found here: " + o.getClass().getName());
-		}
-	}
-
-	protected boolean decrypt_protocol_two(BigInteger result) throws IOException {
-		int comparison;
-		toBob.writeObject(result);
-		toBob.flush();
-		comparison = fromBob.readInt();// x <= y
-		// IF SOMETHING HAPPENS...GET THE POST MORTEM HERE
-		if (comparison != 0 && comparison != 1) {
-			throw new IllegalArgumentException("Invalid Comparison output! --> " + comparison);
-		}
-		return comparison == 1;
 	}
 
 	/**
@@ -610,29 +609,43 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return xor_bits;
 	}
 
-		/*
-		 * This is an issue that can occur with all private integer comparison protocols.
-		 * What to do if the bit values are NOT the same?
-		 * Technically, there is a risk of timing attack as this protocol terminates early if bits aren't 
-		 * the same. But this is beyond my paygrade. Feel free to PR if you have an idea.
-		 * 
-         * Currently by design of the program
-         * 1- Alice KNOWS that bob will assume deltaB = 0.
-         *
-         * Case 1:
-         * y has more bits than x IMPLIES that y is bigger
-         * x <= y is 1 (true)
-         * given deltaB is 0 by default...
-         * deltaA must be 1
-         * answer = 1 XOR 0 = 1
-         *
-         * Case 2:
-         * x has more bits than x IMPLIES that x is bigger
-         * x <= y is 0 (false)
-         * given deltaB is 0 by default...
-         * deltaA must be 0
-         * answer = 0 XOR 0 = 0
-         */
+	protected BigInteger [] get_encrypted_bits() throws HomomorphicException, IOException, ClassNotFoundException {
+		//Step 1: Receive y_i bits from Bob
+		Object o = readObject();
+		BigInteger [] Encrypted_Y;
+				
+		if (o instanceof BigInteger[]) {
+			return (BigInteger []) o;
+		}
+		else {
+			System.err.println("Invalid Object received: " + o.getClass().getName());
+			throw new HomomorphicException("Protocol 3 Step 1: Missing Y-bits!");
+		}
+	}
+
+	/*
+	* This is an issue that can occur with all private integer comparison protocols.
+	* What to do if the bit values are NOT the same?
+	* Technically, there is a risk of timing attack as this protocol terminates early if bits aren't 
+	* the same. But this is beyond my paygrade. Feel free to PR if you have an idea.
+	* 
+    * Currently by design of the program
+    * 1- Alice KNOWS that bob will assume deltaB = 0.
+	*
+    * Case 1:
+	* y has more bits than x IMPLIES that y is bigger
+	* x <= y is 1 (true)
+	* given deltaB is 0 by default...
+	* deltaA must be 1
+    * answer = 1 XOR 0 = 1
+    *
+    * Case 2:
+	* x has more bits than x IMPLIES that x is bigger
+    * x <= y is 0 (false)
+	* given deltaB is 0 by default...
+    * deltaA must be 0
+    * answer = 0 XOR 0 = 0
+    */
 	protected BigInteger unequal_bit_check(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException, IOException {
 
         // Case 1, delta B is ALWAYS INITIALIZED TO 0
@@ -657,5 +670,76 @@ public class alice extends socialist_millionaires implements alice_interface {
 		else {
 			return TWO;
 		}
+	}
+
+	protected boolean decrypt_protocol_one(int delta_a) throws IOException, ClassNotFoundException, HomomorphicException {
+		Object o;
+		BigInteger delta;
+		BigInteger blind = BigInteger.ZERO;
+
+		// Step 6: Bob looks for any 0's in C_i and computes DeltaB
+
+		// Step 7: Obtain Delta B from Bob
+		// Party B encrypts delta_B using his public key and sends it to Alice. Upon receiving
+		// delta_B, party A computes the encryption of delta as
+		// 1- delta = delta_b if delta_a = 0
+		// 2- delta = 1 - delta_b otherwise if delta_a = 1.
+		o = readObject();
+		if (o instanceof BigInteger) {
+			if (delta_a == 0) {
+				delta = (BigInteger) o;
+			}
+			else {
+				delta = DGKOperations.subtract(dgk_public.ONE, (BigInteger) o, dgk_public);
+			}
+		}
+		else {
+			throw new HomomorphicException("Invalid Object found here: " + o.getClass().getName());
+		}
+
+		/*
+		 * Step 8: Bob has the Private key anyway
+		 * Send him the encrypted answer!
+		 * Alice and Bob know now without revealing x or y!
+		 *
+		 * You can blind it for safety, but I will assume Bob is nice,
+		 * Plus the info doesn't really reveal anything to Bob.
+		 */
+		// Blind = NTL.RandomBnd(dgk_public.getU());
+		toBob.writeObject(DGKOperations.add_plaintext(delta, blind, dgk_public));
+		toBob.flush();
+
+		o = readObject();
+		if (o instanceof BigInteger) {
+			delta = (BigInteger) o;
+			delta = delta.subtract(blind);
+			return delta.equals(BigInteger.ONE);
+		}
+		else {
+			throw new HomomorphicException("Invalid Object found here: " + o.getClass().getName());
+		}
+	}
+
+	// The input result is the encrypted answer of the inequality.
+	protected boolean decrypt_protocol_two(BigInteger result) throws IOException, HomomorphicException {
+		BigInteger blind = BigInteger.ZERO;
+		// blind = NTL.RandomBnd(dgk_public.getU());
+
+		// I reserve the right to additively blind
+		// But like in decrypt_protocol_one, I will assume Bob is nice
+		if (isDGK) {
+			result = DGKOperations.add_plaintext(result, blind, dgk_public);
+		}
+		else {
+			result = PaillierCipher.add_plaintext(result, blind, paillier_public);
+		}
+		writeObject(result);
+
+		int comparison = fromBob.readInt();// x <= y
+		// IF SOMETHING HAPPENS...GET THE POST MORTEM HERE
+		if (comparison != 0 && comparison != 1) {
+			throw new IllegalArgumentException("Invalid Comparison output! --> " + comparison);
+		}
+		return comparison == 1;
 	}
 }

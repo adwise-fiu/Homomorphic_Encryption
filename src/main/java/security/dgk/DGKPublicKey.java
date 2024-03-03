@@ -134,6 +134,10 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		return this.l;
 	}
 
+	public int getT() {
+		return this.t;
+	}
+
 	public boolean equals (Object o) {
 		if (this == o) {
 			return true;

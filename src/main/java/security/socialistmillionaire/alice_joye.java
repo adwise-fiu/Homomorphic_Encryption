@@ -240,11 +240,6 @@ public class alice_joye extends alice_veugen {
             throw new IllegalArgumentException("Protocol 1 Step 1: Missing Y-bits!");
         }
 
-        // Step 2 done already, but tell Bob now.
-        toBob.writeInt(delta_a);
-        toBob.flush();
-
-
         BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
         if (early_terminate.equals(BigInteger.ONE)) {
             return true;
@@ -252,7 +247,7 @@ public class alice_joye extends alice_veugen {
         else if (early_terminate.equals(BigInteger.ZERO)) {
             return false;
         }
-        
+
         int floor_t_div_two = (int) Math.floor((float) Encrypted_Y.length/2);
 
         // Step 3: Form Set L
@@ -287,7 +282,6 @@ public class alice_joye extends alice_veugen {
         // Want to go from Right to left...
         int set_l_index = 0;
         for (int i = 0; i < Encrypted_Y.length; i++) {
-
             BigInteger temp;
             BigInteger sum;
             if (set_l.contains(i)) {

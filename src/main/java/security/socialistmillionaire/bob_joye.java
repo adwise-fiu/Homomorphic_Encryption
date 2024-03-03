@@ -69,23 +69,8 @@ public class bob_joye extends bob_veugen {
         }
     }
      */
-    public boolean Protocol1(BigInteger y)
-            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
 
-        int [] bits = new int[2];
-        boolean answer = Protocol0(y, bits);
-        int xor = bits[0] ^ bits[1];
-        assert answer == (xor == 1);
-        return answer;
-    }
-
-    public boolean Protocol2() throws IOException, ClassNotFoundException, HomomorphicException
-    {
-        // Constraint for Paillier
-        if(!isDGK && dgk_public.getL() + 2 >= paillier_public.key_size) {
-            throw new IllegalArgumentException("Constraint violated: l + 2 < log_2(N)");
-        }
-
+    public boolean Protocol2() throws IOException, ClassNotFoundException, HomomorphicException {
         Object x;
         BigInteger beta;
         BigInteger z;
@@ -138,90 +123,9 @@ public class bob_joye extends bob_veugen {
         }
         toAlice.writeObject(zeta_one);
         toAlice.writeObject(zeta_two);
-        toAlice.flush();
-
         //Step 6 - 7: Alice Computes [[x >= y]]
 
         //Step 8 (UNOFFICIAL): Alice needs the answer...
         return decrypt_protocol_two();
-    }
-
-    // Based on Figure 1 from Joye paper
-    // This had modifications, so I can test leq and recover delta b
-    private boolean Protocol0(BigInteger y, int [] bits)
-            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
-        // Constraint...
-        if(y.bitLength() > dgk_public.getL()) {
-            throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
-        }
-
-        boolean answer;
-        Object in;
-        int delta_b = 0;
-        int delta_a;
-        BigInteger [] C;
-        BigInteger temp;
-
-        //Step 1: Bob sends encrypted bits to Alice
-        BigInteger [] EncY = new BigInteger[y.bitLength()];
-        for (int i = 0; i < y.bitLength(); i++) {
-            EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
-        }
-        toAlice.writeObject(EncY);
-        toAlice.flush();
-
-        // Step 2: Alice computes delta_a and just sends now...
-        delta_a = fromAlice.readInt();
-
-        // Step 3: Alice...
-        // Step 4: Alice...
-        // Step 5: Alice...
-
-        // Step 6: Check if one of the numbers in C_i is decrypted to 0.
-        in = readObject();
-        if(in instanceof BigInteger[]) {
-            C = (BigInteger []) in;
-        }
-        else if (in instanceof BigInteger) {
-            temp = (BigInteger) in;
-            if (temp.equals(BigInteger.ONE)) {
-                // x <= y is true, so I need delta_a XOR delta_b == 1
-                // Alice will give you the delta_a for you to compute delta_b
-                // delta_b = 1 XOR delta_a
-                delta_b = 1 ^ delta_a;
-                bits[0] = delta_a;
-                bits[1] = delta_b;
-                return true;
-            }
-            else if (temp.equals(BigInteger.ZERO)) {
-                // x <= y is false, so I need delta_a XOR delta_b == 0
-                // delta_b = 0 XOR delta_a = delta_a
-                delta_b = delta_a;
-                bits[0] = delta_a;
-                bits[1] = delta_b;
-                return false;
-            }
-            else {
-                throw new IllegalArgumentException("This shouldn't be possible, value is: " + temp);
-            }
-        }
-        else {
-            throw new IllegalArgumentException("Protocol 1, Step 6: Invalid object: " + in.getClass().getName());
-        }
-
-        for (BigInteger C_i: C) {
-            if (DGKOperations.decrypt(C_i, dgk_private) == 0) {
-                delta_b = 1;
-                break;
-            }
-        }
-
-        toAlice.writeInt(delta_b);
-        toAlice.flush();
-
-        answer = (delta_a ^ delta_b) == 1;
-        bits[0] = delta_a;
-        bits[1] = delta_b;
-        return answer;
     }
 }

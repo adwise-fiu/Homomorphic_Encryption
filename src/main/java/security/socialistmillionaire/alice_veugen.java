@@ -29,20 +29,10 @@ public class alice_veugen extends alice {
             throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, x is: " + x.bitLength() + " bits");
         }
 
-        Object in;
         BigInteger [] XOR;
         BigInteger [] C;
-        BigInteger [] Encrypted_Y;
 
-        //Step 1: Receive y_i bits from Bob
-        in = readObject();
-        if (in instanceof BigInteger[]) {
-            Encrypted_Y = (BigInteger []) in;
-        }
-        else {
-            System.err.println("Invalid Object received: " + in.getClass().getName());
-            throw new IllegalArgumentException("Protocol 3 Step 1: Missing Y-bits!");
-        }
+        BigInteger [] Encrypted_Y = get_encrypted_bits();
 
         BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
         if (early_terminate.equals(BigInteger.ONE)) {
@@ -137,48 +127,18 @@ public class alice_veugen extends alice {
             throw new IllegalArgumentException("BigInteger: d not found!");
         }
 
+        beta_bits = get_encrypted_bits();
+
         // Step B: get beta_bits from Bob
-        in = readObject();
-        if (in instanceof BigInteger[]) {
-            beta_bits = (BigInteger []) in;
-        }
-        else {
-            System.err.println("Invalid Object received: " + in.getClass().getName());
-            throw new IllegalArgumentException("BigInteger []: C not found!");
-        }
-
-        /*
-         * Currently by design of the program
-         * 1- Alice KNOWS that bob will assume deltaB = 0.
-         *
-         * Alice knows the protocol should be paillier_private if
-         * the bit length is NOT equal.
-         *
-         * Case 1:
-         * y has more bits than x IMPLIES that y is bigger
-         * x <= y is 1 (true)
-         * given deltaB is 0 by default...
-         * deltaA must be 1
-         * answer = 1 XOR 0 = 1
-         *
-         * Case 2:
-         * x has more bits than x IMPLIES that x is bigger
-         * x <= y is 0 (false)
-         * given deltaB is 0 by default...
-         * deltaA must be 0
-         * answer = 0 XOR 0 = 0
-         */
-
-        if (alpha.bitLength() < beta_bits.length) {
-            toBob.writeObject(BigInteger.ONE);
-            toBob.flush();
+        BigInteger early_terminate = unequal_bit_check(alpha, beta_bits);
+        if (early_terminate.equals(BigInteger.ONE)) {
             return true;
         }
-        else if(alpha.bitLength() > beta_bits.length) {
-            toBob.writeObject(BigInteger.ZERO);
-            toBob.flush();
+        else if (early_terminate.equals(BigInteger.ZERO)) {
             return false;
         }
+
+        // if equal bits, proceed!
 
         // Step C: Alice corrects d...
         if(r.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) < 0) {
@@ -186,21 +146,13 @@ public class alice_veugen extends alice {
         }
 
         // Step D: Compute alpha_bits XOR beta_bits
-        encAlphaXORBeta = new BigInteger[beta_bits.length];
-        for (int i = 0; i < encAlphaXORBeta.length; i++) {
-            if (NTL.bit(alpha, i) == 1) {
-                encAlphaXORBeta[i] = DGKOperations.subtract(dgk_public.ONE, beta_bits[i], dgk_public);
-            }
-            else {
-                encAlphaXORBeta[i] = beta_bits[i];
-            }
-        }
+        encAlphaXORBeta = encrypted_xor(alpha, beta_bits);
 
         // Step E: Compute Alpha Hat
         alpha_hat = r.subtract(N).mod(powL);
-        w = new BigInteger[beta_bits.length];
+        w = new BigInteger[alpha.bitLength()];
 
-        for (int i = 0; i < beta_bits.length;i++) {
+        for (int i = 0; i < alpha.bitLength(); i++) {
             if(NTL.bit(alpha_hat, i) == NTL.bit(alpha, i)) {
                 w[i] = encAlphaXORBeta[i];
             }
@@ -210,7 +162,7 @@ public class alice_veugen extends alice {
         }
 
         // Step F: See Optimization 1
-        for (int i = 0; i < beta_bits.length;i++) {
+        for (int i = 0; i < alpha.bitLength(); i++) {
             // If it is 16 or 32 bits...
             if(dgk_public.getL() % 16 == 0) {
                 if(NTL.bit(alpha_hat, i) != NTL.bit(alpha, i)) {
@@ -226,9 +178,9 @@ public class alice_veugen extends alice {
         // Step G: Delta A computed at start!
 
         // Step H: See Optimization 2
-        C = new BigInteger[beta_bits.length + 1];
+        C = new BigInteger[alpha.bitLength() + 1];
 
-        for (int i = 0; i < beta_bits.length;i++) {
+        for (int i = 0; i < alpha.bitLength(); i++) {
             if(deltaA != NTL.bit(alpha, i) && deltaA != NTL.bit(alpha_hat, i)) {
                 C[i] = dgk_public.ONE;
             }
@@ -242,9 +194,9 @@ public class alice_veugen extends alice {
             }
         }
 
-        //This is c_{-1}
-        C[beta_bits.length] = DGKOperations.sum(encAlphaXORBeta, dgk_public);
-        C[beta_bits.length] = DGKOperations.add_plaintext(C[beta_bits.length], deltaA, dgk_public);
+        // This is c_{-1}
+        C[alpha.bitLength()] = DGKOperations.sum(encAlphaXORBeta, dgk_public);
+        C[alpha.bitLength()] = DGKOperations.add_plaintext(C[alpha.bitLength()], deltaA, dgk_public);
 
         // Step I: SHUFFLE BITS AND BLIND WITH EXPONENT
         C = shuffle_bits(C);

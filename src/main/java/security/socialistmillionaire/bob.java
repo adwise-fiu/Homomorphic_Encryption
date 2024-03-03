@@ -128,16 +128,32 @@ public class bob extends socialist_millionaires implements bob_interface
 	 * Review "Protocol 1 EQT-1"
 	 * from the paper "Secure Equality Testing Protocols in the Two-Party Setting"
 	 */
-	public void encrypted_equals() {
+	public boolean encrypted_equals() throws IOException, HomomorphicException, ClassNotFoundException {
+		// Receive x from Alice
+		Object o = readObject();
+		BigInteger x;
+		if (o instanceof BigInteger) {
+			x = (BigInteger) o;
+		}
+		else {
+			throw new HomomorphicException("In encrypted_equals(), I did NOT get a BigInteger");
+		}
+		// Decrypt x to use private comparison
+		if (isDGK) {
+			x = BigInteger.valueOf(DGKOperations.decrypt(x, dgk_private));
+		}
+		else {
+			x = PaillierCipher.decrypt(x, paillier_private);
+		}
 
-	}
-
-	public void private_equals(BigInteger x) {
-
+		Protocol1(x);
+		return decrypt_protocol_two();
 	}
 
 	/**
 	 * Please review "Improving the DGK comparison protocol" - Protocol 1
+	 * Nicely enough, this is the same thing Bob needs to do for Veugen, Joye and checking 
+	 * if two encrypted numbers are equal!
 	 *
 	 * @param y - plaintext value
 	 * @return boolean
@@ -161,7 +177,6 @@ public class bob extends socialist_millionaires implements bob_interface
 			EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
 		}
 		writeObject(EncY);
-		toAlice.flush();
 		
 		// Step 2: Alice...
 		// Step 3: Alice...
@@ -188,12 +203,17 @@ public class bob extends socialist_millionaires implements bob_interface
 			throw new IllegalArgumentException("Protocol 1, Step 6: Invalid object: " + in.getClass().getName());
 		}
 
-		for (BigInteger C_i: C) {
-			if (DGKOperations.decrypt(C_i, dgk_private) == 0) {
-				deltaB = 1;
-				break;
-			}
+		boolean foundZero = false;
+		for (BigInteger C_i : C) {
+			long value = DGKOperations.decrypt(C_i, dgk_private);
+			foundZero |= (value == 0L);
 		}
+		
+		// Perform constant-time comparison to update deltaB
+		if (foundZero) {
+			deltaB = 1;
+		}
+
 		// Run Extra steps to help Alice decrypt Delta
 		return decrypt_protocol_one(deltaB);
 	}
@@ -220,7 +240,6 @@ public class bob extends socialist_millionaires implements bob_interface
 		if (o instanceof BigInteger) {
 			delta = BigInteger.valueOf(DGKOperations.decrypt((BigInteger) o, dgk_private));
 			writeObject(delta);
-			toAlice.flush();
 			return delta.equals(BigInteger.ONE);
 		}
 		else {
@@ -299,7 +318,6 @@ public class bob extends socialist_millionaires implements bob_interface
 		
 		// Step 5: Send [[z/2^l]], Alice has the solution from Protocol 3 already...
 		writeObject(PaillierCipher.encrypt(z.divide(powL), paillier_public));
-		toAlice.flush();
 		
 		// Step 6 - 7: Alice Computes [[x >= y]]
 		
@@ -345,7 +363,6 @@ public class bob extends socialist_millionaires implements bob_interface
 			// To avoid myself throwing errors of encryption must be [0, N), mod it now!
 			writeObject(PaillierCipher.encrypt(x_prime.multiply(y_prime).mod(paillier_public.getN()), paillier_public));
 		}
-		toAlice.flush();
 	}
 	
 	public void division(long divisor) 

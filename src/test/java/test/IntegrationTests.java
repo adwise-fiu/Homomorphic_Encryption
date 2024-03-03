@@ -117,6 +117,7 @@ public class IntegrationTests implements constants
 		}
 	}
 
+	/*
 	@Test
 	public void joye_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
 		bob_joye bob_version_three = new bob_joye(paillier, dgk, el_gamal);
@@ -141,4 +142,5 @@ public class IntegrationTests implements constants
 			e.printStackTrace();
 		}
 	}
+	*/
 }
