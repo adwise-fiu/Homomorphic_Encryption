@@ -89,11 +89,12 @@ public class alice extends socialist_millionaires implements alice_interface {
 
 		if (isDGK) {
 			x = DGKOperations.subtract(a, b, dgk_public);
-			r = r.mod(powL);
+			r = NTL.RandomBnd(dgk_public.getU());
 			x = DGKOperations.add_plaintext(x, r, dgk_public);
 		}
 		else {
 			x = PaillierCipher.subtract(a, b, paillier_public);
+			r = NTL.RandomBnd(paillier_public.getN());
 			x = PaillierCipher.add_plaintext(x, r, paillier_public);
 		}
 		writeObject(x);
@@ -102,36 +103,10 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// encrypts them separately with DGK (for efficiency reason), and
 		// sends [x_i] to A.
 		int delta_a = rnd.nextInt(2);
-		int delta;
-		int x_leq_r;
 
-		if (private_equals(r, delta_a)) {
-			x_leq_r = 1;
-		}
-		else {
-			x_leq_r = 0;
-		}
-		delta_b = delta_a ^ x_leq_r;
-
-		if (isDGK) {
-			if (delta_a == 0) {
-				result = DGKOperations.encrypt(delta_b, dgk_public);
-			}
-			else {
-				result = DGKOperations.encrypt(1 - delta_b, dgk_public);
-			}
-
-		}
-		else {
-			if (delta_a == 0) {
-				result = PaillierCipher.encrypt(delta_b, paillier_public);
-			}
-			else {
-				result = PaillierCipher.encrypt(1 - delta_b, paillier_public);
-			}
-		}
-
-		return decrypt_protocol_two(result);
+		// Technically, the whole computing delta_b and delta are already done here for you!
+		// within the decrypt_protocol_one in private_equals()
+		return private_equals(r, delta_a);
 	}
 
 	// Used only within encrypted_equals
@@ -175,6 +150,8 @@ public class alice extends socialist_millionaires implements alice_interface {
 		shuffle_bits(C);
 		writeObject(C);
 		// Bob just runs Protocol 1
+		// I should note that decrypt protocol_one handles getting delta_b
+		// and computing delta and decrypting delta
 		return decrypt_protocol_one(delta_a);
 	}
 

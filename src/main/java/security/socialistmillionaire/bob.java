@@ -145,9 +145,9 @@ public class bob extends socialist_millionaires implements bob_interface
 		else {
 			y = PaillierCipher.decrypt(y, paillier_private);
 		}
-
-		Protocol1(y);
-		return decrypt_protocol_two();
+		// Technically, the whole computing delta_b and delta are already done here for you!
+		// within the decrypt_protocol_one in private_equals()
+		return Protocol1(y);
 	}
 
 	/**
@@ -161,12 +161,7 @@ public class bob extends socialist_millionaires implements bob_interface
 	 */
 	public boolean Protocol1(BigInteger y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
-		// Constraint...
-		if(y.bitLength() > dgk_public.getL()) {
-			throw new IllegalArgumentException("Constraint violated: 0 <= x, y < 2^l, y is: " + y.bitLength() + " bits");
-		}
-
-		Object in;
+		Object o;
 		int deltaB = 0;
 		BigInteger [] C;
 		BigInteger temp;
@@ -183,12 +178,12 @@ public class bob extends socialist_millionaires implements bob_interface
 		// Step 4: Alice...
 		// Step 5: Alice...
 		// Step 6: Check if one of the numbers in C_i is decrypted to 0.
-		in = readObject();
-		if(in instanceof BigInteger[]) {
-			C = (BigInteger []) in;
+		o = readObject();
+		if(o instanceof BigInteger[]) {
+			C = (BigInteger []) o;
 		}
-		else if (in instanceof BigInteger) {
-			temp = (BigInteger) in;
+		else if (o instanceof BigInteger) {
+			temp = (BigInteger) o;
 			if (temp.equals(BigInteger.ONE)) {
 				return true;
 			}
@@ -200,7 +195,7 @@ public class bob extends socialist_millionaires implements bob_interface
 			}
 		}
 		else {
-			throw new IllegalArgumentException("Protocol 1, Step 6: Invalid object: " + in.getClass().getName());
+			throw new IllegalArgumentException("Protocol 1, Step 6: Invalid object: " + o.getClass().getName());
 		}
 
 		// Perform constant-time comparison to update delta_b
