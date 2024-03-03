@@ -62,8 +62,11 @@ public class test_alice implements Runnable, constants
 			test_sorting(true);
 			test_sorting(false);
 
-			test_equality(true);
-			test_equality(false);
+			test_private_equality(true);
+			test_private_equality(false);
+
+			// test_encrypted_equality(true);
+			// test_encrypted_equality(false);
 		}
 		catch (ClassNotFoundException | IOException | HomomorphicException e) {
 			e.printStackTrace();
@@ -284,7 +287,18 @@ public class test_alice implements Runnable, constants
 		}
 	}
 
-	public void test_equality(boolean dgk_mode) throws HomomorphicException, IOException, ClassNotFoundException {
+	public void test_private_equality(boolean dgk_mode)
+			throws HomomorphicException, IOException, ClassNotFoundException {
+		System.out.println("Alice: Testing Equality Check, DGK Mode:" + dgk_mode);
+		Niu.setDGKMode(dgk_mode);
+
+		assertFalse(Niu.private_equals(FIFTY));
+		assertTrue(Niu.private_equals(FIFTY));
+		assertFalse(Niu.private_equals(FIFTY));
+	}
+
+	public void test_encrypted_equality(boolean dgk_mode)
+			throws HomomorphicException, IOException, ClassNotFoundException {
 		System.out.println("Alice: Testing Equality Check, DGK Mode:" + dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 		BigInteger r_1;

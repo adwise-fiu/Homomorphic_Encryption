@@ -19,7 +19,6 @@ import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class alice extends socialist_millionaires implements alice_interface {
 
@@ -82,7 +81,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 	 */
 	public boolean encrypted_equals(BigInteger a, BigInteger b) throws HomomorphicException, IOException, ClassNotFoundException {
 		// Party A generates a sufficiently large (ℓ + 1 + κ bits) random
-		// value r , computes [x] ← [a − b + r ], and sends [x] to B.
+		// value r, computes [x] ← [a − b + r ], and sends [x] to B.
 		BigInteger r = NTL.generateXBitRandom(dgk_public.getL() + 1 + SIGMA);
 		BigInteger x;
 		BigInteger result;
@@ -99,10 +98,11 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 		writeObject(x);
 
-		// Party B decrypts [x], computes the first l bits x_i , 0 ≤ i < l,
+		// Party B decrypts [x], computes the first l bits x_i, 0 ≤ i < l,
 		// encrypts them separately with DGK (for efficiency reason), and
 		// sends [x_i] to A.
-		int delta_a = rnd.nextInt(2);
+		// int delta_a = rnd.nextInt(2);
+		int delta_a = 0;
 		int delta;
 		int x_leq_r;
 
@@ -133,9 +133,9 @@ public class alice extends socialist_millionaires implements alice_interface {
 
 	// Used only within encrypted_equals
 	private boolean private_equals(BigInteger r, int delta_a) throws HomomorphicException, IOException, ClassNotFoundException {
-		BigInteger [] x_bits = get_encrypted_bits();
+		BigInteger [] Encrypted_Y = get_encrypted_bits();
 
-		BigInteger early_terminate = unequal_bit_check(r, x_bits);
+		BigInteger early_terminate = unequal_bit_check(r, Encrypted_Y);
         if (early_terminate.equals(BigInteger.ONE)) {
             return true;
         }
@@ -145,7 +145,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 
         // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y
-        BigInteger [] xor = encrypted_xor(r, x_bits);
+        BigInteger [] xor = encrypted_xor(r, Encrypted_Y);
 		BigInteger [] C = new BigInteger[r.bitLength()];
 
 		if (delta_a == 0) {
@@ -155,7 +155,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 			C[0] = DGKOperations.multiply(C[0], rho, dgk_public);
 
 			// Step 7: Create lots of dummy encrypted numbers
-			for (int i = 0; i < r.bitLength(); i++) {
+			for (int i = 1; i < r.bitLength(); i++) {
 				C[i] = DGKOperations.encrypt(NTL.RandomBnd(dgk_public.getU()), dgk_public);
 			}
 		}
@@ -197,7 +197,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 
 		int delta_a = rnd.nextInt(2);
-		Object in;
 
 		BigInteger [] Encrypted_Y;
 		BigInteger [] C;
@@ -291,8 +290,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		 */
 		z = PaillierCipher.add_plaintext(x, r.add(powL).mod(paillier_public.getN()), paillier_public);
 		z = PaillierCipher.subtract(z, y, paillier_public);
-		toBob.writeObject(z);
-		toBob.flush();
+		writeObject(z);
 
 		// Step 2: Bob decrypts[[z]] and computes beta = z (mod 2^l)
 
@@ -599,10 +597,11 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return sorted_k;
 	}
 	
-	// ---------------------- Everything here is essentially utility functions all Alices will need ----------------
+	// ---------------------- Everything here is essentially utility functions all Alice will need ----------------
 	
-	// All comparison protocols seem to require encrypted xor, so just make it into a function
-	// Note, Encrypted Y is encrypted bits from Bob. x is an unencrytped number we must compare y with.
+	// All the comparison protocols seem to require encrypted xor, so just make it into a function
+	// Note, Encrypted Y is encrypted bits from Bob.
+	// X is an unencrypted number we must compare y with.
 	protected BigInteger [] encrypted_xor(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException {
 		BigInteger [] xor_bits = new BigInteger[Encrypted_Y.length];
 		for (int i = 0; i < Encrypted_Y.length; i++) {
@@ -619,7 +618,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 	protected BigInteger [] get_encrypted_bits() throws HomomorphicException, IOException, ClassNotFoundException {
 		//Step 1: Receive y_i bits from Bob
 		Object o = readObject();
-		BigInteger [] Encrypted_Y;
 				
 		if (o instanceof BigInteger[]) {
 			return (BigInteger []) o;
@@ -634,9 +632,11 @@ public class alice extends socialist_millionaires implements alice_interface {
 	* This is an issue that can occur with all private integer comparison protocols.
 	* What to do if the bit values are NOT the same?
 	* Technically, there is a risk of timing attack as this protocol terminates early if bits aren't 
-	* the same. But this is beyond my paygrade. Feel free to PR if you have an idea.
+	* the same.
+	* But this is beyond my pay grade.
+	* Feel free to PR if you have an idea.
 	* 
-    * Currently by design of the program
+    * Currently, by design of the program
     * 1- Alice KNOWS that bob will assume deltaB = 0.
 	*
     * Case 1:
@@ -653,7 +653,7 @@ public class alice extends socialist_millionaires implements alice_interface {
     * deltaA must be 0
     * answer = 0 XOR 0 = 0
     */
-	protected BigInteger unequal_bit_check(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException, IOException {
+	protected BigInteger unequal_bit_check(BigInteger x, BigInteger [] Encrypted_Y) throws IOException {
 
         // Case 1, delta B is ALWAYS INITIALIZED TO 0
         // y has more bits -> y is bigger
@@ -673,7 +673,7 @@ public class alice extends socialist_millionaires implements alice_interface {
             return BigInteger.ZERO;
         }
 
-		// Yay the bits are equal! Continue with the protocol!
+		// Yay, the bits are equal! Continue with the protocol!
 		else {
 			return TWO;
 		}
@@ -732,7 +732,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		BigInteger blind = BigInteger.ZERO;
 		// blind = NTL.RandomBnd(dgk_public.getU());
 
-		// I reserve the right to additively blind
+		// I reserve the right to additively blind,
 		// But like in decrypt_protocol_one, I will assume Bob is nice
 		if (isDGK) {
 			result = DGKOperations.add_plaintext(result, blind, dgk_public);

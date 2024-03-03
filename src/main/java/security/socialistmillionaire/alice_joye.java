@@ -15,7 +15,8 @@ public class alice_joye extends alice_veugen {
     public alice_joye() {
         super();
     }
-/*
+
+    /*
     public boolean Protocol1(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
         // Step 1 by Bob
         Object o = readObject();

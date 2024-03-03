@@ -131,22 +131,22 @@ public class bob extends socialist_millionaires implements bob_interface
 	public boolean encrypted_equals() throws IOException, HomomorphicException, ClassNotFoundException {
 		// Receive x from Alice
 		Object o = readObject();
-		BigInteger x;
+		BigInteger y;
 		if (o instanceof BigInteger) {
-			x = (BigInteger) o;
+			y = (BigInteger) o;
 		}
 		else {
 			throw new HomomorphicException("In encrypted_equals(), I did NOT get a BigInteger");
 		}
 		// Decrypt x to use private comparison
 		if (isDGK) {
-			x = BigInteger.valueOf(DGKOperations.decrypt(x, dgk_private));
+			y = BigInteger.valueOf(DGKOperations.decrypt(y, dgk_private));
 		}
 		else {
-			x = PaillierCipher.decrypt(x, paillier_private);
+			y = PaillierCipher.decrypt(y, paillier_private);
 		}
 
-		Protocol1(x);
+		Protocol1(y);
 		return decrypt_protocol_two();
 	}
 
@@ -183,7 +183,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		// Step 4: Alice...
 		// Step 5: Alice...
 		// Step 6: Check if one of the numbers in C_i is decrypted to 0.
-		in = fromAlice.readObject();
+		in = readObject();
 		if(in instanceof BigInteger[]) {
 			C = (BigInteger []) in;
 		}
@@ -203,17 +203,12 @@ public class bob extends socialist_millionaires implements bob_interface
 			throw new IllegalArgumentException("Protocol 1, Step 6: Invalid object: " + in.getClass().getName());
 		}
 
-		boolean foundZero = false;
+		// Perform constant-time comparison to update delta_b
 		for (BigInteger C_i : C) {
 			long value = DGKOperations.decrypt(C_i, dgk_private);
 			if (value == 0) {
-				foundZero = true;
+				deltaB = 1;
 			}
-		}
-
-		// Perform constant-time comparison to update deltaB
-		if (foundZero) {
-			deltaB = 1;
 		}
 
 		// Run Extra steps to help Alice decrypt Delta

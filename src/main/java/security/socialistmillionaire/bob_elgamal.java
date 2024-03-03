@@ -200,7 +200,7 @@ public class bob_elgamal extends bob_veugen {
         toAlice.writeObject(zeta_two);
         toAlice.flush();
 
-        //Step 6 - 7: Alice Computes [[x >= y]]
+        //Step 6-7: Alice Computes [[x >= y]]
         //Step 8 (UNOFFICIAL): Alice needs the answer...
         return decrypt_protocol_two();
     }
@@ -217,7 +217,7 @@ public class bob_elgamal extends bob_veugen {
         else {
             throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
         }
-        // IF SOMETHING HAPPENS...GET POST MORTEM HERE
+        // IF SOMETHING HAPPENS...GET TO POST MORTEM HERE
         if (answer != 0 && answer != 1) {
             throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
         }

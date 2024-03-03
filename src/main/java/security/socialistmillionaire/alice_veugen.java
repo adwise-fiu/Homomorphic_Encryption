@@ -109,7 +109,7 @@ public class alice_veugen extends alice {
         BigInteger N;
         long exponent;
 
-        // Get N from size of Plain-text space
+        // Get N from the size of Plain-text space
         if(this.isDGK) {
             N = dgk_public.getU();
         }

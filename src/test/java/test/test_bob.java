@@ -10,7 +10,7 @@ import security.socialistmillionaire.bob;
 
 import static org.junit.Assert.*;
 
-public class test_bob implements Runnable
+public class test_bob implements Runnable, constants
 {
 	private final  int port;
 	private static ServerSocket bob_socket = null;
@@ -48,8 +48,11 @@ public class test_bob implements Runnable
 			test_sorting(true);
 			test_sorting(false);
 
-			test_equality(true);
-			test_equality(false);
+			test_private_equality(true);
+			test_private_equality(false);
+
+			// test_encrypted_equality(true);
+			// test_encrypted_equality(false);
 		}
 		catch (IOException | ClassNotFoundException | HomomorphicException | IllegalArgumentException x) {
 			x.printStackTrace();
@@ -173,7 +176,15 @@ public class test_bob implements Runnable
 		}
 	}
 
-	public void test_equality(boolean dgk_mode) throws HomomorphicException, IOException, ClassNotFoundException { 
+	public void test_private_equality(boolean dgk_mode) throws HomomorphicException, IOException, ClassNotFoundException {
+		System.out.println("Bob: Testing Equality Check w/o encryption, DGK Mode:" + dgk_mode);
+		andrew.setDGKMode(dgk_mode);
+		andrew.Protocol1(FOURTY_NINE);
+		andrew.Protocol1(FIFTY);
+		andrew.Protocol1(FIFTY_ONE);
+	}
+
+	public void test_encrypted_equality(boolean dgk_mode) throws HomomorphicException, IOException, ClassNotFoundException {
 		System.out.println("Bob: Testing Equality Check, DGK Mode:" + dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		andrew.encrypted_equals();

@@ -4,19 +4,15 @@ import security.misc.HomomorphicException;
 import security.socialistmillionaire.bob_elgamal;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class test_el_gamal_bob extends test_bob implements Runnable {
     private static ServerSocket bob_socket = null;
     private static Socket bob_client = null;
     private final bob_elgamal andrew;
     private final int port;
-    private static final BigInteger[] mid = IntegrationTests.generate_mid();
 
     public test_el_gamal_bob(bob_elgamal andrew, int port) {
         super(andrew, port);
