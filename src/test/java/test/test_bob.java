@@ -126,11 +126,6 @@ public class test_bob implements Runnable, constants
 		andrew.setDGKMode(dgk_mode);
 		boolean answer;
 
-		if (andrew.getClass() == security.socialistmillionaire.bob_joye.class) {
-			System.out.println("Bob: Skipping Sorting because will crash with this alice version...");
-			return;
-		}
-
 		if (dgk_mode) {
 			if (andrew.getClass() != security.socialistmillionaire.bob.class) {
 				for (int i = 0; i < mid.length; i++) {
