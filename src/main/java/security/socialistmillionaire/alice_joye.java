@@ -16,6 +16,63 @@ public class alice_joye extends alice_veugen {
         super();
     }
 
+    // Alice has all values WITHOUT the prime
+    // In the paper, the server is Alice (has encrypted values), and the client is Bob (has keys)
+    public boolean Protocol2(BigInteger x, BigInteger y) throws IOException, HomomorphicException, ClassNotFoundException {
+        BigInteger big_m;
+        BigInteger u_l;
+        BigInteger m_l;
+        int beta_l;
+        int delta_l;
+
+        // Note, we can set a t value.
+        // We could enforce that both values have t-bits to enforce timing attack resistance?
+        // This assumes that x - y is less than a certain number of bits though...
+        // This could be done to enforce u_l has the t-bit set NO MATTER what, so when you mod 2^t
+        // you keep that bit there?
+        int t;
+        BigInteger powT;
+
+        // Compute Big M
+        if (isDGK) {
+            big_m = DGKOperations.subtract(x, y, dgk_public);
+            u_l = NTL.RandomBnd(dgk_public.getU());
+            big_m = DGKOperations.add_plaintext(big_m, u_l, dgk_public);
+            t = dgk_public.getL();
+        }
+        else {
+            big_m = PaillierCipher.subtract(x, y, paillier_public);
+            u_l = NTL.RandomBnd(paillier_public.getN());
+            big_m = PaillierCipher.add_plaintext(big_m, u_l, paillier_public);
+            t = dgk_public.getT();
+        }
+        powT = TWO.pow(t);
+        m_l = u_l.mod(powT);
+
+        // computes delta_l and delta_l_prime
+        // In Figure 1, delta_a == delta_l
+        delta_l = compute_delta_a(m_l);
+        writeObject(big_m);
+        writeObject(DGKOperations.encrypt(delta_l, dgk_public));
+        Protocol0(m_l, delta_l);
+
+        if (u_l.divide(powT).mod(TWO).equals(BigInteger.ZERO)) {
+            beta_l = delta_l;
+        }
+        else {
+            beta_l = 1 ^ delta_l;
+        }
+
+        /*
+         * Unofficial Step 8:
+         * I have beta_l_prime (which is a delta_a)
+         * Bob have beta_l (which is like delta_b)
+         * I need the XOR of these, which is done by following steps in decrypt_protocol_1
+         * as this gets the other delta, and completes XOR back
+         */
+        return decrypt_protocol_one(beta_l);
+    }
+
     public boolean Protocol1(BigInteger x) throws HomomorphicException, IOException, ClassNotFoundException {
         int delta_a = compute_delta_a(x);
         return Protocol0(x, delta_a);
@@ -44,6 +101,7 @@ public class alice_joye extends alice_veugen {
         else if (early_terminate.equals(BigInteger.ZERO)) {
             return false;
         }
+        // we treat x and y having t-bits in length
 
         int floor_t_div_two = (int) Math.floor((float) Encrypted_Y.length/2);
 

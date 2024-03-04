@@ -95,8 +95,7 @@ public class bob_veugen extends bob {
      * Please review Correction to Improving the DGK comparison protocol - Protocol 3
      */
     public boolean Protocol2()
-            throws IOException, ClassNotFoundException, HomomorphicException
-    {
+            throws IOException, ClassNotFoundException, HomomorphicException {
         // Constraint for Paillier
         if(!isDGK && dgk_public.getL() + 2 >= paillier_public.key_size) {
             throw new IllegalArgumentException("Constraint violated: l + 2 < log_2(N)");

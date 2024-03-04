@@ -80,12 +80,10 @@ public class alice extends socialist_millionaires implements alice_interface {
 	 * from the paper "Secure Equality Testing Protocols in the Two-Party Setting"
 	 */
 	public boolean encrypted_equals(BigInteger a, BigInteger b) throws HomomorphicException, IOException, ClassNotFoundException {
-		// Party A generates a sufficiently large (ℓ + 1 + κ bits) random
-		// value r, computes [x] ← [a − b + r ], and sends [x] to B.
-		BigInteger r = NTL.generateXBitRandom(dgk_public.getL() + 1 + SIGMA);
+		// Party A generates a sufficiently large (l + 1 + k bits) random
+		// value r, computes [x] <- [a − b + r ], and sends [x] to B.
+		BigInteger r;
 		BigInteger x;
-		BigInteger result;
-		int delta_b;
 
 		if (isDGK) {
 			x = DGKOperations.subtract(a, b, dgk_public);

@@ -2,7 +2,6 @@ package security.socialistmillionaire;
 
 import security.dgk.DGKOperations;
 import security.misc.HomomorphicException;
-import security.misc.NTL;
 import security.paillier.PaillierCipher;
 
 import java.io.IOException;
@@ -18,4 +17,63 @@ public class bob_joye extends bob_veugen {
         super(a, b);
     }
 
+    public boolean Protocol2() throws IOException, ClassNotFoundException, HomomorphicException {
+        int t;
+        int beta_l_prime;
+        BigInteger powT;
+        BigInteger little_m_prime;
+        BigInteger big_m_prime;
+        BigInteger encrypted_delta_l;
+        int delta_l;
+        int delta_l_prime;
+
+        Object o = readObject();
+        if (o instanceof BigInteger) {
+            big_m_prime = (BigInteger) o;
+        }
+        else {
+            throw new HomomorphicException("In joye_protocol2(), I did NOT get a BigInteger");
+        }
+
+        o = readObject();
+        if (o instanceof BigInteger) {
+            encrypted_delta_l = (BigInteger) o;
+            delta_l = (int) DGKOperations.decrypt(encrypted_delta_l, dgk_private);
+        }
+        else {
+            throw new HomomorphicException("In joye_protocol2(), I did NOT get a BigInteger");
+        }
+
+        // Decrypt x to use private comparison
+        // We should have the t-bit match what alice is doing
+        // We can consider setting both values to be compared as at t-bits exactly.
+        // Only plausible if we know the field of possible answers.
+        if (isDGK) {
+            t = dgk_public.getL();
+            big_m_prime = BigInteger.valueOf(DGKOperations.decrypt(big_m_prime, dgk_private));
+        }
+        else {
+            t = dgk_public.getT();
+            big_m_prime = PaillierCipher.decrypt(big_m_prime, paillier_private);
+        }
+        powT = TWO.pow(t);
+        little_m_prime = big_m_prime.mod(powT);
+
+        // Create a function to run Protocol1 and capture delta_b?
+        // or run a protocol_one, instead of decrypt delta, does same but returns delta_b?
+        if(Protocol1(little_m_prime)) {
+            delta_l_prime = 1 ^ delta_l;
+        }
+        else {
+            delta_l_prime = delta_l;
+        }
+
+        if (big_m_prime.divide(powT).mod(TWO).equals(BigInteger.ZERO)) {
+            beta_l_prime = delta_l_prime;
+        }
+        else {
+            beta_l_prime = 1 ^ delta_l_prime;
+        }
+        return decrypt_protocol_one(beta_l_prime);
+    }
 }
