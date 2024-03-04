@@ -240,6 +240,11 @@ public class test_alice implements Runnable, constants
 			throws HomomorphicException, IOException, ClassNotFoundException {
 		System.out.println("Alice: Testing Protocol 2 with DGK Mode: " + dgk_mode);
 
+		if (Niu.getClass() == security.socialistmillionaire.alice_joye.class) {
+			System.out.println("Bob: Skipping Sorting because will crash with this alice version...");
+			return;
+		}
+
 		Niu.setDGKMode(dgk_mode);
 		boolean answer;
 		if (dgk_mode) {

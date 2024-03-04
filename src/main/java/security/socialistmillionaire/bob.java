@@ -166,7 +166,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		BigInteger [] C;
 		BigInteger temp;
 
-		//Step 1: Bob sends encrypted bits to Alice
+		// Step 1: Bob sends encrypted bits to Alice
 		BigInteger [] EncY = new BigInteger[y.bitLength()];
 		for (int i = 0; i < y.bitLength(); i++) {
 			EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);

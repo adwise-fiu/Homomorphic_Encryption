@@ -122,6 +122,7 @@ public class bob_joye extends bob_veugen {
         }
         toAlice.writeObject(zeta_one);
         toAlice.writeObject(zeta_two);
+        toAlice.flush();
         //Step 6 - 7: Alice Computes [[x >= y]]
 
         //Step 8 (UNOFFICIAL): Alice needs the answer...

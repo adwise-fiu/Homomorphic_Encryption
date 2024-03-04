@@ -84,8 +84,7 @@ public class alice_veugen extends alice {
         for (int i = 0; i < C.length; i++) {
             C[i] = DGKOperations.multiply(C[i], rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
         }
-        toBob.writeObject(C);
-        toBob.flush();
+        writeObject(C);
 
         // Run Extra steps to help Alice decrypt Delta
         return decrypt_protocol_one(deltaA);

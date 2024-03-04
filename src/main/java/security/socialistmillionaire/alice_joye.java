@@ -99,8 +99,7 @@ public class alice_joye extends alice_veugen {
             z = PaillierCipher.add_plaintext(x, r.add(powL).mod(paillier_public.getN()), paillier_public);
             z = PaillierCipher.subtract(z, y, paillier_public);
         }
-        toBob.writeObject(z);
-        toBob.flush();
+        writeObject(z);
 
         // Step 2: Bob decrypts[[z]] and computes beta = z (mod 2^l)
 
@@ -118,12 +117,7 @@ public class alice_joye extends alice_veugen {
         }
 
         // Step 5: get Delta B and [[z_1]] and [[z_2]]
-        if(deltaA == x_leq_y) {
-            deltaB = 0;
-        }
-        else {
-            deltaB = 1;
-        }
+        deltaB = deltaA ^ x_leq_y;
 
         bob = readObject();
         if (bob instanceof BigInteger) {
@@ -189,44 +183,13 @@ public class alice_joye extends alice_veugen {
         return decrypt_protocol_two(result);
     }
 
-    public boolean Protocol1(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
-        int delta_a_prime = compute_delta_a(x);
-        int delta_b_prime;
-        int xor;
-        boolean answer = Protocol0(x, delta_a_prime);
-        if (answer) {
-            delta_b_prime = 1 ^ delta_a_prime;
-        }
-        else {
-            delta_b_prime = delta_a_prime;
-        }
-        xor = delta_a_prime ^ delta_b_prime;
-        assert answer == (xor == 1);
-        return answer;
+    public boolean Protocol1(BigInteger x) throws HomomorphicException, IOException, ClassNotFoundException {
+        int delta_a = compute_delta_a(x);
+        return Protocol0(x, delta_a);
     }
-
-     /*
-    private int get_delta_a_prime(BigInteger x) throws IOException, ClassNotFoundException, HomomorphicException {
-        int delta_a_prime = compute_delta_a(x);
-        int delta_b_prime;
-        int xor;
-        boolean answer = Protocol0(x, delta_a_prime);
-        if (answer) {
-            delta_b_prime = 1 ^ delta_a_prime;
-        }
-        else {
-            delta_b_prime = delta_a_prime;
-        }
-        xor = delta_a_prime ^ delta_b_prime;
-        // Confirm the delta is correct before continuing
-        assert answer == (xor == 1);
-        return delta_a_prime;
-    }
-     */
 
     // This function is the equivalent of the protocol on Figure 1 on Joye and Salehi's paper
     private boolean Protocol0(BigInteger x, int delta_a) throws IOException, ClassNotFoundException, HomomorphicException {
-        int delta_b;
         BigInteger [] Encrypted_Y;
         BigInteger [] C;
         BigInteger [] XOR;
@@ -313,9 +276,7 @@ public class alice_joye extends alice_veugen {
         writeObject(C);
    
         // Get Delta B from Bob
-        delta_b = fromBob.readInt();
-        int answer = delta_a ^ delta_b;
-        return answer == 1;
+        return decrypt_protocol_one(delta_a);
     }
 
     private static int compute_delta_a(BigInteger x) throws HomomorphicException {
