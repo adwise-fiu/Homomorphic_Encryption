@@ -50,7 +50,7 @@ public class test_el_gamal_alice implements constants, Runnable {
             //test_subtract();
         }
         catch (ClassNotFoundException | HomomorphicException | IOException e) {
-            e.printStackTrace();
+            logger.error(e.getStackTrace());
         }
     }
 
