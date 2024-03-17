@@ -322,13 +322,13 @@ public class test_alice implements Runnable, constants
 		BigInteger answer;
 
 		if (dgk_mode) {
-			r_1 = DGKOperations.encrypt(FOURTY_NINE, dgk_public_key);
+			r_1 = DGKOperations.encrypt(FORTY_NINE, dgk_public_key);
 			r_2 = DGKOperations.encrypt(FIFTY, dgk_public_key);
 			r_3 = DGKOperations.encrypt(FIFTY_ONE, dgk_public_key);
 			answer = DGKOperations.encrypt(FIFTY, dgk_public_key);
 		}
 		else {
-			r_1 = PaillierCipher.encrypt(FOURTY_NINE, paillier_public);
+			r_1 = PaillierCipher.encrypt(FORTY_NINE, paillier_public);
 			r_2 = PaillierCipher.encrypt(FIFTY, paillier_public);
 			r_3 = PaillierCipher.encrypt(FIFTY_ONE, paillier_public);
 			answer = PaillierCipher.encrypt(FIFTY, paillier_public);

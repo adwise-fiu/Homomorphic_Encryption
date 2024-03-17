@@ -133,7 +133,7 @@ public final class PaillierCipher implements CipherConstants {
 	 * @param ciphertext - Encrypted Paillier value
 	 * @param plaintext - plaintext value
 	 * @param public_key - used to encrypt ciphertext
-	 * @return Paillier encrypted ciphertext with ciphertext1 - ciphertext2
+	 * @return Paillier encrypted ciphertext with ciphertext - plaintext
 	 */
 	public static BigInteger subtract_plaintext(BigInteger ciphertext, BigInteger plaintext,
 												PaillierPublicKey public_key) throws HomomorphicException {
@@ -141,6 +141,22 @@ public final class PaillierCipher implements CipherConstants {
 		BigInteger inverse = NTL.POSMOD(plaintext.multiply(NEG_ONE), public_key.n);
 		return add_plaintext(ciphertext, inverse, public_key);
 	}
+
+	/**
+	 * y - [x] = y + [-x] = [-x] + y
+	 * Computes encrypted Paillier value of the cipher-text subtracted by the plaintext
+	 * @param plaintext - plaintext value
+	 * @param ciphertext - Encrypted Paillier value
+	 * @param public_key - used to encrypt ciphertext
+	 * @return Paillier encrypted ciphertext with plaintext - ciphertext
+	 */
+	public static BigInteger subtract_ciphertext(BigInteger plaintext, BigInteger ciphertext,
+												PaillierPublicKey public_key) throws HomomorphicException {
+		// Multiply the ciphertext value by -1
+		BigInteger inverse_ciphertext = multiply(ciphertext, public_key.n.subtract(BigInteger.ONE), public_key);
+		return add_plaintext(inverse_ciphertext, plaintext, public_key);
+	}
+
 	
 	/**
 	 * Compute the Paillier encrypted value of ciphertext multiplied by the plaintext.

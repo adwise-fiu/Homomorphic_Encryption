@@ -198,7 +198,7 @@ public class test_bob implements Runnable, constants
 	public void test_private_equality(boolean dgk_mode) throws HomomorphicException, IOException, ClassNotFoundException {
 		logger.info(bob_class_name + ": Testing Equality Check w/o encryption, DGK Mode:" + dgk_mode);
 		andrew.setDGKMode(dgk_mode);
-		andrew.Protocol1(FOURTY_NINE);
+		andrew.Protocol1(FORTY_NINE);
 		andrew.Protocol1(FIFTY);
 		andrew.Protocol1(FIFTY_ONE);
 	}

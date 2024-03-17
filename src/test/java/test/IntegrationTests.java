@@ -65,17 +65,21 @@ public class IntegrationTests implements constants
 
 	@Test
 	public void all_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		bob [] all_bobs = { new bob(paillier, dgk, el_gamal), new bob_veugen(paillier, dgk, el_gamal) };
-		alice [] all_alice = { new alice(), new alice_veugen() };
+		bob [] all_bobs = {
+				new bob(paillier, dgk, el_gamal),
+				new bob_veugen(paillier, dgk, el_gamal),
+				new bob_joye(paillier, dgk, el_gamal)
+		};
+		alice [] all_alice = { new alice(), new alice_veugen(), new alice_joye() };
 
 		for (int i = 0; i < all_bobs.length; i++) {
 			Thread andrew = new Thread(new test_bob(all_bobs[i], 9200 + i));
 			andrew.start();
 
 			// Wait then connect!
-			logger.info("Sleep to give " + andrew.getClass().getName() + " time to make keys...");
+			logger.info("Sleep to give " + all_bobs[i].getClass().getName() + " time to make keys...");
 			Thread.sleep(2 * 1000);
-			logger.info(andrew.getClass().getName() + " is starting...");
+			logger.info(all_alice[i].getClass().getName() + " is starting...");
 
 			all_alice[i].set_socket(new Socket("127.0.0.1", 9200 + i));
 			all_alice[i].receivePublicKeys();
@@ -116,31 +120,6 @@ public class IntegrationTests implements constants
 			yujia.join();
 		}
 		catch (InterruptedException e) {
-			logger.error(e.getStackTrace());
-		}
-	}
-
-	@Test
-	public void joye_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		bob_joye bob_version_three = new bob_joye(paillier, dgk, el_gamal);
-		Thread andrew = new Thread(new test_bob(bob_version_three, 9203));
-		andrew.start();
-
-		// Wait then connect!
-		logger.info("Sleep to give bob time to make keys...");
-		Thread.sleep(2 * 1000);
-		logger.info("Alice starting...");
-
-		alice Niu = new alice_joye();
-		Niu.set_socket(new Socket("127.0.0.1", 9203));
-		Niu.receivePublicKeys();
-
-		Thread yujia = new Thread(new test_alice(Niu, paillier, dgk));
-		yujia.start();
-		try {
-			andrew.join();
-			yujia.join();
-		} catch (InterruptedException e) {
 			logger.error(e.getStackTrace());
 		}
 	}

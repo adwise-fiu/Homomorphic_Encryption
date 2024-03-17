@@ -68,6 +68,10 @@ public class PaillierTest implements constants {
 		a = PaillierCipher.subtract_plaintext(PaillierCipher.encrypt(TWENTY, public_key),
 				BigInteger.TEN, public_key);// 20 - 10
 		assertEquals(BigInteger.TEN, PaillierCipher.decrypt(a, private_key));
+
+        // Test Subtraction with ciphertext
+        a = PaillierCipher.subtract_ciphertext(FIFTY, PaillierCipher.encrypt(TWENTY, public_key), public_key);
+        assertEquals(THIRTY, PaillierCipher.decrypt(a, private_key));
     }
 
     @Test

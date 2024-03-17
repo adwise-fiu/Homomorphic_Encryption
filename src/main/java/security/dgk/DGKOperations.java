@@ -157,6 +157,22 @@ public final class DGKOperations implements CipherConstants
 	}
 
 	/**
+	 * y - [x] = y + [-x] = [-x] + y
+	 * Computes encrypted Paillier value of the cipher-text subtracted by the plaintext
+	 * @param plaintext - plaintext value
+	 * @param ciphertext - Encrypted DGK value
+	 * @param public_key - used to encrypt ciphertext
+	 * @return DGK encrypted ciphertext with plaintext - ciphertext
+	 */
+
+	public static BigInteger subtract_ciphertext(BigInteger plaintext, BigInteger ciphertext,
+												 DGKPublicKey public_key) throws HomomorphicException {
+		// Multiply the ciphertext value by -1
+		BigInteger inverse_ciphertext = multiply(ciphertext, public_key.u - 1, public_key);
+		return add_plaintext(inverse_ciphertext, plaintext, public_key);
+	}
+
+	/**
 	 * Compute the DGK encrypted value of ciphertext multiplied by the plaintext.
 	 * @param ciphertext - DGK encrypted value
 	 * @param public_key - DGK Public key the encrypted ciphertext
