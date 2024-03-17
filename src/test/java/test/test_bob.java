@@ -128,22 +128,29 @@ public class test_bob implements Runnable, constants
 		andrew.setDGKMode(dgk_mode);
 		boolean answer;
 
-		if (andrew.getClass() == security.socialistmillionaire.bob_joye.class) {
-			return;
-		}
-
 		if (dgk_mode) {
 			if (andrew.getClass() != security.socialistmillionaire.bob.class) {
 				for (int i = 0; i < mid.length; i++) {
-					// X > Y is false
+					// Original - Skipped
+					// Veugen (X > Y) - false
+					// Joye (X >= Y) - false
 					answer = andrew.Protocol2();
 					assertFalse(answer);
 
-					// X > Y is false
+					// Original - Skipped
+					// Veugen (X > Y) - false
+					// Joye (X >= Y) - true
 					answer = andrew.Protocol2();
-					assertFalse(answer);
+					if (andrew.getClass() == security.socialistmillionaire.bob_joye.class) {
+						assertTrue(answer);
+					}
+					else{
+						assertFalse(answer);
+					}
 
-					// X > Y is true
+					// Original - Skipped
+					// Veugen (X > Y) - true
+					// Joye (X >= Y) - true
 					answer = andrew.Protocol2();
 					assertTrue(answer);
 				}
@@ -152,12 +159,21 @@ public class test_bob implements Runnable, constants
 		else {
 			// X >= Y is false
 			for(int i = 0; i < mid.length; i++) {
+				// Original (X >= Y) - false
+				// Veugen (X >= Y) - false
+				// Joye (X >= Y) - false
 				answer = andrew.Protocol2();
 				assertFalse(answer);
 
+				// Original (X >= Y) - true
+				// Veugen (X >= Y) - true
+				// Joye (X >= Y) - true
 				answer = andrew.Protocol2();
 				assertTrue(answer);
 
+				// Original (X >= Y) - true
+				// Veugen (X >= Y) - true
+				// Joye (X >= Y) - true
 				answer = andrew.Protocol2();
 				assertTrue(answer);
 			}
@@ -165,10 +181,6 @@ public class test_bob implements Runnable, constants
 	}
 
 	public void test_sorting(boolean dgk_mode) throws HomomorphicException, IOException, ClassNotFoundException {
-		if (andrew.getClass() == security.socialistmillionaire.bob_joye.class) {
-			return;
-		}
-
 		logger.info(bob_class_name + ": Testing Sorting, DGK Mode:" + dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		if (dgk_mode) {

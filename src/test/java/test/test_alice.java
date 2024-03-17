@@ -81,10 +81,6 @@ public class test_alice implements Runnable, constants
 	public void test_sorting(boolean dgk_mode)
 			throws ClassNotFoundException, IOException, HomomorphicException {
 
-		if (Niu.getClass() == security.socialistmillionaire.alice_joye.class) {
-			return;
-		}
-
 		logger.info(alice_class + ": Testing Sorting with DGK Mode: " + dgk_mode);
 		BigInteger [] toSort = new BigInteger[low.length];
 		BigInteger [] min;
@@ -170,7 +166,7 @@ public class test_alice implements Runnable, constants
 	public void test_outsourced_division(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
 		// Division Test, Paillier
-		// REMEMBER THE OUTPUT IS THE ENCRYPTED ANSWER, ONLY BOB CAN VERIFY THE ANSWER
+		// REMEMBER THE OUTPUT IS THE ENCRYPTED ANSWER; ONLY BOB CAN VERIFY THE ANSWER
 		Niu.setDGKMode(dgk_mode);
 		logger.info(alice_class + ": Testing Division, DGK Mode: " + dgk_mode);
 		BigInteger d;
@@ -242,32 +238,38 @@ public class test_alice implements Runnable, constants
 		}
 	}
 
-	// X >= Y is checked
 	public void test_protocol_two(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
 		logger.info(alice_class + ": Testing Protocol 2 with DGK Mode: " + dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 		boolean answer;
 
-		if (Niu.getClass() == security.socialistmillionaire.alice_joye.class) {
-			return;
-		}
-
 		if (dgk_mode) {
 			if (Niu.getClass() != security.socialistmillionaire.alice.class) {
 				for (int i = 0; i < low.length; i++) {
-					// X >= Y is false
+					// Original - Skipped
+					// Veugen (X > Y) - false
+					// Joye (X >= Y) - false
 					answer = Niu.Protocol2(DGKOperations.encrypt(low[i], dgk_public_key),
 							DGKOperations.encrypt(mid[i], dgk_public_key));
 					assertFalse(answer);
 
-					// X >= Y is true
-					// Veugen Protocol 4, DGK only can X > Y
+
+					// Original - Skipped
+					// Veugen (X > Y) - false
+					// Joye (X >= Y) - true
 					answer = Niu.Protocol2(DGKOperations.encrypt(mid[i], dgk_public_key),
 							DGKOperations.encrypt(mid[i], dgk_public_key));
-					assertFalse(answer);
+					if (Niu.getClass() == security.socialistmillionaire.alice_joye.class) {
+						assertTrue(answer);
+					}
+					else {
+						assertFalse(answer);
+					}
 
-					// X >= Y is true
+					// Original - Skipped
+					// Veugen (X > Y) - true
+					// Joye (X >= Y) - true
 					answer = Niu.Protocol2(DGKOperations.encrypt(high[i], dgk_public_key),
 							DGKOperations.encrypt(mid[i], dgk_public_key));
 					assertTrue(answer);
@@ -276,18 +278,23 @@ public class test_alice implements Runnable, constants
 		}
 		else {
 			for (int i = 0; i < low.length;i++) {
-				// X >= Y is false
+				// Original (X >= Y) - false
+				// Veugen (X >= Y) - false
+				// Joye (X >= Y) - false
 				answer = Niu.Protocol2(PaillierCipher.encrypt(low[i], paillier_public),
 						PaillierCipher.encrypt(mid[i], paillier_public));
 				assertFalse(answer);
 
-				// X >= Y is true
-				// Veugen Protocol 4, DGK only can X > Y
+				// Original (X >= Y) - true
+				// Veugen (X >= Y) - true
+				// Joye (X >= Y) - true
 				answer = Niu.Protocol2(PaillierCipher.encrypt(mid[i], paillier_public),
 						PaillierCipher.encrypt(mid[i], paillier_public));
 				assertTrue(answer);
 
-				// X >= Y is true
+				// Original (X >= Y) - true
+				// Veugen (X >= Y) - true
+				// Joye (X >= Y) - true
 				answer = Niu.Protocol2(PaillierCipher.encrypt(high[i], paillier_public),
 						PaillierCipher.encrypt(mid[i], paillier_public));
 				assertTrue(answer);

@@ -22,6 +22,7 @@ public class bob_joye extends bob {
     }
 
     public boolean Protocol2() throws IOException, ClassNotFoundException, HomomorphicException {
+        logger.info("I am using Joye and Salehi Protocol 2");
         int t;
         int beta_l_prime;
         BigInteger powT;
@@ -66,10 +67,10 @@ public class bob_joye extends bob {
         // Create a function to run Protocol1 and capture delta_b?
         // or run a protocol_one, instead of decrypt delta, does same but returns delta_b?
         if(Protocol1(little_m_prime)) {
-            delta_l_prime = delta_l;
+            delta_l_prime = delta_l ^ 1;
         }
         else {
-            delta_l_prime = delta_l ^ 1;
+            delta_l_prime = delta_l;
         }
 
         // Compare values that did NOT get the mod {2^{t}}
@@ -79,7 +80,6 @@ public class bob_joye extends bob {
         else {
             beta_l_prime = 1 ^ delta_l_prime;
         }
-        logger.info("I am using Joye and Salehi Protocol 2");
         return decrypt_protocol_one(beta_l_prime);
     }
 }

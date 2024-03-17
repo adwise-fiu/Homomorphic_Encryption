@@ -24,6 +24,7 @@ public class alice_joye extends alice {
     // Alice has all values WITHOUT the prime
     // In the paper, the server is Alice (has encrypted values), and the client is Bob (has keys)
     public boolean Protocol2(BigInteger x, BigInteger y) throws IOException, HomomorphicException, ClassNotFoundException {
+        logger.info("I am using Joye and Salehi Protocol 2");
         BigInteger big_m;
         BigInteger u_l;
         BigInteger little_m_l;
