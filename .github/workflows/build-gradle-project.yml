@@ -11,13 +11,13 @@ jobs:
       - name: Checkout project sources
         uses: actions/checkout@v3
 
-      #- name: Setup Gradle
-      #  uses: actions/setup-java@v3
-      #  with:
-      #    distribution: 'oracle'
-      #    java-version: '17'
-      #    cache: 'gradle'
-      #- run: sh gradlew build
+      - name: Setup Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'oracle'
+          java-version: '17'
+          cache: 'gradle'
+      - run: sh gradlew build
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
