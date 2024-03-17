@@ -24,7 +24,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Setup Gradle
+      - name: Create JAR file
         uses: actions/setup-java@v3
         with:
           distribution: 'oracle'
@@ -32,8 +32,21 @@ jobs:
           cache: 'gradle'
       - run: sh gradlew jar
 
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
       - name: Release the JAR file
         uses: softprops/action-gh-release@v2
         with:
           files: |
             build/libs/crypto.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
