@@ -73,9 +73,9 @@ public class IntegrationTests implements constants
 			andrew.start();
 
 			// Wait then connect!
-			logger.info("Sleep to give bob time to make keys...");
+			logger.info("Sleep to give " + andrew.getClass().getName() + " time to make keys...");
 			Thread.sleep(2 * 1000);
-			logger.info("Alice starting...");
+			logger.info(andrew.getClass().getName() + " is starting...");
 
 			all_alice[i].set_socket(new Socket("127.0.0.1", 9200 + i));
 			all_alice[i].receivePublicKeys();

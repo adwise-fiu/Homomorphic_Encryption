@@ -643,7 +643,7 @@ public class alice extends socialist_millionaires implements alice_interface {
         if (x.bitLength() < Encrypted_Y.length) {
             writeObject(BigInteger.ONE);
             // x <= y -> 1 (true)
-			logger.info("Shouldn't be here: x <= y bits");
+			logger.warn("[Protocol 1] Shouldn't be here: x <= y bits");
             return BigInteger.ONE;
         }
 
@@ -652,12 +652,11 @@ public class alice extends socialist_millionaires implements alice_interface {
         else if(x.bitLength() > Encrypted_Y.length) {
             writeObject(BigInteger.ZERO);
             // x <= y -> 0 (false)
-			logger.info("Shouldn't be here: x > y bits");
+			logger.warn("[Protocol 1] Shouldn't be here: x > y bits");
             return BigInteger.ZERO;
         }
-
-		// Yay, the bits are equal! Continue with the protocol!
 		else {
+			logger.info("[Protocol 1] x and y have the same number of bits, proceeding with the rest of private integer comparison");
 			return TWO;
 		}
 	}

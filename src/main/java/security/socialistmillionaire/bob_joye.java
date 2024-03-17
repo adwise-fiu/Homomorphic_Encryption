@@ -7,8 +7,12 @@ import security.paillier.PaillierCipher;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class bob_joye extends bob_veugen {
+public class bob_joye extends bob {
+    private static final Logger logger = LogManager.getLogger(bob_joye.class);
+
     public bob_joye(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
         super(a, b, c);
     }
@@ -75,6 +79,7 @@ public class bob_joye extends bob_veugen {
         else {
             beta_l_prime = 1 ^ delta_l_prime;
         }
+        logger.info("I am using Joye and Salehi Protocol 2");
         return decrypt_protocol_one(beta_l_prime);
     }
 }

@@ -33,7 +33,7 @@ public class test_bob implements Runnable, constants
 		try
 		{
 			bob_socket = new ServerSocket(this.port);
-			logger.info("Bob is ready...");
+			logger.info(bob_class_name + " is ready...");
 			bob_client = bob_socket.accept();
 			andrew.set_socket(bob_client);
 			andrew.sendPublicKeys();

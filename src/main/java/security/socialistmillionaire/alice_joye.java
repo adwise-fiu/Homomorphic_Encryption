@@ -1,5 +1,7 @@
 package security.socialistmillionaire;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import security.dgk.DGKOperations;
 import security.misc.HomomorphicException;
 import security.misc.NTL;
@@ -9,8 +11,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class alice_joye extends alice_veugen {
+public class alice_joye extends alice {
+    private static final Logger logger = LogManager.getLogger(alice_joye.class);
 
     public alice_joye() {
         super();
@@ -75,6 +80,7 @@ public class alice_joye extends alice_veugen {
     }
 
     public boolean Protocol1(BigInteger x) throws HomomorphicException, IOException, ClassNotFoundException {
+        logger.info("I am using Joye and Salehi Protocol 1");
         int delta_a = compute_delta_a(x);
         return Protocol0(x, delta_a);
     }
