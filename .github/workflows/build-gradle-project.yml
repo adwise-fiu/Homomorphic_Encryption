@@ -23,3 +23,17 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Setup Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'oracle'
+          java-version: '17'
+          cache: 'gradle'
+      - run: sh gradlew jar
+
+      - name: Release the JAR file
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/libs/crypto.jar
