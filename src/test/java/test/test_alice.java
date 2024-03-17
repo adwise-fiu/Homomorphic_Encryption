@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 public class test_alice implements Runnable, constants
 {
 	private static final Logger logger = LogManager.getLogger(test_alice.class);
+	private final String alice_class;
 	public test_alice(alice Niu, KeyPair paillier, KeyPair dgk) {
 		this.Niu = Niu;
 		if (paillier.getPrivate() instanceof PaillierPrivateKey) {
@@ -30,6 +31,7 @@ public class test_alice implements Runnable, constants
 		if (dgk.getPrivate() instanceof DGKPrivateKey) {
 			this.dgk_private = (DGKPrivateKey) dgk.getPrivate();
 		}
+		alice_class = Niu.getClass().getName();
 	}
 
 	private final alice Niu;
@@ -72,7 +74,7 @@ public class test_alice implements Runnable, constants
 			test_encrypted_equality(false);
 		}
 		catch (ClassNotFoundException | IOException | HomomorphicException e) {
-			e.printStackTrace();
+			logger.error(e.getStackTrace());
 		}
 	}
 	
@@ -83,7 +85,7 @@ public class test_alice implements Runnable, constants
 			return;
 		}
 
-		logger.info("Alice: Testing Sorting with DGK Mode: " + dgk_mode);
+		logger.info(alice_class + ": Testing Sorting with DGK Mode: " + dgk_mode);
 		BigInteger [] toSort = new BigInteger[low.length];
 		BigInteger [] min;
 
@@ -100,7 +102,7 @@ public class test_alice implements Runnable, constants
 
 		if (dgk_mode) {
 			if (Niu.getClass() == security.socialistmillionaire.alice.class) {
-				logger.info("Alice: Skipping Sorting because will crash with this alice version...");
+				logger.info(alice_class + ": Skipping Sorting because will crash with this alice version...");
 				return;
 			}
 		}
@@ -136,7 +138,7 @@ public class test_alice implements Runnable, constants
 			throws HomomorphicException, IOException, ClassNotFoundException {
 		Niu.setDGKMode(dgk_mode);
 		BigInteger temp;
-		logger.info("Alice: Testing Multiplication with DGK Mode: " + dgk_mode);
+		logger.info(alice_class + ": Testing Multiplication with DGK Mode: " + dgk_mode);
 		if(dgk_mode) {
 			temp = Niu.multiplication(DGKOperations.encrypt(THOUSAND, dgk_public_key),
 					DGKOperations.encrypt(TWO, dgk_public_key));
@@ -170,7 +172,7 @@ public class test_alice implements Runnable, constants
 		// Division Test, Paillier
 		// REMEMBER THE OUTPUT IS THE ENCRYPTED ANSWER, ONLY BOB CAN VERIFY THE ANSWER
 		Niu.setDGKMode(dgk_mode);
-		logger.info("Alice: Testing Division, DGK Mode: " + dgk_mode);
+		logger.info(alice_class + ": Testing Division, DGK Mode: " + dgk_mode);
 		BigInteger d;
 		BigInteger temp;
 		if (dgk_mode) {
@@ -218,7 +220,7 @@ public class test_alice implements Runnable, constants
 
 	public void test_protocol_one(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info("Alice: Testing Protocol 1 with DGK Mode: " + dgk_mode);
+		logger.info(alice_class + ": Testing Protocol 1 with DGK Mode: " + dgk_mode);
 		boolean answer;
 		Niu.setDGKMode(dgk_mode);
 
@@ -243,7 +245,7 @@ public class test_alice implements Runnable, constants
 	// X >= Y is checked
 	public void test_protocol_two(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info("Alice: Testing Protocol 2 with DGK Mode: " + dgk_mode);
+		logger.info(alice_class + ": Testing Protocol 2 with DGK Mode: " + dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 		boolean answer;
 
@@ -295,7 +297,7 @@ public class test_alice implements Runnable, constants
 
 	public void test_private_equality(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info("Alice: Testing Equality Check, DGK Mode:" + dgk_mode);
+		logger.info(alice_class + ": Testing Equality Check, DGK Mode:" + dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 
 		assertFalse(Niu.private_equals(FIFTY));
@@ -305,7 +307,7 @@ public class test_alice implements Runnable, constants
 
 	public void test_encrypted_equality(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info("Alice: Testing Equality Check, DGK Mode:" + dgk_mode);
+		logger.info(alice_class + ": Testing Equality Check, DGK Mode:" + dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 		BigInteger r_1;
 		BigInteger r_2;
