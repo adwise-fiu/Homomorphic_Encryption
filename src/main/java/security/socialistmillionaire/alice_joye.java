@@ -21,7 +21,7 @@ public class alice_joye extends alice_veugen {
     public boolean Protocol2(BigInteger x, BigInteger y) throws IOException, HomomorphicException, ClassNotFoundException {
         BigInteger big_m;
         BigInteger u_l;
-        BigInteger m_l;
+        BigInteger little_m_l;
         int beta_l;
         int delta_l;
 
@@ -47,15 +47,16 @@ public class alice_joye extends alice_veugen {
             t = dgk_public.getT();
         }
         powT = TWO.pow(t);
-        m_l = u_l.mod(powT);
+        little_m_l = u_l.mod(powT);
 
         // computes delta_l and delta_l_prime
         // In Figure 1, delta_a == delta_l
-        delta_l = compute_delta_a(m_l);
+        delta_l = compute_delta_a(little_m_l);
         writeObject(big_m);
         writeObject(DGKOperations.encrypt(delta_l, dgk_public));
-        Protocol0(m_l, delta_l);
+        Protocol0(little_m_l, delta_l);
 
+        // Compare values that did NOT get the mod {2^{t}}
         if (u_l.divide(powT).mod(TWO).equals(BigInteger.ZERO)) {
             beta_l = delta_l;
         }
@@ -65,8 +66,8 @@ public class alice_joye extends alice_veugen {
 
         /*
          * Unofficial Step 8:
-         * I have beta_l_prime (which is a delta_a)
-         * Bob have beta_l (which is like delta_b)
+         * Alice has beta_l_prime (which is a delta_a)
+         * Bob has beta_l (which is like delta_b)
          * I need the XOR of these, which is done by following steps in decrypt_protocol_1
          * as this gets the other delta, and completes XOR back
          */

@@ -10,29 +10,24 @@ public class GMPublicKey implements Serializable, PublicKey, GMKey
 	protected final BigInteger n;
 	protected final BigInteger y;
 	
-	protected GMPublicKey(BigInteger n, BigInteger y)
-	{
+	protected GMPublicKey(BigInteger n, BigInteger y) {
 		this.n = n;
 		this.y = y;
 	}
 
-	public String getAlgorithm() 
-	{
-		return "Goldwaser-Micali";
+	public String getAlgorithm() {
+		return "Goldwasser-Micali";
 	}
 
-	public String getFormat()
-	{
+	public String getFormat() {
 		return "X.509";
 	}
 
-	public byte[] getEncoded()
-	{
+	public byte[] getEncoded() {
 		return null;
 	}
 
-	public BigInteger getN() 
-	{
+	public BigInteger getN() {
 		return this.n;
 	}
 }

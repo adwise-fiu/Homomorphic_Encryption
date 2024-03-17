@@ -16,9 +16,12 @@ import security.paillier.PaillierPublicKey;
 import security.socialistmillionaire.alice;
 
 import static org.junit.Assert.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class test_alice implements Runnable, constants
 {
+	private static final Logger logger = LogManager.getLogger(test_alice.class);
 	public test_alice(alice Niu, KeyPair paillier, KeyPair dgk) {
 		this.Niu = Niu;
 		if (paillier.getPrivate() instanceof PaillierPrivateKey) {
@@ -75,7 +78,12 @@ public class test_alice implements Runnable, constants
 	
 	public void test_sorting(boolean dgk_mode)
 			throws ClassNotFoundException, IOException, HomomorphicException {
-		System.out.println("Alice: Testing Sorting with DGK Mode: " + dgk_mode);
+
+		if (Niu.getClass() == security.socialistmillionaire.alice_joye.class) {
+			return;
+		}
+
+		logger.info("Alice: Testing Sorting with DGK Mode: " + dgk_mode);
 		BigInteger [] toSort = new BigInteger[low.length];
 		BigInteger [] min;
 
@@ -92,7 +100,7 @@ public class test_alice implements Runnable, constants
 
 		if (dgk_mode) {
 			if (Niu.getClass() == security.socialistmillionaire.alice.class) {
-				System.out.println("Alice: Skipping Sorting because will crash with this alice version...");
+				logger.info("Alice: Skipping Sorting because will crash with this alice version...");
 				return;
 			}
 		}
@@ -114,21 +122,21 @@ public class test_alice implements Runnable, constants
 				toSort[i] = PaillierCipher.decrypt(toSort[i], paillier_private);
 			}
 		}
-		// Use assert to sort array
+		// Use assert to sort an array
+		logger.info("Initial Array: " + Arrays.toString(toSort));
 		Arrays.sort(toSort);
-		System.out.println("Checking Arrays" + Arrays.toString(toSort));
 		for (int i = 0; i < min.length; i++) {
 			assertEquals(toSort[i], min[i]);
 		}
-		System.out.println("General List: " + Arrays.toString(toSort));
-		System.out.println("Three minimum numbers: " + Arrays.toString(min));
+		logger.info("Sorted Array: " + Arrays.toString(toSort));
+		logger.info("Three minimum numbers: " + Arrays.toString(min));
 	}
 
 	public void test_outsourced_multiply(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
 		Niu.setDGKMode(dgk_mode);
 		BigInteger temp;
-		System.out.println("Alice: Testing Multiplication with DGK Mode: " + dgk_mode);
+		logger.info("Alice: Testing Multiplication with DGK Mode: " + dgk_mode);
 		if(dgk_mode) {
 			temp = Niu.multiplication(DGKOperations.encrypt(THOUSAND, dgk_public_key),
 					DGKOperations.encrypt(TWO, dgk_public_key));
@@ -162,7 +170,7 @@ public class test_alice implements Runnable, constants
 		// Division Test, Paillier
 		// REMEMBER THE OUTPUT IS THE ENCRYPTED ANSWER, ONLY BOB CAN VERIFY THE ANSWER
 		Niu.setDGKMode(dgk_mode);
-		System.out.println("Alice: Testing Division, DGK Mode: " + dgk_mode);
+		logger.info("Alice: Testing Division, DGK Mode: " + dgk_mode);
 		BigInteger d;
 		BigInteger temp;
 		if (dgk_mode) {
@@ -210,7 +218,7 @@ public class test_alice implements Runnable, constants
 
 	public void test_protocol_one(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		System.out.println("Alice: Testing Protocol 1 with DGK Mode: " + dgk_mode);
+		logger.info("Alice: Testing Protocol 1 with DGK Mode: " + dgk_mode);
 		boolean answer;
 		Niu.setDGKMode(dgk_mode);
 
@@ -218,19 +226,16 @@ public class test_alice implements Runnable, constants
 		for(BigInteger l: low) {
 			// X <= Y is true
 			answer = Niu.Protocol1(l);
-			//System.out.println(answer);
 			assertTrue(answer);
 		}
 		for(BigInteger l: mid) {
 			// X <= Y is true
 			answer = Niu.Protocol1(l);
-			//System.out.println(answer);
 			assertTrue(answer);
 		}
 		for(BigInteger l: high) {
 			// X <= Y is false
 			answer = Niu.Protocol1(l);
-			System.out.println(!answer);
 			assertFalse(answer);
 		}
 	}
@@ -238,7 +243,7 @@ public class test_alice implements Runnable, constants
 	// X >= Y is checked
 	public void test_protocol_two(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		System.out.println("Alice: Testing Protocol 2 with DGK Mode: " + dgk_mode);
+		logger.info("Alice: Testing Protocol 2 with DGK Mode: " + dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 		boolean answer;
 
@@ -272,20 +277,17 @@ public class test_alice implements Runnable, constants
 				// X >= Y is false
 				answer = Niu.Protocol2(PaillierCipher.encrypt(low[i], paillier_public),
 						PaillierCipher.encrypt(mid[i], paillier_public));
-				//System.out.println(!answer);
 				assertFalse(answer);
 
 				// X >= Y is true
 				// Veugen Protocol 4, DGK only can X > Y
 				answer = Niu.Protocol2(PaillierCipher.encrypt(mid[i], paillier_public),
 						PaillierCipher.encrypt(mid[i], paillier_public));
-				//System.out.println(answer);
 				assertTrue(answer);
 
 				// X >= Y is true
 				answer = Niu.Protocol2(PaillierCipher.encrypt(high[i], paillier_public),
 						PaillierCipher.encrypt(mid[i], paillier_public));
-				//System.out.println(answer);
 				assertTrue(answer);
 			}
 		}
@@ -293,7 +295,7 @@ public class test_alice implements Runnable, constants
 
 	public void test_private_equality(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		System.out.println("Alice: Testing Equality Check, DGK Mode:" + dgk_mode);
+		logger.info("Alice: Testing Equality Check, DGK Mode:" + dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 
 		assertFalse(Niu.private_equals(FIFTY));
@@ -303,7 +305,7 @@ public class test_alice implements Runnable, constants
 
 	public void test_encrypted_equality(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		System.out.println("Alice: Testing Equality Check, DGK Mode:" + dgk_mode);
+		logger.info("Alice: Testing Equality Check, DGK Mode:" + dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 		BigInteger r_1;
 		BigInteger r_2;

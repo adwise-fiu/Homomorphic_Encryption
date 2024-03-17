@@ -6,9 +6,12 @@ import security.socialistmillionaire.bob_elgamal;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class test_el_gamal_bob extends test_bob implements Runnable {
+    private static final Logger logger = LogManager.getLogger(test_el_gamal_bob.class);
     private static ServerSocket bob_socket = null;
     private static Socket bob_client = null;
     private final bob_elgamal andrew;
@@ -25,7 +28,7 @@ public class test_el_gamal_bob extends test_bob implements Runnable {
         try
         {
             bob_socket = new ServerSocket(port);
-            System.out.println("Bob is ready...");
+            logger.info("Bob is ready...");
             bob_client = bob_socket.accept();
             andrew.set_socket(bob_client);
             andrew.sendPublicKeys();
@@ -40,7 +43,7 @@ public class test_el_gamal_bob extends test_bob implements Runnable {
             //test_subtraction();
         }
         catch (IOException | ClassNotFoundException | HomomorphicException | IllegalArgumentException x) {
-            x.printStackTrace();
+            logger.error(x.getStackTrace());
         }
         finally
         {
@@ -53,7 +56,7 @@ public class test_el_gamal_bob extends test_bob implements Runnable {
                 }
             }
             catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.getStackTrace());
             }
         }
     }

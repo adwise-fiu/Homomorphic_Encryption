@@ -19,8 +19,13 @@ import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;
 import security.paillier.PaillierPrivateKey;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class bob extends socialist_millionaires implements bob_interface
 {
+	private static final Logger logger = LogManager.getLogger(bob.class);
+
 	public bob(KeyPair first, KeyPair second, KeyPair third) {
 		parse_key_pairs(first, second, third);
 	}
@@ -120,8 +125,8 @@ public class bob extends socialist_millionaires implements bob_interface
 			++counter;
 			this.Protocol2();
 		}
-		System.out.println("Protocol 2 was used " + counter + " times!");
-		System.out.println("Protocol 2 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
+		logger.info("Protocol 2 was used " + counter + " times!");
+		logger.info("Protocol 2 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
 	}
 	
 	/*
@@ -403,21 +408,21 @@ public class bob extends socialist_millionaires implements bob_interface
 	{
 		if(dgk_public != null) {
 			writeObject(dgk_public);
-			System.out.println("Bob sent DGK Public Key to Alice");
+			logger.info("Bob sent DGK Public Key to Alice");
 		}
 		else {
 			writeObject(BigInteger.ZERO);
 		}
 		if(paillier_public != null) {
 			writeObject(paillier_public);
-			System.out.println("Bob sent Paillier Public Key to Alice");
+			logger.info("Bob sent Paillier Public Key to Alice");
 		}
 		else {
 			writeObject(BigInteger.ZERO);
 		}
 		if(el_gamal_public != null) {
 			writeObject(el_gamal_public);
-			System.out.println("Bob sent ElGamal Public Key to Alice");
+			logger.info("Bob sent ElGamal Public Key to Alice");
 		}
 		else {
 			writeObject(BigInteger.ZERO);

@@ -11,30 +11,25 @@ public class GMPrivateKey implements Serializable, PrivateKey, GMKey
 	protected final BigInteger q;
 	protected final BigInteger n;
 	
-	protected GMPrivateKey(BigInteger p, BigInteger q)
-	{
+	protected GMPrivateKey(BigInteger p, BigInteger q) {
 		this.p = p;
 		this.q = q;
 		this.n = p.multiply(q);
 	}
 	
-	public String getAlgorithm() 
-	{
-		return "Goldwaser-Micali";
+	public String getAlgorithm() {
+		return "Goldwasser-Micali";
 	}
 
-	public String getFormat()
-	{
+	public String getFormat() {
 		return "PKCS#8";
 	}
 
-	public byte[] getEncoded() 
-	{
+	public byte[] getEncoded() {
 		return null;
 	}
 	
-	public BigInteger getN() 
-	{
+	public BigInteger getN() {
 		return this.n;
 	}
 }

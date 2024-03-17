@@ -9,7 +9,12 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class bob_elgamal extends bob_veugen {
+
+    private static final Logger logger = LogManager.getLogger(bob_elgamal.class);
 
     public bob_elgamal(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
         super(a, b, c);
@@ -145,8 +150,8 @@ public class bob_elgamal extends bob_veugen {
             ++counter;
             this.Protocol2();
         }
-        System.out.println("ElGamal Protocol 4 was used " + counter + " times!");
-        System.out.println("ElGamal Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
+        logger.info("ElGamal Protocol 4 was used " + counter + " times!");
+        logger.info("ElGamal Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
     }
 
     public boolean Protocol2()

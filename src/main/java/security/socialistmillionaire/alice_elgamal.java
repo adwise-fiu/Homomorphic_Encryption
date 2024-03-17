@@ -10,8 +10,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class alice_elgamal extends alice_veugen {
+    private static final Logger logger = LogManager.getLogger(alice_elgamal.class);
 
     public alice_elgamal() {
         super();
@@ -218,7 +221,7 @@ public class alice_elgamal extends alice_veugen {
             zeta_one = (ElGamal_Ciphertext) bob;
         }
         else {
-            System.err.println("Invalid Object received: " + bob.getClass().getName());
+            logger.error("Invalid Object received: " + bob.getClass().getName());
             throw new IllegalArgumentException("Protocol 4, Step 5: BigInteger z_1 not found!");
         }
 
@@ -227,7 +230,7 @@ public class alice_elgamal extends alice_veugen {
             zeta_two = (ElGamal_Ciphertext) bob;
         }
         else {
-            System.err.println("Invalid Object received: " + bob.getClass().getName());
+            logger.error("Invalid Object received: " + bob.getClass().getName());
             throw new IllegalArgumentException("Protocol 4, Step 5: BigInteger z_2 not found!");
         }
 

@@ -23,23 +23,19 @@ public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_
 		this.additive = additive;
 	}
 
-	public String getAlgorithm() 
-	{
+	public String getAlgorithm() {
 		return "ElGamal";
 	}
 
-	public String getFormat() 
-	{
+	public String getFormat() {
 		return "X.509";
 	}
 
-	public byte[] getEncoded() 
-	{
+	public byte[] getEncoded() {
 		return null;
 	}
 
-	public BigInteger getP() 
-	{
+	public BigInteger getP() {
 		return this.p;
 	}
 

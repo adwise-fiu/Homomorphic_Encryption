@@ -8,7 +8,12 @@ import security.paillier.PaillierCipher;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class alice_veugen extends alice {
+
+    private static final Logger logger = LogManager.getLogger(alice_veugen.class);
 
     public alice_veugen() {
         super();
@@ -121,7 +126,7 @@ public class alice_veugen extends alice {
             d = (BigInteger) in;
         }
         else {
-            System.err.println("Invalid Object received: " + in.getClass().getName());
+            logger.error("Invalid Object received: " + in.getClass().getName());
             throw new IllegalArgumentException("BigInteger: d not found!");
         }
 

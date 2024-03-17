@@ -13,9 +13,12 @@ import java.security.KeyPair;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import security.socialistmillionaire.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class IntegrationTests implements constants
 {
+	private static final Logger logger = LogManager.getLogger(IntegrationTests.class);
 	// All Key Pairs
 	private static KeyPair dgk = null;
 	private static KeyPair paillier = null;
@@ -70,9 +73,9 @@ public class IntegrationTests implements constants
 			andrew.start();
 
 			// Wait then connect!
-			System.out.println("Sleep to give bob time to make keys...");
+			logger.info("Sleep to give bob time to make keys...");
 			Thread.sleep(2 * 1000);
-			System.out.println("Alice starting...");
+			logger.info("Alice starting...");
 
 			all_alice[i].set_socket(new Socket("127.0.0.1", 9200 + i));
 			all_alice[i].receivePublicKeys();
@@ -84,7 +87,7 @@ public class IntegrationTests implements constants
 				yujia.join();
 			}
 			catch (InterruptedException e) {
-				e.printStackTrace();
+				logger.error(e.getStackTrace());
 			}
 		}
 	}
@@ -98,9 +101,9 @@ public class IntegrationTests implements constants
 		andrew.start();
 
 		// Wait then connect!
-		System.out.println("Sleep to give bob time to make keys...");
+		logger.info("Sleep to give bob time to make keys...");
 		Thread.sleep(2 * 1000);
-		System.out.println("Alice starting...");
+		logger.info("Alice starting...");
 
 		alice_elgamal Niu = new alice_elgamal();
 		Niu.set_socket(new Socket("127.0.0.1", 10000));
@@ -113,7 +116,7 @@ public class IntegrationTests implements constants
 			yujia.join();
 		}
 		catch (InterruptedException e) {
-			e.printStackTrace();
+			logger.error(e.getStackTrace());
 		}
 	}
 
@@ -124,9 +127,9 @@ public class IntegrationTests implements constants
 		andrew.start();
 
 		// Wait then connect!
-		System.out.println("Sleep to give bob time to make keys...");
+		logger.info("Sleep to give bob time to make keys...");
 		Thread.sleep(2 * 1000);
-		System.out.println("Alice starting...");
+		logger.info("Alice starting...");
 
 		alice Niu = new alice_joye();
 		Niu.set_socket(new Socket("127.0.0.1", 9203));
@@ -138,7 +141,7 @@ public class IntegrationTests implements constants
 			andrew.join();
 			yujia.join();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			logger.error(e.getStackTrace());
 		}
 	}
 }

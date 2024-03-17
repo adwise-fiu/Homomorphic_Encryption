@@ -9,7 +9,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class bob_veugen extends bob {
+    private static final Logger logger = LogManager.getLogger(bob_veugen.class);
 
     public bob_veugen(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
         super(a, b, c);
@@ -132,7 +136,7 @@ public class bob_veugen extends bob {
 
         if(readBoolean()) {
             if(Modified_Protocol3(beta, z)) {
-                System.out.println("Modified Protocol 3 selected");
+                logger.info("Modified Protocol 3 selected");
             }
         }
         else {

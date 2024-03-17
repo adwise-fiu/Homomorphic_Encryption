@@ -62,12 +62,13 @@ public class bob_joye extends bob_veugen {
         // Create a function to run Protocol1 and capture delta_b?
         // or run a protocol_one, instead of decrypt delta, does same but returns delta_b?
         if(Protocol1(little_m_prime)) {
-            delta_l_prime = 1 ^ delta_l;
-        }
-        else {
             delta_l_prime = delta_l;
         }
+        else {
+            delta_l_prime = delta_l ^ 1;
+        }
 
+        // Compare values that did NOT get the mod {2^{t}}
         if (big_m_prime.divide(powT).mod(TWO).equals(BigInteger.ZERO)) {
             beta_l_prime = delta_l_prime;
         }

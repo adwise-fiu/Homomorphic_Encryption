@@ -20,7 +20,12 @@ import security.paillier.PaillierPublicKey;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class alice extends socialist_millionaires implements alice_interface {
+
+	private static final Logger logger = LogManager.getLogger(alice.class);
 
 	public alice() {
 		this.isDGK = false;
@@ -457,7 +462,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		Object x;
 		x = readObject();
 		if (x instanceof DGKPublicKey) {
-			System.out.println("Alice Received DGK Public key from Bob");
+			logger.info("Alice Received DGK Public key from Bob");
 			this.setDGKPublicKey((DGKPublicKey) x);
 		}
 		else {
@@ -466,7 +471,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		
 		x = readObject();
 		if(x instanceof PaillierPublicKey) {
-			System.out.println("Alice Received Paillier Public key from Bob");
+			logger.info("Alice Received Paillier Public key from Bob");
 			this.setPaillierPublicKey((PaillierPublicKey) x);
 		}
 		else {
@@ -475,7 +480,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 	
 		x = readObject();
 		if(x instanceof ElGamalPublicKey) {
-			System.out.println("Alice Received ElGamal Public key from Bob");
+			logger.info("Alice Received ElGamal Public key from Bob");
 			this.setElGamalPublicKey((ElGamalPublicKey) x);
 		}
 		else {
@@ -601,7 +606,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 			return (BigInteger []) o;
 		}
 		else {
-			System.err.println("Invalid Object received: " + o.getClass().getName());
+			logger.error("Invalid Object received: " + o.getClass().getName());
 			throw new HomomorphicException("Protocol 3 Step 1: Missing Y-bits!");
 		}
 	}
@@ -638,7 +643,7 @@ public class alice extends socialist_millionaires implements alice_interface {
         if (x.bitLength() < Encrypted_Y.length) {
             writeObject(BigInteger.ONE);
             // x <= y -> 1 (true)
-            System.out.println("Shouldn't be here: x <= y bits");
+			logger.info("Shouldn't be here: x <= y bits");
             return BigInteger.ONE;
         }
 
@@ -647,7 +652,7 @@ public class alice extends socialist_millionaires implements alice_interface {
         else if(x.bitLength() > Encrypted_Y.length) {
             writeObject(BigInteger.ZERO);
             // x <= y -> 0 (false)
-            System.out.println("Shouldn't be here: x > y bits");
+			logger.info("Shouldn't be here: x > y bits");
             return BigInteger.ZERO;
         }
 

@@ -1,3 +1,6 @@
+# logs
+logs/application.log
+
 # Keys
 dgk
 dgk.pub
