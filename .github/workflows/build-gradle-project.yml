@@ -35,11 +35,11 @@ jobs:
       - name: Generate release tag
         id: tag
         run: |
-          echo "::set-output name=release_tag::CryptoLibBuild_$(date +"%Y.%m.%d_%H-%M")"
+          echo "tag=CryptoLibBuild_$(date + "%Y.%m.%d_%H-%M")" >> "$GITHUB_ENV"
 
       - name: Release the JAR file
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.release_tag }}
+          tag_name: $tag
           files: build/libs/crypto.jar
           token: ${{ secrets.GITHUB_TOKEN }}
