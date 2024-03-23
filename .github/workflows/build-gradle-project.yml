@@ -11,13 +11,13 @@ jobs:
       - name: Checkout project sources
         uses: actions/checkout@v4
 
-      - name: Setup Gradle
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'oracle'
-          java-version: '17'
-          cache: 'gradle'
-      - run: sh gradlew build
+      #- name: Setup Gradle
+      #  uses: actions/setup-java@v4
+      #  with:
+      #    distribution: 'oracle'
+      #    java-version: '17'
+      #    cache: 'gradle'
+      #- run: sh gradlew build
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
@@ -32,14 +32,15 @@ jobs:
           cache: 'gradle'
       - run: sh gradlew jar
 
+      # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#environment-files
       - name: Generate release tag
         id: tag
         run: |
-          echo "tag=CryptoLibBuild_$(date + "%Y.%m.%d_%H-%M")" >> "$GITHUB_ENV"
+          echo "build=CryptoLibBuild_$(date +"%Y.%m.%d_%H-%M")" >> "$GITHUB_ENV"
 
       - name: Release the JAR file
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: $tag
+          tag_name: "$build"
           files: build/libs/crypto.jar
           token: ${{ secrets.GITHUB_TOKEN }}
