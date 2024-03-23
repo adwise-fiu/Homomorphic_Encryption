@@ -5,7 +5,41 @@ on:
   push:
 
 jobs:
-  build-gradle-project:
+  create_release:
+    if: github.repository  == 'andrewquijano/Homomorphic_Encryption' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      v-version: ${{ steps.version.outputs.v-version }}
+    steps:
+      - name: Get next version
+        uses: reecetech/version-increment@2023.10.2
+        id: version
+        with:
+          release_branch: main
+          use_api: true
+
+  upload_release:
+    if: github.repository  == 'andrewquijano/Homomorphic_Encryption' && github.ref == 'refs/heads/main'
+    needs: create_release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create JAR file
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'oracle'
+        java-version: '17'
+        cache: 'gradle'
+    - run: sh gradlew jar
+
+    - name: Release the JAR file
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ needs.create_release.outputs.v-version }}
+        files: build/libs/crypto.jar
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+  test-gradle-project:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout project sources
@@ -23,24 +57,3 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Create JAR file
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'oracle'
-          java-version: '17'
-          cache: 'gradle'
-      - run: sh gradlew jar
-
-      # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#environment-files
-      - name: Generate release tag
-        id: tag
-        run: |
-          echo "build=CryptoLibBuild_$(date +"%Y.%m.%d_%H-%M")" >> "$GITHUB_ENV"
-
-      - name: Release the JAR file
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: "${build}"
-          files: build/libs/crypto.jar
-          token: ${{ secrets.GITHUB_TOKEN }}
