@@ -19,12 +19,12 @@ jobs:
         with:
           release_branch: main
           use_api: true
-          increment: major
+          increment: patch
 
   # Only create a release on main branch, should update to adwise-fiu eventually.
   upload_release:
     if: github.repository == 'AndrewQuijano/Homomorphic_Encryption' && github.ref == 'refs/heads/main'
-    needs: create_release
+    needs: [create_release, test-gradle-project]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout project sources
