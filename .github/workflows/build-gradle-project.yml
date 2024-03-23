@@ -18,6 +18,7 @@ jobs:
         with:
           release_branch: main
           use_api: true
+          increment: major
 
   upload_release:
     if: github.repository  == 'andrewquijano/Homomorphic_Encryption' && github.ref == 'refs/heads/main'
