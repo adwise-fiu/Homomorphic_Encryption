@@ -116,15 +116,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 	private boolean private_equals(BigInteger r, int delta_a) throws HomomorphicException, IOException, ClassNotFoundException {
 		BigInteger [] Encrypted_Y = get_encrypted_bits();
 
-		BigInteger early_terminate = unequal_bit_check(r, Encrypted_Y);
-        if (early_terminate.equals(BigInteger.ONE)) {
-            return true;
-        }
-        else if (early_terminate.equals(BigInteger.ZERO)) {
-            return false;
-        }
-		logger.info("[private_equals] I am comparing two private numbers with " + r.bitLength());
-
         // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y
         BigInteger [] xor = encrypted_xor(r, Encrypted_Y);
@@ -181,20 +172,9 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 
 		int delta_a = rnd.nextInt(2);
-
-		BigInteger [] Encrypted_Y;
+		BigInteger [] Encrypted_Y = get_encrypted_bits();
 		BigInteger [] C;
 		BigInteger [] XOR;
-
-		// Step 1: Get Y bits from Bob
-		Encrypted_Y = get_encrypted_bits();
-		BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
-		if (early_terminate.equals(BigInteger.ONE)) {
-			return true;
-		}
-		else if (early_terminate.equals(BigInteger.ZERO)) {
-			return false;
-		}
 
 		// Otherwise, if the bit size is equal, proceed!
 		// Step 2: compute Encrypted X XOR Y
@@ -203,11 +183,11 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Step 3: Alice picks deltaA and computes s 
 
 		// Step 4: Compute C_i
-		C = new BigInteger[Encrypted_Y.length + 1];
+		C = new BigInteger[XOR.length + 1];
 
 		// Compute the Product of XOR, add s and compute x - y
 		// C_i = sum(XOR) + s + x_i - y_i
-		for (int i = 0; i < Encrypted_Y.length;i++) {
+		for (int i = 0; i < XOR.length;i++) {
 			C[i] = DGKOperations.multiply(DGKOperations.sum(XOR, dgk_public, i), 3, dgk_public);
 			C[i] = DGKOperations.add_plaintext(C[i], 1 - 2 * delta_a, dgk_public);
 			C[i] = DGKOperations.subtract(C[i], Encrypted_Y[i], dgk_public);
@@ -582,18 +562,40 @@ public class alice extends socialist_millionaires implements alice_interface {
 	}
 	
 	// ---------------------- Everything here is essentially utility functions all Alice will need ----------------
-	
-	// All the comparison protocols seem to require encrypted xor, so just make it into a function
-	// Note, Encrypted Y is encrypted bits from Bob.
-	// X is an unencrypted number we must compare y with.
+
 	protected BigInteger [] encrypted_xor(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException {
-		BigInteger [] xor_bits = new BigInteger[Encrypted_Y.length];
-		for (int i = 0; i < Encrypted_Y.length; i++) {
-			if (NTL.bit(x, i) == 1) {
-				xor_bits[i] = DGKOperations.subtract(dgk_public.ONE, Encrypted_Y[i], dgk_public);
+		BigInteger [] xor_bits;
+		int xor_bit_length;
+
+		// Step 2: Determine the maximum bit length between x and Encrypted_Y
+		xor_bit_length = Math.max(x.bitLength(), Encrypted_Y.length);
+		logger.info("[private_equals] I am comparing two private numbers with " + xor_bit_length + " bits");
+
+		// Remember a xor 0 = a
+		xor_bits = new BigInteger[xor_bit_length];
+		for (int i = 0; i < xor_bit_length; i++) {
+			// Retrieve corresponding bits from x and Encrypted_Y
+			int x_bit;
+			BigInteger y_bit;
+			if (i < x.bitLength()) {
+				x_bit = NTL.bit(x, i);
 			}
 			else {
-				xor_bits[i] = Encrypted_Y[i];
+				x_bit = 0; // If x is shorter, treat the missing bits as zeros
+			}
+
+			if (i < Encrypted_Y.length) {
+				y_bit = Encrypted_Y[i];
+			}
+			else {
+				y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
+			}
+
+			if (x_bit == 1) {
+				xor_bits[i] = DGKOperations.subtract(dgk_public.ONE, y_bit, dgk_public);
+			}
+			else {
+				xor_bits[i] = y_bit;
 			}
 		}
 		return xor_bits;
@@ -607,57 +609,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 			return (BigInteger []) o;
 		}
 		else {
-			logger.error("Invalid Object received: " + o.getClass().getName());
-			throw new HomomorphicException("Protocol 3 Step 1: Missing Y-bits!");
-		}
-	}
-
-	/*
-	* This is an issue that can occur with all private integer comparison protocols.
-	* What to do if the bit values are NOT the same?
-	* Technically, there is a risk of timing attack as this protocol terminates early if bits aren't 
-	* the same.
-	* But this is beyond my pay grade.
-	* Feel free to PR if you have an idea.
-	* 
-    * Currently, by design of the program
-    * 1- Alice KNOWS that bob will assume deltaB = 0.
-	*
-    * Case 1:
-	* y has more bits than x IMPLIES that y is bigger
-	* x <= y is 1 (true)
-	* given deltaB is 0 by default...
-	* deltaA must be 1
-    * answer = 1 XOR 0 = 1
-    *
-    * Case 2:
-	* x has more bits than x IMPLIES that x is bigger
-    * x <= y is 0 (false)
-	* given deltaB is 0 by default...
-    * deltaA must be 0
-    * answer = 0 XOR 0 = 0
-    */
-	protected BigInteger unequal_bit_check(BigInteger x, BigInteger [] Encrypted_Y) throws IOException {
-        // Case 1, delta B is ALWAYS INITIALIZED TO 0
-        // y has more bits -> y is bigger
-        if (x.bitLength() < Encrypted_Y.length) {
-            writeObject(BigInteger.ONE);
-            // x <= y -> 1 (true)
-			logger.warn("[Protocol 1] Shouldn't be here: x <= y bits");
-            return BigInteger.ONE;
-        }
-
-        // Case 2 delta B is 0
-        // x has more bits -> x is bigger
-        else if(x.bitLength() > Encrypted_Y.length) {
-            writeObject(BigInteger.ZERO);
-            // x <= y -> 0 (false)
-			logger.warn("[Protocol 1] Shouldn't be here: x > y bits");
-            return BigInteger.ZERO;
-        }
-		else {
-			logger.info("[Protocol 1] x and y have the same number of bits, proceeding with the rest of private integer comparison");
-			return TWO;
+			throw new HomomorphicException("Invalid Object received: " + o.getClass().getName());
 		}
 	}
 

@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class alice_joye extends alice {
     private static final Logger logger = LogManager.getLogger(alice_joye.class);
@@ -24,7 +22,6 @@ public class alice_joye extends alice {
     // Alice has all values WITHOUT the prime
     // In the paper, the server is Alice (has encrypted values), and the client is Bob (has keys)
     public boolean Protocol2(BigInteger x, BigInteger y) throws IOException, HomomorphicException, ClassNotFoundException {
-        logger.info("I am using Joye and Salehi Protocol 2");
         BigInteger big_m;
         BigInteger u_l;
         BigInteger little_m_l;
@@ -95,15 +92,6 @@ public class alice_joye extends alice {
 
         // Step 1: Get Y bits from Bob
         Encrypted_Y = get_encrypted_bits();
-
-        BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
-        if (early_terminate.equals(BigInteger.ONE)) {
-            return true;
-        }
-        else if (early_terminate.equals(BigInteger.ZERO)) {
-            return false;
-        }
-        // we treat x and y having t-bits in length
 
         int floor_t_div_two = (int) Math.floor((float) Encrypted_Y.length/2);
 
