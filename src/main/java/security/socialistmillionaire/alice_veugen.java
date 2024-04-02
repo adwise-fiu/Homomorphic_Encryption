@@ -151,9 +151,9 @@ public class alice_veugen extends alice {
 
         // Step E: Compute Alpha Hat
         alpha_hat = r.subtract(N).mod(powL);
-        w = new BigInteger[alpha.bitLength()];
+        w = new BigInteger[encAlphaXORBeta.length];
 
-        for (int i = 0; i < alpha.bitLength(); i++) {
+        for (int i = 0; i < encAlphaXORBeta.length; i++) {
             if(NTL.bit(alpha_hat, i) == NTL.bit(alpha, i)) {
                 w[i] = encAlphaXORBeta[i];
             }
@@ -163,7 +163,7 @@ public class alice_veugen extends alice {
         }
 
         // Step F: See Optimization 1
-        for (int i = 0; i < alpha.bitLength(); i++) {
+        for (int i = 0; i < encAlphaXORBeta.length; i++) {
             // If it is 16 or 32 bits...
             if(dgk_public.getL() % 16 == 0) {
                 if(NTL.bit(alpha_hat, i) != NTL.bit(alpha, i)) {
@@ -179,9 +179,9 @@ public class alice_veugen extends alice {
         // Step G: Delta A computed at start!
 
         // Step H: See Optimization 2
-        C = new BigInteger[alpha.bitLength() + 1];
+        C = new BigInteger[encAlphaXORBeta.length + 1];
 
-        for (int i = 0; i < alpha.bitLength(); i++) {
+        for (int i = 0; i < encAlphaXORBeta.length; i++) {
             if(deltaA != NTL.bit(alpha, i) && deltaA != NTL.bit(alpha_hat, i)) {
                 C[i] = dgk_public.ONE;
             }
@@ -196,16 +196,16 @@ public class alice_veugen extends alice {
         }
 
         // This is c_{-1}
-        C[alpha.bitLength()] = DGKOperations.sum(encAlphaXORBeta, dgk_public);
-        C[alpha.bitLength()] = DGKOperations.add_plaintext(C[alpha.bitLength()], deltaA, dgk_public);
+        C[encAlphaXORBeta.length] = DGKOperations.sum(encAlphaXORBeta, dgk_public);
+        C[encAlphaXORBeta.length] = DGKOperations.add_plaintext(C[encAlphaXORBeta.length], deltaA, dgk_public);
 
         // Step I: SHUFFLE BITS AND BLIND WITH EXPONENT
         C = shuffle_bits(C);
         for (int i = 0; i < C.length; i++) {
             C[i] = DGKOperations.multiply(C[i], rnd.nextInt(dgk_public.getU().intValue()) + 1, dgk_public);
         }
-        toBob.writeObject(C);
-        toBob.flush();
+        writeObject(C);
+
         // Run Extra steps to help Alice decrypt Delta
         return decrypt_protocol_one(deltaA);
     }
