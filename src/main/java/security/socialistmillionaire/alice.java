@@ -116,13 +116,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 	private boolean private_equals(BigInteger r, int delta_a) throws HomomorphicException, IOException, ClassNotFoundException {
 		BigInteger [] Encrypted_Y = get_encrypted_bits();
 
-		BigInteger early_terminate = unequal_bit_check(r, Encrypted_Y);
-		if (early_terminate.equals(BigInteger.ONE)) {
-			return true;
-		}
-		else if (early_terminate.equals(BigInteger.ZERO)) {
-			return false;
-		}
+		
 
         // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y

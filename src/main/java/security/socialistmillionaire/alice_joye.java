@@ -92,6 +92,13 @@ public class alice_joye extends alice {
 
         // Step 1: Get Y bits from Bob
         Encrypted_Y = get_encrypted_bits();
+        BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
+		if (early_terminate.equals(BigInteger.ONE)) {
+			return true;
+		}
+		else if (early_terminate.equals(BigInteger.ZERO)) {
+			return false;
+		}
 
         int floor_t_div_two = (int) Math.floor((float) Encrypted_Y.length/2);
 

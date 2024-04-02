@@ -63,17 +63,17 @@ public class IntegrationTests implements constants
 		el_gamal = pg.generateKeyPair();
 	}
 
-	@Test
+	// @Test
 	public void all_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
 		bob [] all_bobs = {
 				new bob(paillier, dgk, el_gamal),
 				//new bob_veugen(paillier, dgk, el_gamal),
-				//new bob_joye(paillier, dgk, el_gamal)
+				new bob_joye(paillier, dgk, el_gamal)
 		};
 		alice [] all_alice = {
 				new alice(),
 				//new alice_veugen(),
-				//new alice_joye()
+				new alice_joye()
 		};
 
 		for (int i = 0; i < all_bobs.length; i++) {

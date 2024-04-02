@@ -36,6 +36,13 @@ public class alice_veugen extends alice {
         BigInteger [] XOR;
         BigInteger [] C;
         BigInteger [] Encrypted_Y = get_encrypted_bits();
+        BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
+		if (early_terminate.equals(BigInteger.ONE)) {
+			return true;
+		}
+		else if (early_terminate.equals(BigInteger.ZERO)) {
+			return false;
+		}
 
         // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y
@@ -133,6 +140,13 @@ public class alice_veugen extends alice {
         }
 
         beta_bits = get_encrypted_bits();
+        BigInteger early_terminate = unequal_bit_check(alpha, beta_bits);
+		if (early_terminate.equals(BigInteger.ONE)) {
+			return true;
+		}
+		else if (early_terminate.equals(BigInteger.ZERO)) {
+			return false;
+		}
 
         // Step C: Alice corrects d...
         if(r.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) < 0) {
