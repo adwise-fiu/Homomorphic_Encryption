@@ -102,7 +102,7 @@ public final class NTL implements CipherConstants
     If  k < 0 or k >= NumBits(a), returns 0.
 	 */
 
-	public static int bit(BigInteger a, long k) {
+	public static int bit(BigInteger a, int k) {
 		//If the value k (location of bit is bigger than a
 		if (k >= a.bitLength()) {
 			return 0;
@@ -110,12 +110,11 @@ public final class NTL implements CipherConstants
 		if (k < 0) {
 			return 0;
 		}
-		String bit = a.toString(2); // get it in Binary
-		if (bit.charAt((int) k)== '0') {
-			return 0;
+		if (a.testBit(k)) {
+			return 1;
 		}
 		else {
-			return 1;
+			return 0;
 		}
 	}
 }
