@@ -116,6 +116,14 @@ public class alice extends socialist_millionaires implements alice_interface {
 	private boolean private_equals(BigInteger r, int delta_a) throws HomomorphicException, IOException, ClassNotFoundException {
 		BigInteger [] Encrypted_Y = get_encrypted_bits();
 
+		BigInteger early_terminate = unequal_bit_check(r, Encrypted_Y);
+		if (early_terminate.equals(BigInteger.ONE)) {
+			return true;
+		}
+		else if (early_terminate.equals(BigInteger.ZERO)) {
+			return false;
+		}
+
         // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y
         BigInteger [] xor = encrypted_xor(r, Encrypted_Y);
@@ -175,6 +183,14 @@ public class alice extends socialist_millionaires implements alice_interface {
 		BigInteger [] Encrypted_Y = get_encrypted_bits();
 		BigInteger [] C;
 		BigInteger [] XOR;
+
+		BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
+		if (early_terminate.equals(BigInteger.ONE)) {
+			return true;
+		}
+		else if (early_terminate.equals(BigInteger.ZERO)) {
+			return false;
+		}
 
 		// Otherwise, if the bit size is equal, proceed!
 		// Step 2: compute Encrypted X XOR Y
@@ -621,7 +637,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 	protected BigInteger [] get_encrypted_bits() throws HomomorphicException, IOException, ClassNotFoundException {
 		//Step 1: Receive y_i bits from Bob
 		Object o = readObject();
-				
 		if (o instanceof BigInteger[]) {
 			return (BigInteger []) o;
 		}
@@ -675,6 +690,30 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 		else {
 			throw new HomomorphicException("Invalid Object found here: " + o.getClass().getName());
+		}
+	}
+
+	protected BigInteger unequal_bit_check(BigInteger x, BigInteger [] Encrypted_Y) throws IOException {
+        // Case 1, delta B is ALWAYS INITIALIZED TO 0
+        // y has more bits -> y is bigger
+        if (x.bitLength() < Encrypted_Y.length) {
+            writeObject(BigInteger.ONE);
+            // x <= y -> 1 (true)
+			logger.warn("[Protocol 1] Shouldn't be here: x <= y bits");
+            return BigInteger.ONE;
+        }
+
+        // Case 2 delta B is 0
+        // x has more bits -> x is bigger
+        else if(x.bitLength() > Encrypted_Y.length) {
+            writeObject(BigInteger.ZERO);
+            // x <= y -> 0 (false)
+			logger.warn("[Protocol 1] Shouldn't be here: x > y bits");
+            return BigInteger.ZERO;
+        }
+		else {
+			logger.info("[Protocol 1] x and y have the same number of bits, proceeding with the rest of private integer comparison");
+			return TWO;
 		}
 	}
 

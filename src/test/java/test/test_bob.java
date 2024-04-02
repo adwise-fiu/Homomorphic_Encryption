@@ -60,7 +60,7 @@ public class test_bob implements Runnable, constants
 			test_encrypted_equality(false);
 		}
 		catch (IOException | ClassNotFoundException | HomomorphicException | IllegalArgumentException x) {
-			logger.error(x.getStackTrace());
+			throw new RuntimeException(x);
 		}
 		finally {
 			try {

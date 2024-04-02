@@ -43,7 +43,7 @@ public class test_el_gamal_bob extends test_bob implements Runnable {
             //test_subtraction();
         }
         catch (IOException | ClassNotFoundException | HomomorphicException | IllegalArgumentException x) {
-            logger.error(x.getStackTrace());
+            throw new RuntimeException(x);
         }
         finally
         {

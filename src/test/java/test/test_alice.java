@@ -74,7 +74,7 @@ public class test_alice implements Runnable, constants
 			test_encrypted_equality(false);
 		}
 		catch (ClassNotFoundException | IOException | HomomorphicException e) {
-			logger.error(e.getStackTrace());
+			throw new RuntimeException(e);
 		}
 	}
 	
