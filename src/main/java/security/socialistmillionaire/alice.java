@@ -188,15 +188,32 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Compute the Product of XOR, add s and compute x - y
 		// C_i = sum(XOR) + s + x_i - y_i
 		for (int i = 0; i < XOR.length;i++) {
+			// Retrieve corresponding bits from x and Encrypted_Y
+			int x_bit;
+			BigInteger y_bit;
+			if (i < x.bitLength()) {
+				x_bit = NTL.bit(x, i);
+			}
+			else {
+				x_bit = 0; // If x is shorter, treat the missing bits as zeros
+			}
+
+			if (i < Encrypted_Y.length) {
+				y_bit = Encrypted_Y[i];
+			}
+			else {
+				y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
+			}
+
 			C[i] = DGKOperations.multiply(DGKOperations.sum(XOR, dgk_public, i), 3, dgk_public);
 			C[i] = DGKOperations.add_plaintext(C[i], 1 - 2 * delta_a, dgk_public);
-			C[i] = DGKOperations.subtract(C[i], Encrypted_Y[i], dgk_public);
-			C[i] = DGKOperations.add_plaintext(C[i], NTL.bit(x, i), dgk_public);
+			C[i] = DGKOperations.subtract(C[i], y_bit, dgk_public);
+			C[i] = DGKOperations.add_plaintext(C[i], x_bit, dgk_public);
 		}
 
 		//This is c_{-1}
-		C[Encrypted_Y.length] = DGKOperations.sum(XOR, dgk_public);
-		C[Encrypted_Y.length] = DGKOperations.add_plaintext(C[Encrypted_Y.length], delta_a, dgk_public);
+		C[XOR.length] = DGKOperations.sum(XOR, dgk_public);
+		C[XOR.length] = DGKOperations.add_plaintext(C[XOR.length], delta_a, dgk_public);
 
 		// Step 5: Blinds C_i, Shuffle it and send to Bob
 		for (int i = 0; i < C.length; i++) {
@@ -569,7 +586,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 
 		// Step 2: Determine the maximum bit length between x and Encrypted_Y
 		xor_bit_length = Math.max(x.bitLength(), Encrypted_Y.length);
-		logger.info("[private_equals] I am comparing two private numbers with " + xor_bit_length + " bits");
+		logger.info("[private_integer_comparison] I am comparing two private numbers with " + xor_bit_length + " bits");
 
 		// Remember a xor 0 = a
 		xor_bits = new BigInteger[xor_bit_length];

@@ -126,15 +126,32 @@ public class alice_joye extends alice {
 
         // Want to go from Right to left...
         int set_l_index = 0;
-        for (int i = 0; i < Encrypted_Y.length; i++) {
+        for (int i = 0; i < XOR.length; i++) {
             BigInteger temp;
             BigInteger sum;
+            // Retrieve corresponding bits from x and Encrypted_Y
+            int x_bit;
+            BigInteger y_bit;
+            if (i < x.bitLength()) {
+                x_bit = NTL.bit(x, i);
+            }
+            else {
+                x_bit = 0; // If x is shorter, treat the missing bits as zeros
+            }
+
+            if (i < Encrypted_Y.length) {
+                y_bit = Encrypted_Y[i];
+            }
+            else {
+                y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
+            }
+
             if (set_l.contains(i)) {
                 // right to left
                 // 1 + (1 - 2 * delta_a) * x_i
-                first_term = 1 + ((1 - 2 * delta_a) * NTL.bit(x, i));
+                first_term = 1 + ((1 - 2 * delta_a) * x_bit);
                 // (2 * delta_a - 1) * y_i
-                second_term = DGKOperations.multiply(Encrypted_Y[i], (2L * delta_a) - 1, dgk_public);
+                second_term = DGKOperations.multiply(y_bit, (2L * delta_a) - 1, dgk_public);
                 // Combine terms.
                 temp = DGKOperations.add_plaintext(second_term, first_term, dgk_public);
 

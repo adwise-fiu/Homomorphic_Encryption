@@ -70,7 +70,11 @@ public class IntegrationTests implements constants
 				new bob_veugen(paillier, dgk, el_gamal),
 				new bob_joye(paillier, dgk, el_gamal)
 		};
-		alice [] all_alice = { new alice(), new alice_veugen(), new alice_joye() };
+		alice [] all_alice = {
+				new alice(),
+				new alice_veugen(),
+				new alice_joye()
+		};
 
 		for (int i = 0; i < all_bobs.length; i++) {
 			Thread andrew = new Thread(new test_bob(all_bobs[i], 9200 + i));
