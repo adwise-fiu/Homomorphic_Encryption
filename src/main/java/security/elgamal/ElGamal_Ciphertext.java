@@ -1,10 +1,12 @@
 package security.elgamal;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
 
 public class ElGamal_Ciphertext implements Serializable
 {
+	@Serial
 	private static final long serialVersionUID = -4168027417302369803L;
 	public final BigInteger gr; //(g^r)
 	public final BigInteger hrgm; //(m * h^r) OR (g^m * h^r)

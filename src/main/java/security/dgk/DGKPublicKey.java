@@ -9,11 +9,8 @@ import security.misc.CipherConstants;
 
 public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Runnable, CipherConstants
 {
-	/**
-	 * The type fingerprint that is set to indicate serialization compatibility with a previous version of the type.
-	 */
+	@Serial
 	private static final long serialVersionUID = -1613333167285302035L;
-	
 	final BigInteger n;
 	final BigInteger g;
 	final BigInteger h;

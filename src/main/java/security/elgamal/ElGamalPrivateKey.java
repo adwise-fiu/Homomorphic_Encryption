@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, PrivateKey, Runnable, CipherConstants
 {
 	private static final Logger logger = LogManager.getLogger(ElGamalPrivateKey.class);
-
 	//Private Key parameters
 	final BigInteger x;
 	final Map <BigInteger, BigInteger> LUT;

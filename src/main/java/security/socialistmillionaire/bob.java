@@ -176,6 +176,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		for (int i = 0; i < y.bitLength(); i++) {
 			EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
 		}
+		logger.info("[private_integer_comparison] I am comparing two private numbers with " + y.bitLength());
 		writeObject(EncY);
 		
 		// Step 2: Alice...

@@ -1,11 +1,13 @@
 package security.elgamal;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.PublicKey;
 
 public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_Key
 {
+	@Serial
 	private static final long serialVersionUID = -6796919675914392847L;
 	final BigInteger p;
 	final BigInteger g;

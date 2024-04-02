@@ -7,6 +7,7 @@ import java.security.PrivateKey;
 public final class PaillierPrivateKey implements Serializable, PaillierKey, PrivateKey
 {
 	//private transient PKCS12BagAttributeCarrierImpl attrCarrier = new PKCS12BagAttributeCarrierImpl();
+	@Serial
 	private static final long serialVersionUID = -3342551807566493368L;
 
 	// k1 is the security parameter. It is the number of bits in n.

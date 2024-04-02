@@ -1,11 +1,13 @@
 package security.gm;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.PrivateKey;
 
 public class GMPrivateKey implements Serializable, PrivateKey, GMKey
 {
+	@Serial
 	private static final long serialVersionUID = -6003066379615503599L;
 	protected final BigInteger p;
 	protected final BigInteger q;

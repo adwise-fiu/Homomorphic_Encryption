@@ -123,6 +123,7 @@ public class alice extends socialist_millionaires implements alice_interface {
         else if (early_terminate.equals(BigInteger.ZERO)) {
             return false;
         }
+		logger.info("[private_equals] I am comparing two private numbers with " + r.bitLength());
 
         // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y
@@ -637,7 +638,6 @@ public class alice extends socialist_millionaires implements alice_interface {
     * answer = 0 XOR 0 = 0
     */
 	protected BigInteger unequal_bit_check(BigInteger x, BigInteger [] Encrypted_Y) throws IOException {
-
         // Case 1, delta B is ALWAYS INITIALIZED TO 0
         // y has more bits -> y is bigger
         if (x.bitLength() < Encrypted_Y.length) {
