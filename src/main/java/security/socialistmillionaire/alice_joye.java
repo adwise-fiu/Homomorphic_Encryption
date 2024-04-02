@@ -100,10 +100,14 @@ public class alice_joye extends alice {
 			return false;
 		}
 
-        int floor_t_div_two = (int) Math.floor((float) Encrypted_Y.length/2);
+        // if equal bits, proceed!
+        // Step 2: compute Encrypted X XOR Y
+        XOR = encrypted_xor(x, Encrypted_Y);
+
+        int floor_t_div_two = (int) Math.floor((float) XOR.length/2);
 
         // Step 3: Form Set L
-        for (int i = 0; i < Encrypted_Y.length; i++) {
+        for (int i = 0; i < XOR.length; i++) {
             // Break if |L| > floor(t/2)
             if (delta_a == NTL.bit(x, i)) {
                 set_l.add(i);
@@ -112,7 +116,7 @@ public class alice_joye extends alice {
 
         // I need to confirm that #L = floor(t/2) always
         // This is how I protect against timing attacks.
-        for (int i = 0; i < Encrypted_Y.length; i++) {
+        for (int i = 0; i < XOR.length; i++) {
             if (set_l.size() == floor_t_div_two) {
                 break;
             }
@@ -123,10 +127,6 @@ public class alice_joye extends alice {
         // Confirm the value #L = floor(t/2), no more, no less.
         assert floor_t_div_two == set_l.size();
         C = new BigInteger[set_l.size() + 1];
-
-        // if equal bits, proceed!
-        // Step 2: compute Encrypted X XOR Y
-        XOR = encrypted_xor(x, Encrypted_Y);
 
         int first_term;
         BigInteger second_term;
