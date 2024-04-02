@@ -36,13 +36,14 @@ public class alice_veugen extends alice {
         BigInteger [] XOR;
         BigInteger [] C;
         BigInteger [] Encrypted_Y = get_encrypted_bits();
+
         BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
-		if (early_terminate.equals(BigInteger.ONE)) {
-			return true;
-		}
-		else if (early_terminate.equals(BigInteger.ZERO)) {
-			return false;
-		}
+        if (early_terminate.equals(BigInteger.ONE)) {
+            return true;
+        }
+        else if (early_terminate.equals(BigInteger.ZERO)) {
+            return false;
+        }
 
         // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y
@@ -53,44 +54,33 @@ public class alice_veugen extends alice {
         // Step 4A: Generate C_i, see c_{-1} to test for equality!
         // Step 4B: alter C_i using Delta A
         // C_{-1} = C_i[yBits], will be computed at the end...
-        C = new BigInteger [XOR.length + 1];
+        C = new BigInteger [Encrypted_Y.length + 1];
 
-        for (int i = 0; i < XOR.length; i++) {
-            C[i] = DGKOperations.sum(XOR, dgk_public, XOR.length - 1 - i);
-
-            // Retrieve corresponding bits from x and Encrypted_Y
-            BigInteger y_bit;
-
-            if (i < Encrypted_Y.length) {
-                y_bit = Encrypted_Y[Encrypted_Y.length - 1 - i];
-            }
-            else {
-                y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
-            }
-
+        for (int i = 0; i < Encrypted_Y.length; i++) {
+            C[i] = DGKOperations.sum(XOR, dgk_public, Encrypted_Y.length - 1 - i);
             if (deltaA == 0) {
                 // Step 4 = [1] - [y_i bit] + [c_i]
                 // Step 4 = [c_i] - [y_i bit] + [1]
-                C[i] = DGKOperations.subtract(C[i], y_bit, dgk_public);
+                C[i] = DGKOperations.subtract(C[i], Encrypted_Y[Encrypted_Y.length - 1 - i], dgk_public);
                 C[i] = DGKOperations.add_plaintext(C[i], 1, dgk_public);
             }
             else {
                 // Step 4 = [y_i] + [c_i]
-                C[i]= DGKOperations.add(C[i], y_bit, dgk_public);
+                C[i]= DGKOperations.add(C[i], Encrypted_Y[Encrypted_Y.length - 1 - i], dgk_public);
             }
         }
 
         // This is c_{-1}
-        C[XOR.length] = DGKOperations.sum(XOR, dgk_public);
-        C[XOR.length] = DGKOperations.add_plaintext(C[XOR.length], deltaA, dgk_public);
+        C[Encrypted_Y.length] = DGKOperations.sum(XOR, dgk_public);
+        C[Encrypted_Y.length] = DGKOperations.add_plaintext(C[Encrypted_Y.length], deltaA, dgk_public);
 
         // Step 5: Apply the Blinding to C_i and send it to Bob
-        for (int i = 0; i < C.length; i++) {
+        for (int i = 0; i < Encrypted_Y.length; i++) {
             // if index i is NOT in L, just place a random NON-ZERO
             // int bit = x.testBit(i) ? 1 : 0;
             int bit = NTL.bit(x, i);
-            if (bit != deltaA) {
-                C[C.length - 1 - i] = DGKOperations.encrypt(rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
+            if(bit != deltaA) {
+                C[Encrypted_Y.length - 1 - i] = DGKOperations.encrypt(rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
             }
         }
         // Blind and Shuffle bits!
@@ -135,17 +125,22 @@ public class alice_veugen extends alice {
             d = (BigInteger) in;
         }
         else {
-            throw new IllegalArgumentException("Invalid Object received: " + in.getClass().getName());
+            logger.error("Invalid Object received: " + in.getClass().getName());
+            throw new IllegalArgumentException("BigInteger: d not found!");
         }
 
         beta_bits = get_encrypted_bits();
+
+        // Step B: get beta_bits from Bob
         BigInteger early_terminate = unequal_bit_check(alpha, beta_bits);
-		if (early_terminate.equals(BigInteger.ONE)) {
-			return true;
-		}
-		else if (early_terminate.equals(BigInteger.ZERO)) {
-			return false;
-		}
+        if (early_terminate.equals(BigInteger.ONE)) {
+            return true;
+        }
+        else if (early_terminate.equals(BigInteger.ZERO)) {
+            return false;
+        }
+
+        // if equal bits, proceed!
 
         // Step C: Alice corrects d...
         if(r.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) < 0) {
@@ -157,9 +152,9 @@ public class alice_veugen extends alice {
 
         // Step E: Compute Alpha Hat
         alpha_hat = r.subtract(N).mod(powL);
-        w = new BigInteger[encAlphaXORBeta.length];
+        w = new BigInteger[alpha.bitLength()];
 
-        for (int i = 0; i < encAlphaXORBeta.length; i++) {
+        for (int i = 0; i < alpha.bitLength(); i++) {
             if(NTL.bit(alpha_hat, i) == NTL.bit(alpha, i)) {
                 w[i] = encAlphaXORBeta[i];
             }
@@ -169,7 +164,7 @@ public class alice_veugen extends alice {
         }
 
         // Step F: See Optimization 1
-        for (int i = 0; i < encAlphaXORBeta.length; i++) {
+        for (int i = 0; i < alpha.bitLength(); i++) {
             // If it is 16 or 32 bits...
             if(dgk_public.getL() % 16 == 0) {
                 if(NTL.bit(alpha_hat, i) != NTL.bit(alpha, i)) {
@@ -185,9 +180,9 @@ public class alice_veugen extends alice {
         // Step G: Delta A computed at start!
 
         // Step H: See Optimization 2
-        C = new BigInteger[encAlphaXORBeta.length + 1];
+        C = new BigInteger[alpha.bitLength() + 1];
 
-        for (int i = 0; i < encAlphaXORBeta.length; i++) {
+        for (int i = 0; i < alpha.bitLength(); i++) {
             if(deltaA != NTL.bit(alpha, i) && deltaA != NTL.bit(alpha_hat, i)) {
                 C[i] = dgk_public.ONE;
             }
@@ -202,16 +197,16 @@ public class alice_veugen extends alice {
         }
 
         // This is c_{-1}
-        C[encAlphaXORBeta.length] = DGKOperations.sum(encAlphaXORBeta, dgk_public);
-        C[encAlphaXORBeta.length] = DGKOperations.add_plaintext(C[encAlphaXORBeta.length], deltaA, dgk_public);
+        C[alpha.bitLength()] = DGKOperations.sum(encAlphaXORBeta, dgk_public);
+        C[alpha.bitLength()] = DGKOperations.add_plaintext(C[alpha.bitLength()], deltaA, dgk_public);
 
         // Step I: SHUFFLE BITS AND BLIND WITH EXPONENT
         C = shuffle_bits(C);
         for (int i = 0; i < C.length; i++) {
             C[i] = DGKOperations.multiply(C[i], rnd.nextInt(dgk_public.getU().intValue()) + 1, dgk_public);
         }
-        writeObject(C);
-
+        toBob.writeObject(C);
+        toBob.flush();
         // Run Extra steps to help Alice decrypt Delta
         return decrypt_protocol_one(deltaA);
     }
