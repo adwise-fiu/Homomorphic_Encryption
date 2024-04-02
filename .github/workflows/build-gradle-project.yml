@@ -8,6 +8,7 @@ jobs:
   # https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
   create_release:
     if: github.repository == 'AndrewQuijano/Homomorphic_Encryption' && github.ref == 'refs/heads/main'
+    needs: [test-gradle-project]
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
