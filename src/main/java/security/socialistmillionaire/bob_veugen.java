@@ -26,13 +26,9 @@ public class bob_veugen extends bob {
     // Use this for Using Modified Protocol3 within Protocol 4
     boolean Modified_Protocol3(BigInteger beta, BigInteger z)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
-        Object in;
-        BigInteger [] C;
-        BigInteger [] beta_bits = new BigInteger[beta.bitLength()];
-        BigInteger deltaA;
+
         BigInteger d;
         BigInteger N;
-        int deltaB = 0;
 
         if(isDGK) {
             N = dgk_public.getU();
@@ -48,51 +44,8 @@ public class bob_veugen extends bob {
         else {
             d = DGKOperations.encrypt(0, dgk_public);
         }
-        toAlice.writeObject(d);
-        toAlice.flush();
-
-        // Step B: Send the encrypted Beta bits
-        for (int i = 0; i < beta_bits.length;i++) {
-            beta_bits[i] = DGKOperations.encrypt(NTL.bit(beta, i), dgk_public);
-        }
-        toAlice.writeObject(beta_bits);
-        toAlice.flush();
-
-        // Step C: Alice corrects d...
-
-        // Step D: Alice computes [[alpha XOR beta]]
-
-        // Step E: Alice Computes alpha_hat and w_bits
-
-        // Step F: Alice Exponent w_bits
-
-        // Step G: Alice picks Delta A
-
-        // Step H: Alice computes C_i
-
-        // Step I: Alice blinds C_i
-
-        // Step J: Get C_i and look for zeros
-        in = readObject();
-        if(in instanceof BigInteger[]) {
-            C = (BigInteger []) in;
-        }
-        else if (in instanceof BigInteger) {
-            deltaA = (BigInteger) in;
-            return deltaA.intValue() == 1;
-        }
-        else {
-            throw new IllegalArgumentException("Modified Protocol3: invalid input in Step J " + in.getClass().getName());
-        }
-
-        for (BigInteger C_i: C) {
-            if(DGKOperations.decrypt(C_i, dgk_private) == 0) {
-                deltaB = 1;
-                break;
-            }
-        }
-        // Run Extra steps to help Alice decrypt Delta
-        return decrypt_protocol_one(deltaB);
+        writeObject(d);
+        return Protocol1(beta);
     }
 
     /**
