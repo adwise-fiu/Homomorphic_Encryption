@@ -592,7 +592,8 @@ public class alice extends socialist_millionaires implements alice_interface {
 
 		// Step 2: Determine the maximum bit length between x and Encrypted_Y
 		xor_bit_length = Math.max(x.bitLength(), Encrypted_Y.length);
-		logger.info("[private_integer_comparison] I am comparing two private numbers with " + xor_bit_length + " bits");
+		logger.info("[private_integer_comparison] x has " + x.bitLength() + " bits and y has " + Encrypted_Y.length + " bits");
+		logger.info("[private_integer_comparison] Therefore, my xor output has " + xor_bit_length + " bits");
 
 		// Remember a xor 0 = a
 		xor_bits = new BigInteger[xor_bit_length];
