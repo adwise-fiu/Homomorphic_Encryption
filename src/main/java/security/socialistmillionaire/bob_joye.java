@@ -22,7 +22,6 @@ public class bob_joye extends bob {
     }
 
     public boolean Protocol2() throws IOException, ClassNotFoundException, HomomorphicException {
-        logger.info("I am using Joye and Salehi Protocol 2");
         int t;
         int beta_l_prime;
         BigInteger powT;

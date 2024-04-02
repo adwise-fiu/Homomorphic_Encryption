@@ -94,13 +94,7 @@ public class alice_joye extends alice {
         List<Integer> set_l = new ArrayList<>();
 
         // Step 1: Get Y bits from Bob
-        Object in = readObject();
-        if (in instanceof BigInteger[]) {
-            Encrypted_Y = (BigInteger []) in;
-        }
-        else {
-            throw new IllegalArgumentException("Protocol 1 Step 1: Missing Y-bits!");
-        }
+        Encrypted_Y = get_encrypted_bits();
 
         BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
         if (early_terminate.equals(BigInteger.ONE)) {

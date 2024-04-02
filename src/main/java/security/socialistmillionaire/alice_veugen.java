@@ -12,7 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class alice_veugen extends alice {
-
     private static final Logger logger = LogManager.getLogger(alice_veugen.class);
 
     public alice_veugen() {
