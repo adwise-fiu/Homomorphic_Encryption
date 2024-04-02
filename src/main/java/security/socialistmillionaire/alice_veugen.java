@@ -54,33 +54,33 @@ public class alice_veugen extends alice {
         // Step 4A: Generate C_i, see c_{-1} to test for equality!
         // Step 4B: alter C_i using Delta A
         // C_{-1} = C_i[yBits], will be computed at the end...
-        C = new BigInteger [Encrypted_Y.length + 1];
+        C = new BigInteger [XOR.length + 1];
 
-        for (int i = 0; i < Encrypted_Y.length; i++) {
-            C[i] = DGKOperations.sum(XOR, dgk_public, Encrypted_Y.length - 1 - i);
+        for (int i = 0; i < XOR.length; i++) {
+            C[i] = DGKOperations.sum(XOR, dgk_public, XOR.length - 1 - i);
             if (deltaA == 0) {
                 // Step 4 = [1] - [y_i bit] + [c_i]
                 // Step 4 = [c_i] - [y_i bit] + [1]
-                C[i] = DGKOperations.subtract(C[i], Encrypted_Y[Encrypted_Y.length - 1 - i], dgk_public);
+                C[i] = DGKOperations.subtract(C[i], Encrypted_Y[XOR.length - 1 - i], dgk_public);
                 C[i] = DGKOperations.add_plaintext(C[i], 1, dgk_public);
             }
             else {
                 // Step 4 = [y_i] + [c_i]
-                C[i]= DGKOperations.add(C[i], Encrypted_Y[Encrypted_Y.length - 1 - i], dgk_public);
+                C[i]= DGKOperations.add(C[i], Encrypted_Y[XOR.length - 1 - i], dgk_public);
             }
         }
 
         // This is c_{-1}
-        C[Encrypted_Y.length] = DGKOperations.sum(XOR, dgk_public);
-        C[Encrypted_Y.length] = DGKOperations.add_plaintext(C[Encrypted_Y.length], deltaA, dgk_public);
+        C[XOR.length] = DGKOperations.sum(XOR, dgk_public);
+        C[XOR.length] = DGKOperations.add_plaintext(C[XOR.length], deltaA, dgk_public);
 
         // Step 5: Apply the Blinding to C_i and send it to Bob
-        for (int i = 0; i < Encrypted_Y.length; i++) {
+        for (int i = 0; i < XOR.length; i++) {
             // if index i is NOT in L, just place a random NON-ZERO
             // int bit = x.testBit(i) ? 1 : 0;
             int bit = NTL.bit(x, i);
             if(bit != deltaA) {
-                C[Encrypted_Y.length - 1 - i] = DGKOperations.encrypt(rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
+                C[XOR.length - 1 - i] = DGKOperations.encrypt(rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
             }
         }
         // Blind and Shuffle bits!
@@ -125,8 +125,7 @@ public class alice_veugen extends alice {
             d = (BigInteger) in;
         }
         else {
-            logger.error("Invalid Object received: " + in.getClass().getName());
-            throw new IllegalArgumentException("BigInteger: d not found!");
+            throw new IllegalArgumentException("Invalid Object received: " + in.getClass().getName());
         }
 
         beta_bits = get_encrypted_bits();
