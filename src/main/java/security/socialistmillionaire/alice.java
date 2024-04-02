@@ -115,13 +115,9 @@ public class alice extends socialist_millionaires implements alice_interface {
 	// Used only within encrypted_equals
 	private boolean private_equals(BigInteger r, int delta_a) throws HomomorphicException, IOException, ClassNotFoundException {
 		BigInteger [] Encrypted_Y = get_encrypted_bits();
-
-		
-
-        // if equal bits, proceed!
-        // Step 2: compute Encrypted X XOR Y
+		logger.info("Received Encrypted " + Encrypted_Y.length + " from bob for private_equals check");
         BigInteger [] xor = encrypted_xor(r, Encrypted_Y);
-		BigInteger [] C = new BigInteger[r.bitLength()];
+		BigInteger [] C = new BigInteger[xor.length];
 
 		if (delta_a == 0) {
 			// Step 6: Sum XOR and multiply by random 2*t bit number
@@ -130,12 +126,12 @@ public class alice extends socialist_millionaires implements alice_interface {
 			C[0] = DGKOperations.multiply(C[0], rho, dgk_public);
 
 			// Step 7: Create lots of dummy encrypted numbers
-			for (int i = 1; i < r.bitLength(); i++) {
+			for (int i = 1; i < xor.length; i++) {
 				C[i] = DGKOperations.encrypt(NTL.RandomBnd(dgk_public.getU()), dgk_public);
 			}
 		}
 		else {
-			for (int i = 0; i < r.bitLength(); i++) {
+			for (int i = 0; i < xor.length; i++) {
 				// Sum XOR part and multiply by 2
 				C[i] = DGKOperations.multiply(DGKOperations.sum(xor, dgk_public, i), 2, dgk_public);
 				// subtract 1
