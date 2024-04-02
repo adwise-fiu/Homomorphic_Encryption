@@ -135,8 +135,7 @@ public class alice_veugen extends alice {
             d = (BigInteger) in;
         }
         else {
-            logger.error("Invalid Object received: " + in.getClass().getName());
-            throw new IllegalArgumentException("BigInteger: d not found!");
+            throw new IllegalArgumentException("Invalid Object received: " + in.getClass().getName());
         }
 
         beta_bits = get_encrypted_bits();
