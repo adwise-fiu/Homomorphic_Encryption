@@ -92,23 +92,12 @@ public class alice_joye extends alice {
 
         // Step 1: Get Y bits from Bob
         Encrypted_Y = get_encrypted_bits();
-        BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
-		if (early_terminate.equals(BigInteger.ONE)) {
-			return true;
-		}
-		else if (early_terminate.equals(BigInteger.ZERO)) {
-			return false;
-		}
-
-        // if equal bits, proceed!
-        // Step 2: compute Encrypted X XOR Y
         XOR = encrypted_xor(x, Encrypted_Y);
 
         int floor_t_div_two = (int) Math.floor((float) XOR.length/2);
 
         // Step 3: Form Set L
-        for (int i = 0; i < XOR.length; i++) {
-            // Break if |L| > floor(t/2)
+        for (int i = 0; i < x.bitLength(); i++) {
             if (delta_a == NTL.bit(x, i)) {
                 set_l.add(i);
             }
@@ -133,21 +122,25 @@ public class alice_joye extends alice {
 
         // Want to go from Right to left...
         int set_l_index = 0;
+        int xor_bit_length = XOR.length;
+        int start_bit_position_x = Math.max(0, xor_bit_length - x.bitLength());
+        int start_bit_position_y = Math.max(0, xor_bit_length - Encrypted_Y.length);
+
         for (int i = 0; i < XOR.length; i++) {
             BigInteger temp;
             BigInteger sum;
-            // Retrieve corresponding bits from x and Encrypted_Y
             int x_bit;
             BigInteger y_bit;
-            if (i < x.bitLength()) {
-                x_bit = NTL.bit(x, i);
+
+            if (i >= start_bit_position_x) {
+                x_bit = NTL.bit(x, i - start_bit_position_x);
             }
             else {
-                x_bit = 0; // If x is shorter, treat the missing bits as zeros
+                x_bit = 0; // Padding with zeros if x has fewer bits
             }
 
-            if (i < Encrypted_Y.length) {
-                y_bit = Encrypted_Y[i];
+            if (i >= start_bit_position_y) {
+                y_bit = Encrypted_Y[i - start_bit_position_y];
             }
             else {
                 y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
