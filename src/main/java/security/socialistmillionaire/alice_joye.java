@@ -129,9 +129,8 @@ public class alice_joye extends alice {
         for (int i = 0; i < XOR.length; i++) {
             BigInteger temp;
             BigInteger sum;
-            int x_bit;
+            int x_bit = NTL.bit(x, i - start_bit_position_x);
             BigInteger y_bit;
-            x_bit = NTL.bit(x, i - start_bit_position_x);
 
             if (i >= start_bit_position_y) {
                 y_bit = Encrypted_Y[i - start_bit_position_y];

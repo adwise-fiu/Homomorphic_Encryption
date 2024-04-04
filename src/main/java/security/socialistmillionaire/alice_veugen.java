@@ -130,17 +130,6 @@ public class alice_veugen extends alice {
 
         beta_bits = get_encrypted_bits();
 
-        // Step B: get beta_bits from Bob
-        BigInteger early_terminate = unequal_bit_check(alpha, beta_bits);
-        if (early_terminate.equals(BigInteger.ONE)) {
-            return true;
-        }
-        else if (early_terminate.equals(BigInteger.ZERO)) {
-            return false;
-        }
-
-        // if equal bits, proceed!
-
         // Step C: Alice corrects d...
         if(r.compareTo(N.subtract(BigInteger.ONE).divide(TWO)) < 0) {
             d = DGKOperations.encrypt(BigInteger.ZERO, dgk_public);
@@ -153,8 +142,16 @@ public class alice_veugen extends alice {
         alpha_hat = r.subtract(N).mod(powL);
         w = new BigInteger[encAlphaXORBeta.length];
 
+        int xor_bit_length = encAlphaXORBeta.length;
+        int start_bit_position_x = Math.max(0, xor_bit_length - alpha.bitLength());
+        int start_bit_position_y = Math.max(0, xor_bit_length - beta_bits.length);
+        int start_alpha_hat_position = Math.max(0, xor_bit_length - alpha_hat.bitLength());
+
         for (int i = 0; i < encAlphaXORBeta.length; i++) {
-            if(NTL.bit(alpha_hat, i) == NTL.bit(alpha, i)) {
+            int alpha_bit = NTL.bit(alpha, i - start_bit_position_x);
+            int alpha_hat_bit = NTL.bit(alpha_hat, i - start_alpha_hat_position);
+
+            if(alpha_hat_bit == alpha_bit) {
                 w[i] = encAlphaXORBeta[i];
             }
             else {
@@ -164,9 +161,12 @@ public class alice_veugen extends alice {
 
         // Step F: See Optimization 1
         for (int i = 0; i < encAlphaXORBeta.length; i++) {
+            int alpha_bit = NTL.bit(alpha, i - start_bit_position_x);
+            int alpha_hat_bit = NTL.bit(alpha_hat, i - start_alpha_hat_position);
+
             // If it is 16 or 32 bits...
             if(dgk_public.getL() % 16 == 0) {
-                if(NTL.bit(alpha_hat, i) != NTL.bit(alpha, i)) {
+                if(alpha_hat_bit != alpha_bit) {
                     w[i] = DGKOperations.multiply(w[i], dgk_public.getL(), dgk_public);
                 }
             }
@@ -182,16 +182,27 @@ public class alice_veugen extends alice {
         C = new BigInteger[encAlphaXORBeta.length + 1];
 
         for (int i = 0; i < encAlphaXORBeta.length; i++) {
-            if(deltaA != NTL.bit(alpha, i) && deltaA != NTL.bit(alpha_hat, i)) {
+            int alpha_bit = NTL.bit(alpha, i - start_bit_position_x);
+            int alpha_hat_bit = NTL.bit(alpha_hat, i - start_alpha_hat_position);
+
+            BigInteger beta_bit;
+            if (i >= start_bit_position_y) {
+                beta_bit = beta_bits[i - start_bit_position_y];
+            }
+            else {
+                beta_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
+            }
+
+            if(deltaA != alpha_bit && deltaA != NTL.bit(alpha_hat, i)) {
                 C[i] = dgk_public.ONE;
             }
             else {
-                exponent = NTL.bit(alpha_hat, i) - NTL.bit(alpha, i);
+                exponent = alpha_hat_bit - alpha_bit;
                 C[i] = DGKOperations.multiply(DGKOperations.sum(w, dgk_public, i), 3, dgk_public);
                 C[i] = DGKOperations.add_plaintext(C[i], 1 - (2L * deltaA), dgk_public);
                 C[i] = DGKOperations.add(C[i], DGKOperations.multiply(d, exponent, dgk_public), dgk_public);
-                C[i] = DGKOperations.subtract(C[i], beta_bits[i], dgk_public);
-                C[i] = DGKOperations.add_plaintext(C[i], NTL.bit(alpha, i), dgk_public);
+                C[i] = DGKOperations.subtract(C[i], beta_bit, dgk_public);
+                C[i] = DGKOperations.add_plaintext(C[i], alpha_bit, dgk_public);
             }
         }
 

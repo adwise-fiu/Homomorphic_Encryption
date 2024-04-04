@@ -193,10 +193,9 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// C_i = sum(XOR) + s + x_i - y_i
 		for (int i = 0; i < XOR.length;i++) {
 			// Retrieve corresponding bits from x and Encrypted_Y
-			int x_bit;
-			BigInteger y_bit;
-			x_bit = NTL.bit(x, i - start_bit_position_x);
+			int x_bit = NTL.bit(x, i - start_bit_position_x);
 
+			BigInteger y_bit;
 			if (i >= start_bit_position_y) {
 				y_bit = Encrypted_Y[i - start_bit_position_y];
 			}
