@@ -3,6 +3,8 @@ package security.paillier;
 import java.math.BigInteger;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import security.misc.CipherConstants;
 import security.misc.HomomorphicException;
 import security.misc.NTL;
@@ -14,6 +16,8 @@ import security.misc.NTL;
  * As it extends from CipherSpi, it can also encrypt byte arrays as well.
  */
 public final class PaillierCipher implements CipherConstants {
+
+	private static final Logger logger = LogManager.getLogger(PaillierCipher.class);
 
 	//-----------------------BigInteger Paillier----------------------------------------------
 
@@ -29,8 +33,9 @@ public final class PaillierCipher implements CipherConstants {
 			throws HomomorphicException 
 	{
 		if (plaintext.signum() == -1) {
-			throw new HomomorphicException("Encryption Invalid Parameter: the plaintext is not in Zu (plaintext < 0)"
-					+ " value of Plain Text is: " + plaintext);
+			logger.warn("Encryption Invalid Parameter: the plaintext is not in Zu (plaintext < 0)"
+					+ " value of Plain Text is: " + plaintext + " will be encrypted as " +
+					NTL.POSMOD(plaintext, public_key.getN()));
 		}
 		else if (plaintext.compareTo(public_key.n) >= 0) {
 			throw new HomomorphicException("Encryption Invalid Parameter: the plaintext is not in N"

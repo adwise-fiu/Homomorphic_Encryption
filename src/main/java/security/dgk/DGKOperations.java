@@ -8,9 +8,14 @@ import security.misc.NTL;
 
 
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import security.socialistmillionaire.alice;
 
 public final class DGKOperations implements CipherConstants
 {
+	private static final Logger logger = LogManager.getLogger(DGKOperations.class);
+
 	//--------------------------------DGK Operations w/ BigInteger----------------------------------
 
 	/**
@@ -26,8 +31,9 @@ public final class DGKOperations implements CipherConstants
 	{
 		BigInteger ciphertext;
 		if (plaintext < -1) {
-			throw new IllegalArgumentException("Encryption Invalid Parameter: the plaintext is not in Zu (plaintext < 0)"
-					+ " value of Plain Text is: " + plaintext);
+			logger.warn("Encryption Invalid Parameter: the plaintext is not in Zu (plaintext < 0)"
+					+ " value of Plain Text is: " + plaintext + " will be encrypted as " +
+					NTL.POSMOD(BigInteger.valueOf(plaintext), public_key.getU()));
 		}
 		else if (plaintext >= public_key.u) {
 			throw new IllegalArgumentException("Encryption Invalid Parameter: the plaintext is not in Zu"
@@ -49,8 +55,7 @@ public final class DGKOperations implements CipherConstants
 		return ciphertext;
 	}
 	
-	public static BigInteger encrypt(BigInteger plaintext, DGKPublicKey public_key)
-	{
+	public static BigInteger encrypt(BigInteger plaintext, DGKPublicKey public_key) {
 		return encrypt(plaintext.longValue(), public_key);
 	}
 	
