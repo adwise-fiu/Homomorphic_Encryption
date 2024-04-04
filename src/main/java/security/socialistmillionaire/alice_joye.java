@@ -131,13 +131,7 @@ public class alice_joye extends alice {
             BigInteger sum;
             int x_bit;
             BigInteger y_bit;
-
-            if (i >= start_bit_position_x) {
-                x_bit = NTL.bit(x, i - start_bit_position_x);
-            }
-            else {
-                x_bit = 0; // Padding with zeros if x has fewer bits
-            }
+            x_bit = NTL.bit(x, i - start_bit_position_x);
 
             if (i >= start_bit_position_y) {
                 y_bit = Encrypted_Y[i - start_bit_position_y];

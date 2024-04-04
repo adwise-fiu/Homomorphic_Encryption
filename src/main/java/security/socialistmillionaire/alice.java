@@ -195,13 +195,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 			// Retrieve corresponding bits from x and Encrypted_Y
 			int x_bit;
 			BigInteger y_bit;
-
-			if (i >= start_bit_position_x) {
-				x_bit = NTL.bit(x, i - start_bit_position_x);
-			}
-			else {
-				x_bit = 0; // Padding with zeros if x has fewer bits
-			}
+			x_bit = NTL.bit(x, i - start_bit_position_x);
 
 			if (i >= start_bit_position_y) {
 				y_bit = Encrypted_Y[i - start_bit_position_y];
@@ -293,15 +287,8 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 
 		// Step 5A: get Delta B
-
-
-		// Step 5A: get Delta B 
-		if(deltaA == x_leq_y) {
-			deltaB = 0;
-		}
-		else {
-			deltaB = 1;
-		}
+		// Step 5A: get Delta B
+		deltaB = x_leq_y ^ deltaA;
 
 		// Step 5B: Bob sends z/2^l 
 		bob = readObject();
@@ -549,7 +536,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 		// deep copy
 		List<BigInteger> arr = new ArrayList<>(input);
-		
 		BigInteger [] sorted_k = new BigInteger[k];
 		
 		boolean activation;
@@ -609,13 +595,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 			// Retrieve corresponding bits from x and Encrypted_Y
 			int x_bit;
 			BigInteger y_bit;
-
-			if (i >= start_bit_position_x) {
-				x_bit = NTL.bit(x, i - start_bit_position_x);
-			}
-			else {
-				x_bit = 0; // Padding with zeros if x has fewer bits
-			}
+			x_bit = NTL.bit(x, i - start_bit_position_x);
 
 			if (i >= start_bit_position_y) {
 				y_bit = Encrypted_Y[i - start_bit_position_y];
