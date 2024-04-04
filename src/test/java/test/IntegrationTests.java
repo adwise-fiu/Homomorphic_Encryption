@@ -1,6 +1,11 @@
 package test;
 
+import security.dgk.DGKOperations;
+import security.dgk.DGKPrivateKey;
+import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalPrivateKey;
+import security.misc.HomomorphicException;
+import security.misc.NTL;
 import security.paillier.PaillierKeyPairGenerator;
 import security.dgk.DGKKeyPairGenerator;
 import security.elgamal.ElGamalKeyPairGenerator;
@@ -15,6 +20,8 @@ import org.junit.Test;
 import security.socialistmillionaire.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static org.junit.Assert.assertEquals;
 
 public class IntegrationTests implements constants
 {
@@ -61,6 +68,49 @@ public class IntegrationTests implements constants
 		ElGamalKeyPairGenerator pg = new ElGamalKeyPairGenerator(true);
 		pg.initialize(EL_GAMAL_KEY_SIZE, null);
 		el_gamal = pg.generateKeyPair();
+	}
+
+	@Test
+	public void test_encrypted_xor() throws HomomorphicException {
+		alice Niu = new alice();
+		bob andrew = new bob(paillier, dgk);
+		Niu.setDGKMode(true);
+		andrew.setDGKMode(true);
+		Niu.setDGKPublicKey((DGKPublicKey) dgk.getPublic());
+		Niu.set_dgk_private_key((DGKPrivateKey) dgk.getPrivate());
+
+		BigInteger [] encrypted_bits;
+		BigInteger x;
+		BigInteger y;
+		BigInteger [] xor;
+		BigInteger expected_xor;
+
+		int [] y_bits = { 10, 15, 5};
+
+        for (int yBit : y_bits) {
+			// Works both when y and x is hard coded to be 10 bits long.
+			x = NTL.generateXBitRandom(yBit);
+			y = NTL.generateXBitRandom(10);
+			encrypted_bits = andrew.encrypt_bits(y);
+
+            logger.debug("x in bits looks like " + x.toString(2) + " and vale is " + x);
+            logger.debug("y in bits looks like " + y.toString(2) + " and vale is " + y);
+
+			xor = Niu.encrypted_xor(x, encrypted_bits);
+            // Few things to note, xor can be smaller that inputs.
+            // Prints top to bottom, matches left to right when printing bit string.
+            // If x and y same bit-size, IT WORKS
+            // As expected, right now it IS WRONG, if x is smaller in bits, let's fix this first.
+            StringBuilder collect_bits = new StringBuilder();
+            for (int i = 0; i < xor.length; i++) {
+                long l = DGKOperations.decrypt(xor[i], (DGKPrivateKey) dgk.getPrivate());
+                logger.debug("i=" + i + " is " + l);
+                collect_bits.append(l);
+            }
+            expected_xor = x.xor(y);
+            logger.debug("xor regular: " + expected_xor.toString(2));
+            assertEquals(new BigInteger(collect_bits.toString(), 2), x.xor(y));
+        }
 	}
 
 	@Test

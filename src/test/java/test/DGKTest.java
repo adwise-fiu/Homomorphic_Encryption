@@ -7,6 +7,8 @@ import security.dgk.DGKOperations;
 import security.dgk.DGKPrivateKey;
 import security.dgk.DGKPublicKey;
 import security.misc.HomomorphicException;
+import security.socialistmillionaire.alice;
+import security.socialistmillionaire.bob;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -74,7 +76,6 @@ public class DGKTest implements constants {
         a = DGKOperations.subtract_ciphertext(FIFTY, DGKOperations.encrypt(TWENTY, public_key), public_key);
         assertEquals(30, DGKOperations.decrypt(a, private_key));
     }
-
     @Test
     public void test_divide() throws HomomorphicException {
         // Test Division, Division is failing for some reason...?

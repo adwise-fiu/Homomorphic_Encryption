@@ -9,6 +9,7 @@ import javax.net.ssl.SSLSocket;
 
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import security.dgk.DGKOperations;
+import security.dgk.DGKPrivateKey;
 import security.dgk.DGKPublicKey;
 
 import security.elgamal.ElGamalPublicKey;
@@ -174,14 +175,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 		BigInteger [] C;
 		BigInteger [] XOR;
 
-		BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
-		if (early_terminate.equals(BigInteger.ONE)) {
-			return true;
-		}
-		else if (early_terminate.equals(BigInteger.ZERO)) {
-			return false;
-		}
-
 		// Otherwise, if the bit size is equal, proceed!
 		// Step 2: compute Encrypted X XOR Y
 		XOR = encrypted_xor(x, Encrypted_Y);
@@ -191,21 +184,27 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Step 4: Compute C_i
 		C = new BigInteger[XOR.length + 1];
 
+		// Step 2: Determine the starting bit position for x and Encrypted_Y
+		int xor_bit_length = XOR.length;
+		int start_bit_position_x = Math.max(0, xor_bit_length - x.bitLength());
+		int start_bit_position_y = Math.max(0, xor_bit_length - Encrypted_Y.length);
+
 		// Compute the Product of XOR, add s and compute x - y
 		// C_i = sum(XOR) + s + x_i - y_i
 		for (int i = 0; i < XOR.length;i++) {
 			// Retrieve corresponding bits from x and Encrypted_Y
 			int x_bit;
 			BigInteger y_bit;
-			if (i < x.bitLength()) {
-				x_bit = NTL.bit(x, i);
+
+			if (i >= start_bit_position_x) {
+				x_bit = NTL.bit(x, i - start_bit_position_x);
 			}
 			else {
-				x_bit = 0; // If x is shorter, treat the missing bits as zeros
+				x_bit = 0; // Padding with zeros if x has fewer bits
 			}
 
-			if (i < Encrypted_Y.length) {
-				y_bit = Encrypted_Y[i];
+			if (i >= start_bit_position_y) {
+				y_bit = Encrypted_Y[i - start_bit_position_y];
 			}
 			else {
 				y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
@@ -461,6 +460,10 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return result;
 	}
 
+	public void set_dgk_private_key(DGKPrivateKey dgk_private) {
+		this.dgk_private = dgk_private;
+	}
+
 	public void receivePublicKeys()
 			throws IOException, ClassNotFoundException {
 		Object x;
@@ -586,7 +589,8 @@ public class alice extends socialist_millionaires implements alice_interface {
 	
 	// ---------------------- Everything here is essentially utility functions all Alice will need ----------------
 
-	protected BigInteger [] encrypted_xor(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException {
+	// Found the issue; i=0 should be a 0 on the smallest thing first no matter what.
+	public BigInteger [] encrypted_xor(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException {
 		BigInteger [] xor_bits;
 		int xor_bit_length;
 
@@ -595,24 +599,33 @@ public class alice extends socialist_millionaires implements alice_interface {
 		logger.info("[private_integer_comparison] x has " + x.bitLength() + " bits and y has " + Encrypted_Y.length + " bits");
 		logger.info("[private_integer_comparison] Therefore, my xor output has " + xor_bit_length + " bits");
 
+		// Step 2: Determine the starting bit position for x and Encrypted_Y
+		int start_bit_position_x = Math.max(0, xor_bit_length - x.bitLength());
+		int start_bit_position_y = Math.max(0, xor_bit_length - Encrypted_Y.length);
+
 		// Remember a xor 0 = a
 		xor_bits = new BigInteger[xor_bit_length];
 		for (int i = 0; i < xor_bit_length; i++) {
 			// Retrieve corresponding bits from x and Encrypted_Y
 			int x_bit;
 			BigInteger y_bit;
-			if (i < x.bitLength()) {
-				x_bit = NTL.bit(x, i);
+
+			if (i >= start_bit_position_x) {
+				x_bit = NTL.bit(x, i - start_bit_position_x);
 			}
 			else {
-				x_bit = 0; // If x is shorter, treat the missing bits as zeros
+				x_bit = 0; // Padding with zeros if x has fewer bits
 			}
 
-			if (i < Encrypted_Y.length) {
-				y_bit = Encrypted_Y[i];
+			if (i >= start_bit_position_y) {
+				y_bit = Encrypted_Y[i - start_bit_position_y];
 			}
 			else {
 				y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
+			}
+
+			if (dgk_private != null) {
+				logger.debug("i=" + i + " x_bit is: " + x_bit + " and y_bit is: " + DGKOperations.decrypt(y_bit, dgk_private));
 			}
 
 			if (x_bit == 1) {
