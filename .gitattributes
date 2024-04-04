@@ -1,0 +1,7 @@
+# Always checkout with LF
+*.sh            text eol=lf
+*.txt           text eol=lf
+gradlew         text eol=lf
+
+# Always checkout with CRLF
+*.bat           text eol=crlf

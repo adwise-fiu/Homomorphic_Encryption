@@ -155,6 +155,14 @@ public class bob extends socialist_millionaires implements bob_interface
 		return Protocol1(y);
 	}
 
+	public BigInteger [] encrypt_bits(BigInteger y) {
+		BigInteger [] Encrypted_Y = new BigInteger[y.bitLength()];
+		for (int i = 0; i < y.bitLength(); i++) {
+			Encrypted_Y[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
+		}
+		return Encrypted_Y;
+	}
+
 	/**
 	 * Please review "Improving the DGK comparison protocol" - Protocol 1
 	 * Nicely enough, this is the same thing Bob needs to do for Veugen, Joye and checking 
@@ -172,12 +180,8 @@ public class bob extends socialist_millionaires implements bob_interface
 		BigInteger temp;
 
 		// Step 1: Bob sends encrypted bits to Alice
-		BigInteger [] EncY = new BigInteger[y.bitLength()];
-		for (int i = 0; i < y.bitLength(); i++) {
-			EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
-		}
 		logger.info("[private_integer_comparison] I am comparing sending y, which is " + y.bitLength() + " bits long");
-		writeObject(EncY);
+		writeObject(encrypt_bits(y));
 		
 		// Step 2: Alice...
 		// Step 3: Alice...

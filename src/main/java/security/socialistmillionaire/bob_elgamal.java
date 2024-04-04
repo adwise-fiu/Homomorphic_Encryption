@@ -186,7 +186,7 @@ public class bob_elgamal extends bob_veugen {
 
         // Step 4: Run Modified DGK Comparison Protocol
         // true --> run Modified protocol 3
-        if(fromAlice.readBoolean()) {
+        if(readBoolean()) {
             Modified_Protocol3(beta, z);
         }
         else {
