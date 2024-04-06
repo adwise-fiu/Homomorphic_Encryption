@@ -78,7 +78,6 @@ public class alice_joye extends alice {
     }
 
     public boolean Protocol1(BigInteger x) throws HomomorphicException, IOException, ClassNotFoundException {
-        logger.info("I am using Joye and Salehi Protocol 1");
         int delta_a = compute_delta_a(x);
         return Protocol0(x, delta_a);
     }

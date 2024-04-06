@@ -85,16 +85,16 @@ public class IntegrationTests implements constants
 		BigInteger [] xor;
 		BigInteger expected_xor;
 
-		int [] y_bits = { 10, 15, 5};
+		int [] y_bits = { 3, 16, 7};
 
         for (int yBit : y_bits) {
 			// Works both when y and x is hard coded to be 10 bits long.
 			x = NTL.generateXBitRandom(yBit);
-			y = NTL.generateXBitRandom(10);
+			y = NTL.generateXBitRandom(7);
 			encrypted_bits = andrew.encrypt_bits(y);
 
-            logger.debug("x in bits looks like " + x.toString(2) + " and vale is " + x);
-            logger.debug("y in bits looks like " + y.toString(2) + " and vale is " + y);
+            logger.debug("x in bits looks like {} and vale is {}", x.toString(2), x);
+            logger.debug("y in bits looks like {} and vale is {}", y.toString(2), y);
 
 			xor = Niu.encrypted_xor(x, encrypted_bits);
             // Few things to note, xor can be smaller that inputs.
@@ -104,11 +104,11 @@ public class IntegrationTests implements constants
             StringBuilder collect_bits = new StringBuilder();
             for (int i = 0; i < xor.length; i++) {
                 long l = DGKOperations.decrypt(xor[i], (DGKPrivateKey) dgk.getPrivate());
-                logger.debug("i=" + i + " is " + l);
+                logger.debug("i={} is {}", i, l);
                 collect_bits.append(l);
             }
             expected_xor = x.xor(y);
-            logger.debug("xor regular: " + expected_xor.toString(2));
+            logger.debug("xor regular: {}", expected_xor.toString(2));
             assertEquals(new BigInteger(collect_bits.toString(), 2), x.xor(y));
         }
 	}
@@ -131,9 +131,9 @@ public class IntegrationTests implements constants
 			andrew.start();
 
 			// Wait then connect!
-			logger.info("Sleep to give " + all_bobs[i].getClass().getName() + " time to make keys...");
+            logger.info("Sleep to give {} time to make keys...", all_bobs[i].getClass().getName());
 			Thread.sleep(2 * 1000);
-			logger.info(all_alice[i].getClass().getName() + " is starting...");
+            logger.info("{} is starting...", all_alice[i].getClass().getName());
 
 			all_alice[i].set_socket(new Socket("127.0.0.1", 9200 + i));
 			all_alice[i].receivePublicKeys();
