@@ -113,7 +113,26 @@ public class IntegrationTests implements constants
         }
 	}
 
-	@Test
+	//@Test
+	public void test_debug_joye_protocol_one() throws HomomorphicException {
+		alice_joye Niu = new alice_joye();
+		bob andrew = new bob(paillier, dgk);
+		Niu.setDGKMode(true);
+		andrew.setDGKMode(true);
+		Niu.setDGKPublicKey((DGKPublicKey) dgk.getPublic());
+		Niu.set_dgk_private_key((DGKPrivateKey) dgk.getPrivate());
+
+		BigInteger x = NTL.generateXBitRandom(10);
+		BigInteger y = NTL.generateXBitRandom(15);
+		BigInteger [] encrypted_bits = andrew.encrypt_bits(y);
+		BigInteger [] xor = Niu.encrypted_xor(x, encrypted_bits);
+
+		int delta_a = alice_joye.hamming_weight(x);
+		Niu.form_set_l(x, delta_a, xor);
+
+	}
+
+	//@Test
 	public void all_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
 		bob [] all_bobs = {
 				new bob(paillier, dgk, el_gamal),

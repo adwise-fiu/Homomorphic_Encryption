@@ -82,10 +82,9 @@ public class alice_joye extends alice {
         return Protocol0(x, delta_a);
     }
 
-    protected BigInteger [] compute_c(BigInteger x, BigInteger [] Encrypted_Y,
+    public BigInteger [] compute_c(BigInteger x, BigInteger [] Encrypted_Y,
                                       BigInteger [] XOR, int delta_a, List<Integer> set_l) throws HomomorphicException {
 
-        BigInteger [] C = new BigInteger[(int) Math.floor((float) XOR.length/2)];
         int first_term;
         BigInteger second_term;
         int set_l_index = 0;
@@ -93,6 +92,7 @@ public class alice_joye extends alice {
         int xor_bit_length = XOR.length;
         int start_bit_position_x = Math.max(0, xor_bit_length - x.bitLength());
         int start_bit_position_y = Math.max(0, xor_bit_length - Encrypted_Y.length);
+        BigInteger [] C = new BigInteger[set_l.size() + 1];
 
         for (int i = 0; i < XOR.length; i++) {
             BigInteger temp;
@@ -132,7 +132,7 @@ public class alice_joye extends alice {
         return C;
     }
 
-    private List<Integer> form_set_l(BigInteger x, int delta_a, BigInteger [] XOR) {
+    public List<Integer> form_set_l(BigInteger x, int delta_a, BigInteger [] XOR) {
         List<Integer> set_l = new ArrayList<>();
         int floor_t_div_two = (int) Math.floor((float) XOR.length/2);
 
@@ -166,7 +166,7 @@ public class alice_joye extends alice {
         BigInteger [] Encrypted_Y;
         BigInteger [] C;
         BigInteger [] XOR;
-        List<Integer> set_l = new ArrayList<>();
+        List<Integer> set_l;
 
         // Step 1: Get Y bits from Bob
         Encrypted_Y = get_encrypted_bits();
@@ -200,7 +200,7 @@ public class alice_joye extends alice {
         return delta_a;
     }
 
-    private static int hamming_weight(BigInteger value) throws HomomorphicException {
+    public static int hamming_weight(BigInteger value) throws HomomorphicException {
         if (value.signum() < 0) {
             throw new HomomorphicException("I'm unsure if Hamming weight is defined for negative");
         }
