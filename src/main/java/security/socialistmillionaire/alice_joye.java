@@ -39,15 +39,15 @@ public class alice_joye extends alice {
         // Compute Big M
         if (isDGK) {
             big_m = DGKOperations.subtract(x, y, dgk_public);
+            t = dgk_public.getL();
             u_l = NTL.RandomBnd(dgk_public.getU());
             big_m = DGKOperations.add_plaintext(big_m, u_l, dgk_public);
-            t = dgk_public.getL();
         }
         else {
             big_m = PaillierCipher.subtract(x, y, paillier_public);
+            t = dgk_public.getT();
             u_l = NTL.RandomBnd(paillier_public.getN());
             big_m = PaillierCipher.add_plaintext(big_m, u_l, paillier_public);
-            t = dgk_public.getT();
         }
         powT = TWO.pow(t);
         little_m_l = u_l.mod(powT);
@@ -82,45 +82,14 @@ public class alice_joye extends alice {
         return Protocol0(x, delta_a);
     }
 
-    // This function is the equivalent of the protocol on Figure 1 on Joye and Salehi's paper
-    private boolean Protocol0(BigInteger x, int delta_a) throws IOException, ClassNotFoundException, HomomorphicException {
-        BigInteger [] Encrypted_Y;
-        BigInteger [] C;
-        BigInteger [] XOR;
-        List<Integer> set_l = new ArrayList<>();
+    protected BigInteger [] compute_c(BigInteger x, BigInteger [] Encrypted_Y,
+                                      BigInteger [] XOR, int delta_a, List<Integer> set_l) throws HomomorphicException {
 
-        // Step 1: Get Y bits from Bob
-        Encrypted_Y = get_encrypted_bits();
-        XOR = encrypted_xor(x, Encrypted_Y);
-
-        int floor_t_div_two = (int) Math.floor((float) XOR.length/2);
-
-        // Step 3: Form Set L
-        for (int i = 0; i < x.bitLength(); i++) {
-            if (delta_a == NTL.bit(x, i)) {
-                set_l.add(i);
-            }
-        }
-
-        // I need to confirm that #L = floor(t/2) always
-        // This is how I protect against timing attacks.
-        for (int i = 0; i < XOR.length; i++) {
-            if (set_l.size() == floor_t_div_two) {
-                break;
-            }
-            if (!set_l.contains(i)) {
-                set_l.add(i);
-            }
-        }
-        // Confirm the value #L = floor(t/2), no more, no less.
-        assert floor_t_div_two == set_l.size();
-        C = new BigInteger[set_l.size() + 1];
-
+        BigInteger [] C = new BigInteger[(int) Math.floor((float) XOR.length/2)];
         int first_term;
         BigInteger second_term;
-
-        // Want to go from Right to left...
         int set_l_index = 0;
+
         int xor_bit_length = XOR.length;
         int start_bit_position_x = Math.max(0, xor_bit_length - x.bitLength());
         int start_bit_position_y = Math.max(0, xor_bit_length - Encrypted_Y.length);
@@ -160,11 +129,53 @@ public class alice_joye extends alice {
         C[set_l.size()] = DGKOperations.sum(XOR, dgk_public);
         C[set_l.size()] = DGKOperations.add_plaintext(C[set_l.size()], delta_a, dgk_public);
         C[set_l.size()] = DGKOperations.multiply(C[set_l.size()], rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
+        return C;
+    }
 
-        // Step 4: send shuffled bits to Bob
+    private List<Integer> form_set_l(BigInteger x, int delta_a, BigInteger [] XOR) {
+        List<Integer> set_l = new ArrayList<>();
+        int floor_t_div_two = (int) Math.floor((float) XOR.length/2);
+
+        // Step 3: Form Set L
+        for (int i = 0; i < x.bitLength(); i++) {
+            if (delta_a == NTL.bit(x, i)) {
+                set_l.add(i);
+            }
+        }
+        logger.debug("delta A = {} and x-bits are {}", delta_a, set_l);
+
+        // I need to confirm that #L = floor(t/2) always
+        // This is how I protect against timing attacks.
+        for (int i = 0; i < XOR.length; i++) {
+            if (set_l.size() == floor_t_div_two) {
+                break;
+            }
+            if (!set_l.contains(i)) {
+                set_l.add(i);
+            }
+        }
+        logger.debug("set_l now includes: {}",  set_l);
+
+        // Confirm the value #L = floor(t/2), no more, no less.
+        assert floor_t_div_two == set_l.size();
+        return set_l;
+    }
+
+    // This function is the equivalent of the protocol on Figure 1 on Joye and Salehi's paper
+    private boolean Protocol0(BigInteger x, int delta_a) throws IOException, ClassNotFoundException, HomomorphicException {
+        BigInteger [] Encrypted_Y;
+        BigInteger [] C;
+        BigInteger [] XOR;
+        List<Integer> set_l = new ArrayList<>();
+
+        // Step 1: Get Y bits from Bob
+        Encrypted_Y = get_encrypted_bits();
+        XOR = encrypted_xor(x, Encrypted_Y);
+        set_l = form_set_l(x, delta_a, XOR);
+        C = compute_c(x, Encrypted_Y, XOR, delta_a, set_l);
         C = shuffle_bits(C);
         writeObject(C);
-   
+
         // Get Delta B from Bob
         return decrypt_protocol_one(delta_a);
     }

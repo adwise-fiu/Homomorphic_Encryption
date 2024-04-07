@@ -76,8 +76,7 @@ public class alice_veugen extends alice {
 
         // Step 5: Apply the Blinding to C_i and send it to Bob
         for (int i = 0; i < XOR.length; i++) {
-            // if index i is NOT in L, just place a random NON-ZERO
-            // int bit = x.testBit(i) ? 1 : 0;
+            // if the index i is NOT in L, just place a random NON-ZERO
             int bit = NTL.bit(x, i);
             if(bit != deltaA) {
                 C[XOR.length - 1 - i] = DGKOperations.encrypt(rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
