@@ -77,8 +77,8 @@ public class test_el_gamal_alice implements constants, Runnable {
         for (int i = 0; i < plain_min.length; i++) {
             assertEquals(toSort[i], plain_min[i]);
         }
-        logger.info("General List: " + Arrays.toString(toSort));
-        logger.info("Three minimum numbers: " + Arrays.toString(plain_min));
+        logger.info("General List: {}", Arrays.toString(toSort));
+        logger.info("Three minimum numbers: {}", Arrays.toString(plain_min));
     }
 
     public void test_protocol_two() throws HomomorphicException, IOException, ClassNotFoundException {

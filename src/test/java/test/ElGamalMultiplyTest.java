@@ -28,7 +28,7 @@ public class ElGamalMultiplyTest implements constants {
     }
 
     @Test
-    public void test_decrypt() throws HomomorphicException {
+    public void test_decrypt() {
         // Test D(E(X)) = X
         ElGamal_Ciphertext a = ElGamalCipher.encrypt(BigInteger.TEN, public_key);
         BigInteger alpha = ElGamalCipher.decrypt(a, private_key);

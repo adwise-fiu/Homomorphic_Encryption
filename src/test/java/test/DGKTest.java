@@ -7,8 +7,6 @@ import security.dgk.DGKOperations;
 import security.dgk.DGKPrivateKey;
 import security.dgk.DGKPublicKey;
 import security.misc.HomomorphicException;
-import security.socialistmillionaire.alice;
-import security.socialistmillionaire.bob;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
