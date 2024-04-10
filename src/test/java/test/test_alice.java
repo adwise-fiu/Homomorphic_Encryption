@@ -81,7 +81,7 @@ public class test_alice implements Runnable, constants
 	public void test_sorting(boolean dgk_mode)
 			throws ClassNotFoundException, IOException, HomomorphicException {
 
-		logger.info(alice_class + ": Testing Sorting with DGK Mode: " + dgk_mode);
+        logger.info("{}: Testing Sorting with DGK Mode: {}", alice_class, dgk_mode);
 		BigInteger [] toSort = new BigInteger[low.length];
 		BigInteger [] min;
 
@@ -98,7 +98,7 @@ public class test_alice implements Runnable, constants
 
 		if (dgk_mode) {
 			if (Niu.getClass() == security.socialistmillionaire.alice.class) {
-				logger.info(alice_class + ": Skipping Sorting because will crash with this alice version...");
+                logger.info("{}: Skipping Sorting because will crash with this alice version...", alice_class);
 				return;
 			}
 		}
@@ -121,20 +121,20 @@ public class test_alice implements Runnable, constants
 			}
 		}
 		// Use assert to sort an array
-		logger.info("Initial Array: " + Arrays.toString(toSort));
+        logger.info("Initial Array: {}", Arrays.toString(toSort));
 		Arrays.sort(toSort);
 		for (int i = 0; i < min.length; i++) {
 			assertEquals(toSort[i], min[i]);
 		}
-		logger.info("Sorted Array: " + Arrays.toString(toSort));
-		logger.info("Three minimum numbers: " + Arrays.toString(min));
+        logger.info("Sorted Array: {}", Arrays.toString(toSort));
+        logger.info("Three minimum numbers: {}", Arrays.toString(min));
 	}
 
 	public void test_outsourced_multiply(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
 		Niu.setDGKMode(dgk_mode);
 		BigInteger temp;
-		logger.info(alice_class + ": Testing Multiplication with DGK Mode: " + dgk_mode);
+        logger.info("{}: Testing Multiplication with DGK Mode: {}", alice_class, dgk_mode);
 		if(dgk_mode) {
 			temp = Niu.multiplication(DGKOperations.encrypt(THOUSAND, dgk_public_key),
 					DGKOperations.encrypt(TWO, dgk_public_key));
@@ -168,7 +168,7 @@ public class test_alice implements Runnable, constants
 		// Division Test, Paillier
 		// REMEMBER THE OUTPUT IS THE ENCRYPTED ANSWER; ONLY BOB CAN VERIFY THE ANSWER
 		Niu.setDGKMode(dgk_mode);
-		logger.info(alice_class + ": Testing Division, DGK Mode: " + dgk_mode);
+        logger.info("{}: Testing Division, DGK Mode: {}", alice_class, dgk_mode);
 		BigInteger d;
 		BigInteger temp;
 		if (dgk_mode) {
@@ -216,7 +216,7 @@ public class test_alice implements Runnable, constants
 
 	public void test_protocol_one(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info(alice_class + ": Testing Protocol 1 with DGK Mode: " + dgk_mode);
+        logger.info("{}: Testing Protocol 1 with DGK Mode: {}", alice_class, dgk_mode);
 		boolean answer;
 		Niu.setDGKMode(dgk_mode);
 
@@ -240,7 +240,7 @@ public class test_alice implements Runnable, constants
 
 	public void test_protocol_two(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info(alice_class + ": Testing Protocol 2 with DGK Mode: " + dgk_mode);
+        logger.info("{}: Testing Protocol 2 with DGK Mode: {}", alice_class, dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 		boolean answer;
 
@@ -304,7 +304,7 @@ public class test_alice implements Runnable, constants
 
 	public void test_private_equality(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info(alice_class + ": Testing Equality Check, DGK Mode:" + dgk_mode);
+        logger.info("{}: Testing Private Equality Check, DGK Mode:{}", alice_class, dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 
 		assertFalse(Niu.private_equals(FIFTY));
@@ -314,7 +314,7 @@ public class test_alice implements Runnable, constants
 
 	public void test_encrypted_equality(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info(alice_class + ": Testing Equality Check, DGK Mode:" + dgk_mode);
+        logger.info("{}: Testing Encrypted Equality Check, DGK Mode:{}", alice_class, dgk_mode);
 		Niu.setDGKMode(dgk_mode);
 		BigInteger r_1;
 		BigInteger r_2;

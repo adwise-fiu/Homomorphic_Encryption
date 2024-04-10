@@ -92,6 +92,7 @@ public class alice_joye extends alice {
         int xor_bit_length = XOR.length;
         int start_bit_position_x = Math.max(0, xor_bit_length - x.bitLength());
         int start_bit_position_y = Math.max(0, xor_bit_length - Encrypted_Y.length);
+        // C has the size floor(t/2) + 1, where 1 is for c_{-1}
         BigInteger [] C = new BigInteger[set_l.size() + 1];
 
         for (int i = 0; i < XOR.length; i++) {
@@ -180,7 +181,7 @@ public class alice_joye extends alice {
         return decrypt_protocol_one(delta_a);
     }
 
-    private static int compute_delta_a(BigInteger x) throws HomomorphicException {
+    public static int compute_delta_a(BigInteger x) throws HomomorphicException {
         // Step 2, Compute Hamming Weight and Select delta A
         int delta_a;
         int hamming_weight = hamming_weight(x);

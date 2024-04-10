@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.security.KeyPair;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -93,8 +94,8 @@ public class IntegrationTests implements constants
 			y = NTL.generateXBitRandom(7);
 			encrypted_bits = andrew.encrypt_bits(y);
 
-            logger.debug("x in bits looks like {} and vale is {}", x.toString(2), x);
-            logger.debug("y in bits looks like {} and vale is {}", y.toString(2), y);
+            logger.debug("x in bits looks like {} and value is {}", x.toString(2), x);
+            logger.debug("y in bits looks like {} and value is {}", y.toString(2), y);
 
 			xor = Niu.encrypted_xor(x, encrypted_bits);
             // Few things to note, xor can be smaller that inputs.
@@ -113,8 +114,11 @@ public class IntegrationTests implements constants
         }
 	}
 
-	//@Test
+	@Test
 	public void test_debug_joye_protocol_one() throws HomomorphicException {
+		List<Integer> set_l;
+		BigInteger [] C;
+		int delta_b;
 		alice_joye Niu = new alice_joye();
 		bob andrew = new bob(paillier, dgk);
 		Niu.setDGKMode(true);
@@ -122,17 +126,37 @@ public class IntegrationTests implements constants
 		Niu.setDGKPublicKey((DGKPublicKey) dgk.getPublic());
 		Niu.set_dgk_private_key((DGKPrivateKey) dgk.getPrivate());
 
-		BigInteger x = NTL.generateXBitRandom(10);
-		BigInteger y = NTL.generateXBitRandom(15);
-		BigInteger [] encrypted_bits = andrew.encrypt_bits(y);
-		BigInteger [] xor = Niu.encrypted_xor(x, encrypted_bits);
+		BigInteger x;
+		BigInteger y;
+		BigInteger [] encrypted_bits;
+		BigInteger[] xor;
+		int [] y_bits = { 10, 3, 17};
 
-		int delta_a = alice_joye.hamming_weight(x);
-		Niu.form_set_l(x, delta_a, xor);
+		for (int yBit : y_bits) {
+			// Works both when y and x is hard coded to be 10 bits long.
+			x = NTL.generateXBitRandom(yBit);
+			y = NTL.generateXBitRandom(10);
+			encrypted_bits = andrew.encrypt_bits(y);
+			xor = Niu.encrypted_xor(x, encrypted_bits);
 
+			logger.debug("x in bits looks like {} and value is {}", x.toString(2), x);
+			logger.debug("y in bits looks like {} and value is {}", y.toString(2), y);
+
+			// This is beyond XOR, and the bug
+			int delta_a = alice_joye.compute_delta_a(x);
+			set_l = Niu.form_set_l(x, delta_a, xor);
+			C = Niu.compute_c(x, encrypted_bits, xor, delta_a, set_l);
+			delta_b = andrew.compute_delta_b(C);
+
+			if (x.compareTo(y) <= 0) {
+				assertEquals(1, delta_a ^ delta_b);
+			} else {
+				assertEquals(0, delta_a ^ delta_b);
+			}
+		}
 	}
 
-	//@Test
+	@Test
 	public void all_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
 		bob [] all_bobs = {
 				new bob(paillier, dgk, el_gamal),

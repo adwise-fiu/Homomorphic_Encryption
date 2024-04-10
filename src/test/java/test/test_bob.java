@@ -33,7 +33,7 @@ public class test_bob implements Runnable, constants
 		try
 		{
 			bob_socket = new ServerSocket(this.port);
-			logger.info(bob_class_name + " is ready...");
+            logger.info("{} is ready...", bob_class_name);
 			bob_client = bob_socket.accept();
 			andrew.set_socket(bob_client);
 			andrew.sendPublicKeys();
@@ -80,7 +80,7 @@ public class test_bob implements Runnable, constants
 	public void test_outsourced_multiply(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
 		// Test out-source multiplication, DGK
-		logger.info(bob_class_name + ": Testing Multiplication, DGK Mode: " + dgk_mode);
+        logger.info("{}: Testing Multiplication, DGK Mode: {}", bob_class_name, dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		for(int i = 0; i < 3; i++) {
 			andrew.multiplication();
@@ -89,7 +89,7 @@ public class test_bob implements Runnable, constants
 
 	public void test_outsourced_division(boolean dgk_mode)
 			throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info(bob_class_name + ": Testing Division, DGK Mode: " + dgk_mode);
+        logger.info("{}: Testing Division, DGK Mode: {}", bob_class_name, dgk_mode);
 		// Division Protocol Test, Paillier
 		andrew.setDGKMode(dgk_mode);
 		andrew.division(2);
@@ -101,7 +101,7 @@ public class test_bob implements Runnable, constants
 
 	public void test_protocol_one(boolean dgk_mode)
 			throws IOException, ClassNotFoundException, HomomorphicException {
-		logger.info(bob_class_name + ": Testing Protocol 1, DGK Mode:" + dgk_mode);
+        logger.info("{}: Testing Protocol 1, DGK Mode:{}", bob_class_name, dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		boolean answer;
 		for(BigInteger l: mid) {
@@ -124,7 +124,7 @@ public class test_bob implements Runnable, constants
 	// This checks for X >= Y
 	public void test_protocol_two(boolean dgk_mode)
 			throws IOException, ClassNotFoundException, HomomorphicException {
-		logger.info(bob_class_name + ": Testing Protocol 2, DGK Mode:" + dgk_mode);
+        logger.info("{}: Testing Protocol 2, DGK Mode:{}", bob_class_name, dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		boolean answer;
 
@@ -181,11 +181,11 @@ public class test_bob implements Runnable, constants
 	}
 
 	public void test_sorting(boolean dgk_mode) throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info(bob_class_name + ": Testing Sorting, DGK Mode:" + dgk_mode);
+        logger.info("{}: Testing Sorting, DGK Mode:{}", bob_class_name, dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		if (dgk_mode) {
 			if (andrew.getClass() == security.socialistmillionaire.bob.class) {
-				logger.info(bob_class_name + ": Skipping Sorting because will crash with this alice version...");
+                logger.info("{}: Skipping Sorting because will crash with this alice version...", bob_class_name);
 				return;
 			}
 			andrew.sort();
@@ -196,7 +196,7 @@ public class test_bob implements Runnable, constants
 	}
 
 	public void test_private_equality(boolean dgk_mode) throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info(bob_class_name + ": Testing Equality Check w/o encryption, DGK Mode:" + dgk_mode);
+        logger.info("{}: Testing Equality Check w/o encryption, DGK Mode:{}", bob_class_name, dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		andrew.Protocol1(FORTY_NINE);
 		andrew.Protocol1(FIFTY);
@@ -204,7 +204,7 @@ public class test_bob implements Runnable, constants
 	}
 
 	public void test_encrypted_equality(boolean dgk_mode) throws HomomorphicException, IOException, ClassNotFoundException {
-		logger.info(bob_class_name + ": Testing Equality Check, DGK Mode:" + dgk_mode);
+        logger.info("{}: Testing Equality Check, DGK Mode:{}", bob_class_name, dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		andrew.encrypted_equals();
 		andrew.encrypted_equals();
