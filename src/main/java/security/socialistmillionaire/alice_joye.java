@@ -54,10 +54,12 @@ public class alice_joye extends alice {
 
         // computes delta_l and delta_l_prime
         // In Figure 1, delta_a == delta_l
-        delta_l = compute_delta_a(little_m_l);
         writeObject(big_m);
+        BigInteger [] Encrypted_Y = get_encrypted_bits();
+        BigInteger [] XOR = encrypted_xor(x, Encrypted_Y);
+        delta_l = compute_delta_a(little_m_l, XOR.length);
         writeObject(DGKOperations.encrypt(delta_l, dgk_public));
-        Protocol0(little_m_l, delta_l);
+        Protocol0(little_m_l, delta_l, XOR, Encrypted_Y);
 
         // Compare values that did NOT get the mod {2^{t}}
         if (u_l.divide(powT).mod(TWO).equals(BigInteger.ZERO)) {
@@ -78,8 +80,10 @@ public class alice_joye extends alice {
     }
 
     public boolean Protocol1(BigInteger x) throws HomomorphicException, IOException, ClassNotFoundException {
-        int delta_a = compute_delta_a(x);
-        return Protocol0(x, delta_a);
+        BigInteger [] Encrypted_Y = get_encrypted_bits();
+        BigInteger [] XOR = encrypted_xor(x, Encrypted_Y);
+        int delta_a = compute_delta_a(x, XOR.length);
+        return Protocol0(x, delta_a, XOR, Encrypted_Y);
     }
 
     public BigInteger [] compute_c(BigInteger x, BigInteger [] Encrypted_Y,
@@ -163,15 +167,11 @@ public class alice_joye extends alice {
     }
 
     // This function is the equivalent of the protocol on Figure 1 on Joye and Salehi's paper
-    private boolean Protocol0(BigInteger x, int delta_a) throws IOException, ClassNotFoundException, HomomorphicException {
-        BigInteger [] Encrypted_Y;
-        BigInteger [] C;
-        BigInteger [] XOR;
-        List<Integer> set_l;
+    private boolean Protocol0(BigInteger x, int delta_a, BigInteger [] XOR, BigInteger [] Encrypted_Y)
+            throws IOException, ClassNotFoundException, HomomorphicException {
 
-        // Step 1: Get Y bits from Bob
-        Encrypted_Y = get_encrypted_bits();
-        XOR = encrypted_xor(x, Encrypted_Y);
+        BigInteger [] C;
+        List<Integer> set_l;
         set_l = form_set_l(x, delta_a, XOR);
         C = compute_c(x, Encrypted_Y, XOR, delta_a, set_l);
         C = shuffle_bits(C);
@@ -181,11 +181,10 @@ public class alice_joye extends alice {
         return decrypt_protocol_one(delta_a);
     }
 
-    public static int compute_delta_a(BigInteger x) throws HomomorphicException {
+    public static int compute_delta_a(BigInteger x, int t_bits) throws HomomorphicException {
         // Step 2, Compute Hamming Weight and Select delta A
         int delta_a;
         int hamming_weight = hamming_weight(x);
-        int t_bits = x.bitLength();
         double ceiling = Math.ceil(t_bits/2.0);
         double floor = Math.floor(t_bits/2.0);
 
