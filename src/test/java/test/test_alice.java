@@ -223,16 +223,19 @@ public class test_alice implements Runnable, constants
 		// Bob always will compare with a medium
 		for(BigInteger l: low) {
 			// X <= Y is true
+			// logger.info("[Alice] Protocol 1 Testing with {}", l);
 			answer = Niu.Protocol1(l);
 			assertTrue(answer);
 		}
 		for(BigInteger l: mid) {
 			// X <= Y is true
+			// logger.info("[Alice] Protocol 1 Testing with {}", l);
 			answer = Niu.Protocol1(l);
 			assertTrue(answer);
 		}
 		for(BigInteger l: high) {
 			// X <= Y is false
+			// logger.info("[Alice] Protocol 1 Testing with {}", l);
 			answer = Niu.Protocol1(l);
 			assertFalse(answer);
 		}

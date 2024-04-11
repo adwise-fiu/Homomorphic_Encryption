@@ -106,16 +106,19 @@ public class test_bob implements Runnable, constants
 		boolean answer;
 		for(BigInteger l: mid) {
 			// X <= Y is true
+            // logger.info("[Bob] Protocol 1 Testing with {}", l);
 			answer = andrew.Protocol1(l);
 			assertTrue(answer);
 		}
 		for(BigInteger l: mid) {
 			// X <= Y is true
+			// logger.info("[Bob] Protocol 1 Testing with {}", l);
 			answer = andrew.Protocol1(l);
 			assertTrue(answer);
 		}
 		for(BigInteger l: mid) {
 			// X <= Y is false
+			// logger.info("[Bob] Protocol 1 Testing with {}", l);
 			answer = andrew.Protocol1(l);
 			assertFalse(answer);
 		}

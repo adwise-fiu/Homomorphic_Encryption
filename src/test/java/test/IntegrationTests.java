@@ -130,7 +130,7 @@ public class IntegrationTests implements constants
 		BigInteger y;
 		BigInteger [] encrypted_bits;
 		BigInteger[] xor;
-		int [] y_bits = { 10, 3, 17};
+		int [] y_bits = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
 		for (int yBit : y_bits) {
 			// Works both when y and x is hard coded to be 10 bits long.
@@ -143,7 +143,7 @@ public class IntegrationTests implements constants
 			logger.debug("y in bits looks like {} and value is {}", y.toString(2), y);
 
 			// This is beyond XOR, and the bug
-			int delta_a = alice_joye.compute_delta_a(x);
+			int delta_a = alice_joye.compute_delta_a(x, xor.length);
 			set_l = Niu.form_set_l(x, delta_a, xor);
 			C = Niu.compute_c(x, encrypted_bits, xor, delta_a, set_l);
 			delta_b = andrew.compute_delta_b(C);
@@ -183,13 +183,9 @@ public class IntegrationTests implements constants
 
 			Thread yujia = new Thread(new test_alice(all_alice[i], paillier, dgk));
 			yujia.start();
-			try {
-				andrew.join();
-				yujia.join();
-			}
-			catch (InterruptedException e) {
-				logger.error(e.getStackTrace());
-			}
+
+			andrew.join();
+			yujia.join();
 		}
 	}
 
@@ -211,12 +207,8 @@ public class IntegrationTests implements constants
 
 		Thread yujia = new Thread(new test_el_gamal_alice(Niu, (ElGamalPrivateKey) el_gamal.getPrivate()));
 		yujia.start();
-		try {
-			andrew.join();
-			yujia.join();
-		}
-		catch (InterruptedException e) {
-			logger.error(e.getStackTrace());
-		}
+
+		andrew.join();
+		yujia.join();
 	}
 }
