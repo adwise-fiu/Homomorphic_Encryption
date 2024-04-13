@@ -55,11 +55,14 @@ public class alice_joye extends alice {
         // computes delta_l and delta_l_prime
         // In Figure 1, delta_a == delta_l
         writeObject(big_m);
+        // Complete Protocol 1
         BigInteger [] Encrypted_Y = get_encrypted_bits();
         BigInteger [] XOR = encrypted_xor(x, Encrypted_Y);
         delta_l = compute_delta_a(little_m_l, XOR.length);
-        writeObject(DGKOperations.encrypt(delta_l, dgk_public));
         Protocol0(little_m_l, delta_l, XOR, Encrypted_Y);
+
+        // Now that Protocol 1 is done, Bob needs Delta A to compute Delta B
+        writeObject(DGKOperations.encrypt(delta_l, dgk_public));
 
         // Compare values that did NOT get the mod {2^{t}}
         if (u_l.divide(powT).mod(TWO).equals(BigInteger.ZERO)) {
