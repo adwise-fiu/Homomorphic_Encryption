@@ -59,7 +59,7 @@ public class test_bob implements Runnable, constants
 			test_encrypted_equality(true);
 			test_encrypted_equality(false);
 		}
-		catch (IOException | ClassNotFoundException | HomomorphicException | IllegalArgumentException x) {
+		catch (Exception x) {
 			throw new RuntimeException(x);
 		}
 		finally {

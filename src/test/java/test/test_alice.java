@@ -73,7 +73,7 @@ public class test_alice implements Runnable, constants
 			test_encrypted_equality(true);
 			test_encrypted_equality(false);
 		}
-		catch (ClassNotFoundException | IOException | HomomorphicException e) {
+		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
