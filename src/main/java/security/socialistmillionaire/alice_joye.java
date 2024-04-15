@@ -57,7 +57,8 @@ public class alice_joye extends alice {
         writeObject(big_m);
         // Complete Protocol 1
         BigInteger [] Encrypted_Y = get_encrypted_bits();
-        BigInteger [] XOR = encrypted_xor(x, Encrypted_Y);
+        BigInteger [] XOR = encrypted_xor(little_m_l, Encrypted_Y);
+        // Remember that XOR.length is t-bits, x (xor) y is t-bits, so x and y should be t-bits too
         delta_l = compute_delta_a(little_m_l, XOR.length);
         Protocol0(little_m_l, delta_l, XOR, Encrypted_Y);
 
@@ -85,6 +86,7 @@ public class alice_joye extends alice {
     public boolean Protocol1(BigInteger x) throws HomomorphicException, IOException, ClassNotFoundException {
         BigInteger [] Encrypted_Y = get_encrypted_bits();
         BigInteger [] XOR = encrypted_xor(x, Encrypted_Y);
+        // Remember that XOR.length is t-bits, x (xor) y is t-bits, so x and y should be t-bits too
         int delta_a = compute_delta_a(x, XOR.length);
         return Protocol0(x, delta_a, XOR, Encrypted_Y);
     }
@@ -173,10 +175,8 @@ public class alice_joye extends alice {
     private boolean Protocol0(BigInteger x, int delta_a, BigInteger [] XOR, BigInteger [] Encrypted_Y)
             throws IOException, ClassNotFoundException, HomomorphicException {
 
-        BigInteger [] C;
-        List<Integer> set_l;
-        set_l = form_set_l(x, delta_a, XOR);
-        C = compute_c(x, Encrypted_Y, XOR, delta_a, set_l);
+        List<Integer> set_l = form_set_l(x, delta_a, XOR);
+        BigInteger [] C = compute_c(x, Encrypted_Y, XOR, delta_a, set_l);
         C = shuffle_bits(C);
         writeObject(C);
 
