@@ -55,6 +55,8 @@ public class alice_joye extends alice {
         // computes delta_l and delta_l_prime
         // In Figure 1, delta_a == delta_l
         writeObject(big_m);
+        logger.debug("[private_integer_comparison] Alice is sending {} for Joye Protocol 1 (Embedded)", little_m_l);
+
         // Complete Protocol 1
         BigInteger [] Encrypted_Y = get_encrypted_bits();
         BigInteger [] XOR = encrypted_xor(little_m_l, Encrypted_Y);
