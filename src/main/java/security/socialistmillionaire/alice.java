@@ -118,31 +118,38 @@ public class alice extends socialist_millionaires implements alice_interface {
 		BigInteger [] Encrypted_Y = get_encrypted_bits();
         logger.info("Received Encrypted {} from bob for private_equals check", Encrypted_Y.length);
         BigInteger [] xor = encrypted_xor(r, Encrypted_Y);
-		BigInteger [] C = new BigInteger[xor.length];
+		BigInteger [] C_a = new BigInteger[xor.length];
+		BigInteger [] C_b = new BigInteger[xor.length];
+
+		// Step 6: Sum XOR and multiply by random 2*t bit number
+		C_a[0] = DGKOperations.sum(xor, dgk_public);
+		BigInteger rho = NTL.generateXBitRandom(2 * dgk_public.getT());
+		C_a[0] = DGKOperations.multiply(C_a[0], rho, dgk_public);
+
+		// Step 7: Create lots of dummy encrypted numbers
+		for (int i = 1; i < xor.length; i++) {
+			C_a[i] = DGKOperations.encrypt(NTL.RandomBnd(dgk_public.getU()), dgk_public);
+		}
+
+		// Delta_B
+		for (int i = 0; i < xor.length; i++) {
+			// Sum XOR part and multiply by 2
+			C_b[i] = DGKOperations.multiply(DGKOperations.sum(xor, dgk_public, i), 2, dgk_public);
+			// subtract 1
+			C_b[i] = DGKOperations.subtract(C_b[i], dgk_public.ONE, dgk_public);
+			// Add XOR bit value at i
+			C_b[i] = DGKOperations.add(C_b[i], xor[i], dgk_public);
+		}
 
 		if (delta_a == 0) {
-			// Step 6: Sum XOR and multiply by random 2*t bit number
-			C[0] = DGKOperations.sum(xor, dgk_public);
-			BigInteger rho = NTL.generateXBitRandom(2 * dgk_public.getT());
-			C[0] = DGKOperations.multiply(C[0], rho, dgk_public);
-
-			// Step 7: Create lots of dummy encrypted numbers
-			for (int i = 1; i < xor.length; i++) {
-				C[i] = DGKOperations.encrypt(NTL.RandomBnd(dgk_public.getU()), dgk_public);
-			}
+			shuffle_bits(C_a);
+			writeObject(C_a);
 		}
 		else {
-			for (int i = 0; i < xor.length; i++) {
-				// Sum XOR part and multiply by 2
-				C[i] = DGKOperations.multiply(DGKOperations.sum(xor, dgk_public, i), 2, dgk_public);
-				// subtract 1
-				C[i] = DGKOperations.subtract(C[i], dgk_public.ONE, dgk_public);
-				// Add XOR bit value at i
-				C[i] = DGKOperations.add(C[i], xor[i], dgk_public);
-			}
+			shuffle_bits(C_b);
+			writeObject(C_b);
 		}
-		shuffle_bits(C);
-		writeObject(C);
+
 		// Bob just runs Protocol 1
 		// I should note that decrypt protocol_one handles getting delta_b
 		// and computing delta and decrypting delta
