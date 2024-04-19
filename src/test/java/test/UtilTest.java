@@ -13,8 +13,11 @@ import java.io.IOException;
 import java.security.KeyPair;
 
 import static org.junit.Assert.assertEquals;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class UtilTest implements constants {
+    private static final Logger logger = LogManager.getLogger(UtilTest.class);
     private static PaillierPublicKey paillier_public_key;
     private static PaillierPrivateKey paillier_private_key;
 
@@ -41,16 +44,16 @@ public class UtilTest implements constants {
     public void test_store_dgk() throws IOException, ClassNotFoundException {
         dgk_public_key.writeKey("dgk.pub");
         dgk_private_key.writeKey("dgk");
-        System.out.println("DGK Write Key");
+        logger.info("DGK Write Key");
 
         DGKPublicKey other_dgk_pub = DGKPublicKey.readKey("dgk.pub");
-        System.out.println("DGK Public Read");
+        logger.info("DGK Public Read");
         DGKPrivateKey other_dgk_private = DGKPrivateKey.readKey("dgk");
-        System.out.println("DGK Public Read");
+        logger.info("DGK Public Read");
 
         assertEquals(dgk_public_key, other_dgk_pub);
         assertEquals(dgk_private_key, other_dgk_private);
-        System.out.println("READ/WRITE TEST ON DGK DONE");
+        logger.info("READ/WRITE TEST ON DGK DONE");
     }
 
     @Test
@@ -63,6 +66,6 @@ public class UtilTest implements constants {
 
         assertEquals(paillier_public_key, other_paillier_pub);
         assertEquals(paillier_private_key, other_paillier_private);
-        System.out.println("READ/WRITE TEST ON PAILLIER DONE");
+        logger.info("READ/WRITE TEST ON PAILLIER DONE");
     }
 }

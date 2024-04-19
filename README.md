@@ -1,7 +1,7 @@
 # Homomorphic Encryption
-[![Build Gradle project](https://github.com/AndrewQuijano/Homomorphic_Encryption/actions/workflows/build-gradle-project.yml/badge.svg)](https://github.com/AndrewQuijano/Homomorphic_Encryption/actions/workflows/build-gradle-project.yml)
+[![Build Gradle project](https://github.com/adwise-fiu/Homomorphic_Encryption/actions/workflows/build-gradle-project.yml/badge.svg)](https://github.com/AndrewQuijano/Homomorphic_Encryption/actions/workflows/build-gradle-project.yml)
 
-[![codecov](https://codecov.io/gh/AndrewQuijano/Homomorphic_Encryption/branch/main/graph/badge.svg?token=OIFWDVX2SA)](https://codecov.io/gh/AndrewQuijano/Homomorphic_Encryption)
+[![codecov](https://codecov.io/gh/adwise-fiu/Homomorphic_Encryption/branch/main/graph/badge.svg?token=OIFWDVX2SA)](https://codecov.io/gh/AndrewQuijano/Homomorphic_Encryption)
 
 Homomorphic Encryption is a Java library that implements the following partially homomorphic encryption systems:
 * Paillier  

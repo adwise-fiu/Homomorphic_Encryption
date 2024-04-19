@@ -10,8 +10,8 @@ import security.misc.NTL;
 
 public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 {
+	@Serial
 	private static final long serialVersionUID = 4574519230502483629L;
-
 	// Private Key Parameters
 	final BigInteger p;
 	private final BigInteger q;

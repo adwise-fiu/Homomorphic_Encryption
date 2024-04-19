@@ -69,8 +69,11 @@ public class DGKTest implements constants {
         a = DGKOperations.subtract_plaintext(DGKOperations.encrypt(TWENTY, public_key),
                 BigInteger.TEN, public_key);// 20 - 10
         assertEquals(10, DGKOperations.decrypt(a, private_key));
-    }
 
+        // Test Subtraction with ciphertext
+        a = DGKOperations.subtract_ciphertext(FIFTY, DGKOperations.encrypt(TWENTY, public_key), public_key);
+        assertEquals(30, DGKOperations.decrypt(a, private_key));
+    }
     @Test
     public void test_divide() throws HomomorphicException {
         // Test Division, Division is failing for some reason...?

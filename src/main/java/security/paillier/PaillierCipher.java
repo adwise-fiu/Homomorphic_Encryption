@@ -3,6 +3,8 @@ package security.paillier;
 import java.math.BigInteger;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import security.misc.CipherConstants;
 import security.misc.HomomorphicException;
 import security.misc.NTL;
@@ -14,6 +16,8 @@ import security.misc.NTL;
  * As it extends from CipherSpi, it can also encrypt byte arrays as well.
  */
 public final class PaillierCipher implements CipherConstants {
+
+	private static final Logger logger = LogManager.getLogger(PaillierCipher.class);
 
 	//-----------------------BigInteger Paillier----------------------------------------------
 
@@ -29,8 +33,9 @@ public final class PaillierCipher implements CipherConstants {
 			throws HomomorphicException 
 	{
 		if (plaintext.signum() == -1) {
-			throw new HomomorphicException("Encryption Invalid Parameter: the plaintext is not in Zu (plaintext < 0)"
-					+ " value of Plain Text is: " + plaintext);
+			logger.warn("Encryption Invalid Parameter: the plaintext is not in Zu (plaintext < 0)"
+					+ " value of Plain Text is: " + plaintext + " will be encrypted as " +
+					NTL.POSMOD(plaintext, public_key.getN()));
 		}
 		else if (plaintext.compareTo(public_key.n) >= 0) {
 			throw new HomomorphicException("Encryption Invalid Parameter: the plaintext is not in N"
@@ -133,7 +138,7 @@ public final class PaillierCipher implements CipherConstants {
 	 * @param ciphertext - Encrypted Paillier value
 	 * @param plaintext - plaintext value
 	 * @param public_key - used to encrypt ciphertext
-	 * @return Paillier encrypted ciphertext with ciphertext1 - ciphertext2
+	 * @return Paillier encrypted ciphertext with ciphertext - plaintext
 	 */
 	public static BigInteger subtract_plaintext(BigInteger ciphertext, BigInteger plaintext,
 												PaillierPublicKey public_key) throws HomomorphicException {
@@ -141,6 +146,22 @@ public final class PaillierCipher implements CipherConstants {
 		BigInteger inverse = NTL.POSMOD(plaintext.multiply(NEG_ONE), public_key.n);
 		return add_plaintext(ciphertext, inverse, public_key);
 	}
+
+	/**
+	 * y - [x] = y + [-x] = [-x] + y
+	 * Computes encrypted Paillier value of the cipher-text subtracted by the plaintext
+	 * @param plaintext - plaintext value
+	 * @param ciphertext - Encrypted Paillier value
+	 * @param public_key - used to encrypt ciphertext
+	 * @return Paillier encrypted ciphertext with plaintext - ciphertext
+	 */
+	public static BigInteger subtract_ciphertext(BigInteger plaintext, BigInteger ciphertext,
+												PaillierPublicKey public_key) throws HomomorphicException {
+		// Multiply the ciphertext value by -1
+		BigInteger inverse_ciphertext = multiply(ciphertext, public_key.n.subtract(BigInteger.ONE), public_key);
+		return add_plaintext(inverse_ciphertext, plaintext, public_key);
+	}
+
 	
 	/**
 	 * Compute the Paillier encrypted value of ciphertext multiplied by the plaintext.

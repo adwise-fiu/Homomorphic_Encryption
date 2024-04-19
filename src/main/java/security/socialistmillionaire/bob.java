@@ -19,8 +19,13 @@ import security.paillier.PaillierCipher;
 import security.paillier.PaillierPublicKey;
 import security.paillier.PaillierPrivateKey;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class bob extends socialist_millionaires implements bob_interface
 {
+	private static final Logger logger = LogManager.getLogger(bob.class);
+
 	public bob(KeyPair first, KeyPair second, KeyPair third) {
 		parse_key_pairs(first, second, third);
 	}
@@ -120,15 +125,15 @@ public class bob extends socialist_millionaires implements bob_interface
 			++counter;
 			this.Protocol2();
 		}
-		System.out.println("Protocol 2 was used " + counter + " times!");
-		System.out.println("Protocol 2 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
+        logger.info("Protocol 2 was used {} times!", counter);
+        logger.info("Protocol 2 completed in {} seconds!", (System.nanoTime() - start_time) / BILLION);
 	}
 	
 	/*
 	 * Review "Protocol 1 EQT-1"
 	 * from the paper "Secure Equality Testing Protocols in the Two-Party Setting"
 	 */
-	public boolean encrypted_equals() throws IOException, HomomorphicException, ClassNotFoundException {
+	public void encrypted_equals() throws IOException, HomomorphicException, ClassNotFoundException {
 		// Receive x from Alice
 		Object o = readObject();
 		BigInteger y;
@@ -147,7 +152,26 @@ public class bob extends socialist_millionaires implements bob_interface
 		}
 		// Technically, the whole computing delta_b and delta are already done here for you!
 		// within the decrypt_protocol_one in private_equals()
-		return Protocol1(y);
+		Protocol1(y);
+	}
+
+	public BigInteger [] encrypt_bits(BigInteger y) {
+		BigInteger [] Encrypted_Y = new BigInteger[y.bitLength()];
+		for (int i = 0; i < y.bitLength(); i++) {
+			Encrypted_Y[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
+		}
+		return Encrypted_Y;
+	}
+
+	public int compute_delta_b(BigInteger [] C) throws HomomorphicException {
+		int deltaB = 0;
+		for (BigInteger C_i : C) {
+			long value = DGKOperations.decrypt(C_i, dgk_private);
+			if (value == 0) {
+				deltaB = 1;
+			}
+		}
+		return deltaB;
 	}
 
 	/**
@@ -162,17 +186,15 @@ public class bob extends socialist_millionaires implements bob_interface
 	public boolean Protocol1(BigInteger y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
 		Object o;
-		int deltaB = 0;
 		BigInteger [] C;
 		BigInteger temp;
+		int deltaB;
 
 		// Step 1: Bob sends encrypted bits to Alice
-		BigInteger [] EncY = new BigInteger[y.bitLength()];
-		for (int i = 0; i < y.bitLength(); i++) {
-			EncY[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);
-		}
-		writeObject(EncY);
-		
+        logger.debug("[private_integer_comparison] Bob is sending {}", y);
+        logger.info("[private_integer_comparison] I am comparing sending y, which is {} bits long", y.bitLength());
+		writeObject(encrypt_bits(y));
+
 		// Step 2: Alice...
 		// Step 3: Alice...
 		// Step 4: Alice...
@@ -199,12 +221,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		}
 
 		// Perform constant-time comparison to update delta_b
-		for (BigInteger C_i : C) {
-			long value = DGKOperations.decrypt(C_i, dgk_private);
-			if (value == 0) {
-				deltaB = 1;
-			}
-		}
+		deltaB = compute_delta_b(C);
 
 		// Run Extra steps to help Alice decrypt Delta
 		return decrypt_protocol_one(deltaB);
@@ -403,21 +420,21 @@ public class bob extends socialist_millionaires implements bob_interface
 	{
 		if(dgk_public != null) {
 			writeObject(dgk_public);
-			System.out.println("Bob sent DGK Public Key to Alice");
+			logger.info("Bob sent DGK Public Key to Alice");
 		}
 		else {
 			writeObject(BigInteger.ZERO);
 		}
 		if(paillier_public != null) {
 			writeObject(paillier_public);
-			System.out.println("Bob sent Paillier Public Key to Alice");
+			logger.info("Bob sent Paillier Public Key to Alice");
 		}
 		else {
 			writeObject(BigInteger.ZERO);
 		}
 		if(el_gamal_public != null) {
 			writeObject(el_gamal_public);
-			System.out.println("Bob sent ElGamal Public Key to Alice");
+			logger.info("Bob sent ElGamal Public Key to Alice");
 		}
 		else {
 			writeObject(BigInteger.ZERO);

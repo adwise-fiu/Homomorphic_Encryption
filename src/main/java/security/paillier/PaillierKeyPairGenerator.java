@@ -7,17 +7,19 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGeneratorSpi;
 import java.security.SecureRandom;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import security.misc.CipherConstants;
 
 public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
 {
+	private static final Logger logger = LogManager.getLogger(PaillierKeyPairGenerator.class);
 	private int key_size = KEY_SIZE;
 	private SecureRandom rnd = null;
 
 	// Use this function to generate public and private key
 	public static void main(String []  args) {
-		System.out.println("HELLO PAILLIER");
 		String paillier_private_key_file = "paillier";
 		String paillier_public_key_file = "paillier.pub";
 		KeyPair paillier;
@@ -65,7 +67,7 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 			rnd = new SecureRandom();
 		}
 
-		System.out.println("Paillier Keys have " + key_size + " bits");
+		logger.info("Paillier Keys have " + key_size + " bits");
 		
 		// Chooses a random prime of length k2. The probability that
 		// p is not prime is at most 2^(-k2)
@@ -95,7 +97,7 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 		PaillierPublicKey pk = new PaillierPublicKey(this.key_size, n, modulus, g);
 		PaillierPrivateKey sk = new PaillierPrivateKey(this.key_size, n, modulus, lambda, mu, g, alpha);
 		
-		System.out.println("Completed building Paillier Key Pair!");
+		logger.info("Completed building Paillier Key Pair!");
 		return new KeyPair(pk, sk);
 	}
 

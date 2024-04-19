@@ -1,6 +1,11 @@
 package test;
 
+import security.dgk.DGKOperations;
+import security.dgk.DGKPrivateKey;
+import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalPrivateKey;
+import security.misc.HomomorphicException;
+import security.misc.NTL;
 import security.paillier.PaillierKeyPairGenerator;
 import security.dgk.DGKKeyPairGenerator;
 import security.elgamal.ElGamalKeyPairGenerator;
@@ -9,13 +14,19 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.security.KeyPair;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 import security.socialistmillionaire.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import static org.junit.Assert.assertEquals;
 
 public class IntegrationTests implements constants
 {
+	private static final Logger logger = LogManager.getLogger(IntegrationTests.class);
 	// All Key Pairs
 	private static KeyPair dgk = null;
 	private static KeyPair paillier = null;
@@ -61,34 +72,122 @@ public class IntegrationTests implements constants
 	}
 
 	@Test
+	public void test_encrypted_xor() throws HomomorphicException {
+		alice Niu = new alice();
+		bob andrew = new bob(paillier, dgk);
+		Niu.setDGKMode(true);
+		andrew.setDGKMode(true);
+		Niu.setDGKPublicKey((DGKPublicKey) dgk.getPublic());
+		Niu.set_dgk_private_key((DGKPrivateKey) dgk.getPrivate());
+
+		BigInteger [] encrypted_bits;
+		BigInteger x;
+		BigInteger y;
+		BigInteger [] xor;
+		BigInteger expected_xor;
+
+		int [] y_bits = { 3, 16, 7};
+
+        for (int yBit : y_bits) {
+			// Works both when y and x is hard coded to be 10 bits long.
+			x = NTL.generateXBitRandom(yBit);
+			y = NTL.generateXBitRandom(7);
+			encrypted_bits = andrew.encrypt_bits(y);
+
+            logger.debug("x in bits looks like {} and value is {}", x.toString(2), x);
+            logger.debug("y in bits looks like {} and value is {}", y.toString(2), y);
+
+			xor = Niu.encrypted_xor(x, encrypted_bits);
+            // Few things to note, xor can be smaller that inputs.
+            // Prints top to bottom, matches left to right when printing bit string.
+            // If x and y same bit-size, IT WORKS
+            // As expected, right now it IS WRONG, if x is smaller in bits, let's fix this first.
+            StringBuilder collect_bits = new StringBuilder();
+            for (int i = 0; i < xor.length; i++) {
+                long l = DGKOperations.decrypt(xor[i], (DGKPrivateKey) dgk.getPrivate());
+                logger.debug("i={} is {}", i, l);
+                collect_bits.append(l);
+            }
+            expected_xor = x.xor(y);
+            logger.debug("xor regular: {}", expected_xor.toString(2));
+            assertEquals(new BigInteger(collect_bits.toString(), 2), x.xor(y));
+        }
+	}
+
+	@Test
+	public void test_debug_joye_protocol_one() throws HomomorphicException {
+		List<Integer> set_l;
+		BigInteger [] C;
+		int delta_b;
+		alice_joye Niu = new alice_joye();
+		bob andrew = new bob(paillier, dgk);
+		Niu.setDGKMode(true);
+		andrew.setDGKMode(true);
+		Niu.setDGKPublicKey((DGKPublicKey) dgk.getPublic());
+		Niu.set_dgk_private_key((DGKPrivateKey) dgk.getPrivate());
+
+		BigInteger x;
+		BigInteger y;
+		BigInteger [] encrypted_bits;
+		BigInteger[] xor;
+		int [] y_bits = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+
+		for (int yBit : y_bits) {
+			// Works both when y and x is hard coded to be 10 bits long.
+			x = NTL.generateXBitRandom(yBit);
+			y = NTL.generateXBitRandom(10);
+			encrypted_bits = andrew.encrypt_bits(y);
+			xor = Niu.encrypted_xor(x, encrypted_bits);
+
+			logger.debug("x in bits looks like {} and value is {}", x.toString(2), x);
+			logger.debug("y in bits looks like {} and value is {}", y.toString(2), y);
+
+			// This is beyond XOR, and the bug
+			int delta_a = alice_joye.compute_delta_a(x, xor.length);
+			set_l = Niu.form_set_l(x, delta_a, xor);
+			C = Niu.compute_c(x, encrypted_bits, xor, delta_a, set_l);
+			delta_b = andrew.compute_delta_b(C);
+
+			if (x.compareTo(y) <= 0) {
+				assertEquals(1, delta_a ^ delta_b);
+			} else {
+				assertEquals(0, delta_a ^ delta_b);
+			}
+		}
+	}
+
+	@Test
 	public void all_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		bob [] all_bobs = { new bob(paillier, dgk, el_gamal), new bob_veugen(paillier, dgk, el_gamal) };
-		alice [] all_alice = { new alice(), new alice_veugen() };
+		bob [] all_bobs = {
+				new bob(paillier, dgk, el_gamal),
+				new bob_veugen(paillier, dgk, el_gamal),
+				new bob_joye(paillier, dgk, el_gamal)
+		};
+		alice [] all_alice = {
+				new alice(),
+				new alice_veugen(),
+				new alice_joye()
+		};
 
 		for (int i = 0; i < all_bobs.length; i++) {
 			Thread andrew = new Thread(new test_bob(all_bobs[i], 9200 + i));
 			andrew.start();
 
 			// Wait then connect!
-			System.out.println("Sleep to give bob time to make keys...");
+            logger.info("Sleep to give {} time to make keys...", all_bobs[i].getClass().getName());
 			Thread.sleep(2 * 1000);
-			System.out.println("Alice starting...");
+            logger.info("{} is starting...", all_alice[i].getClass().getName());
 
 			all_alice[i].set_socket(new Socket("127.0.0.1", 9200 + i));
 			all_alice[i].receivePublicKeys();
 
 			Thread yujia = new Thread(new test_alice(all_alice[i], paillier, dgk));
 			yujia.start();
-			try {
-				andrew.join();
-				yujia.join();
-			}
-			catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+
+			andrew.join();
+			yujia.join();
 		}
 	}
-
 
 	// Test El Gamal version of Alice and Bob
 	@Test
@@ -98,9 +197,9 @@ public class IntegrationTests implements constants
 		andrew.start();
 
 		// Wait then connect!
-		System.out.println("Sleep to give bob time to make keys...");
+		logger.info("Sleep to give bob time to make keys...");
 		Thread.sleep(2 * 1000);
-		System.out.println("Alice starting...");
+		logger.info("Alice starting...");
 
 		alice_elgamal Niu = new alice_elgamal();
 		Niu.set_socket(new Socket("127.0.0.1", 10000));
@@ -108,37 +207,8 @@ public class IntegrationTests implements constants
 
 		Thread yujia = new Thread(new test_el_gamal_alice(Niu, (ElGamalPrivateKey) el_gamal.getPrivate()));
 		yujia.start();
-		try {
-			andrew.join();
-			yujia.join();
-		}
-		catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
 
-	@Test
-	public void joye_integration_test() throws IOException, InterruptedException, ClassNotFoundException {
-		bob_joye bob_version_three = new bob_joye(paillier, dgk, el_gamal);
-		Thread andrew = new Thread(new test_bob(bob_version_three, 9203));
-		andrew.start();
-
-		// Wait then connect!
-		System.out.println("Sleep to give bob time to make keys...");
-		Thread.sleep(2 * 1000);
-		System.out.println("Alice starting...");
-
-		alice Niu = new alice_joye();
-		Niu.set_socket(new Socket("127.0.0.1", 9203));
-		Niu.receivePublicKeys();
-
-		Thread yujia = new Thread(new test_alice(Niu, paillier, dgk));
-		yujia.start();
-		try {
-			andrew.join();
-			yujia.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		andrew.join();
+		yujia.join();
 	}
 }

@@ -15,8 +15,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class test_el_gamal_alice implements constants, Runnable {
+    private static final Logger logger = LogManager.getLogger(test_el_gamal_alice.class);
+
     public test_el_gamal_alice(alice_elgamal Niu, ElGamalPrivateKey el_gamal_private) {
         this.Niu = Niu;
         this.el_gamal_private = el_gamal_private;
@@ -46,12 +50,12 @@ public class test_el_gamal_alice implements constants, Runnable {
             //test_subtract();
         }
         catch (ClassNotFoundException | HomomorphicException | IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
     public void test_sorting() throws HomomorphicException, IOException, ClassNotFoundException {
-        System.out.println("Alice: Sorting Test...ElGamal");
+        logger.info("Alice: Sorting Test...ElGamal");
         BigInteger [] toSort = new BigInteger[low.length];
         List<ElGamal_Ciphertext> t = new ArrayList<>();
         List<ElGamal_Ciphertext> min;
@@ -73,12 +77,12 @@ public class test_el_gamal_alice implements constants, Runnable {
         for (int i = 0; i < plain_min.length; i++) {
             assertEquals(toSort[i], plain_min[i]);
         }
-        System.out.println("General List: " + Arrays.toString(toSort));
-        System.out.println("Three minimum numbers: " + Arrays.toString(plain_min));
+        logger.info("General List: {}", Arrays.toString(toSort));
+        logger.info("Three minimum numbers: {}", Arrays.toString(plain_min));
     }
 
     public void test_protocol_two() throws HomomorphicException, IOException, ClassNotFoundException {
-        System.out.println("Alice: Protocol 4 Tests...ElGamal");
+        logger.info("Alice: Protocol 4 Tests...ElGamal");
         boolean answer;
         // Test for X >= Y
         for (int i = 0; i < low.length;i++) {
@@ -95,7 +99,7 @@ public class test_el_gamal_alice implements constants, Runnable {
     }
 
     public void test_outsourced_multiply() throws IOException, ClassNotFoundException {
-        System.out.println("Alice: Multiplication Tests...ElGamal");
+        logger.info("Alice: Multiplication Tests...ElGamal");
         ElGamal_Ciphertext temp;
         // Check the multiplication, ElGamal
         temp = Niu.multiplication(ElGamalCipher.encrypt(THOUSAND, el_gamal_public),
@@ -111,7 +115,7 @@ public class test_el_gamal_alice implements constants, Runnable {
 
     public void test_outsourced_division()
             throws HomomorphicException, IOException, ClassNotFoundException {
-        System.out.println("Division Tests...ElGamal");
+        logger.info("Division Tests...ElGamal");
         ElGamal_Ciphertext big = ElGamalCipher.encrypt(100, el_gamal_public);
         ElGamal_Ciphertext temp;
         temp = Niu.division(big, 2);//100/2 = 50
@@ -133,7 +137,7 @@ public class test_el_gamal_alice implements constants, Runnable {
     public void test_addition() throws IOException, ClassNotFoundException {
         ElGamal_Ciphertext temp;
         if (!el_gamal_public.additive) {
-            System.out.println("Alice: Test ElGamal Secure Addition...");
+            logger.info("Alice: Test ElGamal Secure Addition...");
             temp = Niu.addition(ElGamalCipher.encrypt(TWO_HUNDRED, el_gamal_public),
                     ElGamalCipher.encrypt(HUNDRED, el_gamal_public));
             assertEquals(ElGamalCipher.decrypt(temp, el_gamal_private), THREE_HUNDRED);
@@ -151,7 +155,7 @@ public class test_el_gamal_alice implements constants, Runnable {
     public void test_subtract() throws IOException, ClassNotFoundException {
         ElGamal_Ciphertext temp;
         if (!el_gamal_public.additive) {
-            System.out.println("Alice: Test ElGamal Secure Subtraction...");
+            logger.info("Alice: Test ElGamal Secure Subtraction...");
             temp = Niu.addition(ElGamalCipher.encrypt(TWO_HUNDRED, el_gamal_public),
                     ElGamalCipher.encrypt(HUNDRED, el_gamal_public));
             assertEquals(ElGamalCipher.decrypt(temp, el_gamal_private), HUNDRED);

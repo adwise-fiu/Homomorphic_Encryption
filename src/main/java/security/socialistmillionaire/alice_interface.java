@@ -9,6 +9,12 @@ import java.util.List;
 
 public interface alice_interface {
 
+    /*
+     * Review "Protocol 1 EQT-1"
+     * from the paper "Secure Equality Testing Protocols in the Two-Party Setting"
+     */
+    boolean encrypted_equals(BigInteger x, BigInteger y) throws HomomorphicException, IOException, ClassNotFoundException;
+
     // Used to compare alice's private integer x and bob's private integer y
     boolean Protocol1(BigInteger x)
             throws IOException, IllegalArgumentException, HomomorphicException, ClassNotFoundException;
@@ -18,6 +24,7 @@ public interface alice_interface {
             throws IOException, ClassNotFoundException, HomomorphicException;
 
     BigInteger division(BigInteger x, long d) throws IOException, ClassNotFoundException, HomomorphicException;
+
     BigInteger multiplication(BigInteger x, BigInteger y)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException;
 

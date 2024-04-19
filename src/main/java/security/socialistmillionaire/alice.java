@@ -9,6 +9,7 @@ import javax.net.ssl.SSLSocket;
 
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import security.dgk.DGKOperations;
+import security.dgk.DGKPrivateKey;
 import security.dgk.DGKPublicKey;
 
 import security.elgamal.ElGamalPublicKey;
@@ -20,7 +21,12 @@ import security.paillier.PaillierPublicKey;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class alice extends socialist_millionaires implements alice_interface {
+
+	private static final Logger logger = LogManager.getLogger(alice.class);
 
 	public alice() {
 		this.isDGK = false;
@@ -108,45 +114,42 @@ public class alice extends socialist_millionaires implements alice_interface {
 	}
 
 	// Used only within encrypted_equals
-	private boolean private_equals(BigInteger r, int delta_a) throws HomomorphicException, IOException, ClassNotFoundException {
+	protected boolean private_equals(BigInteger r, int delta_a) throws HomomorphicException, IOException, ClassNotFoundException {
 		BigInteger [] Encrypted_Y = get_encrypted_bits();
-
-		BigInteger early_terminate = unequal_bit_check(r, Encrypted_Y);
-        if (early_terminate.equals(BigInteger.ONE)) {
-            return true;
-        }
-        else if (early_terminate.equals(BigInteger.ZERO)) {
-            return false;
-        }
-
-        // if equal bits, proceed!
-        // Step 2: compute Encrypted X XOR Y
+        logger.info("Received Encrypted {} from bob for private_equals check", Encrypted_Y.length);
         BigInteger [] xor = encrypted_xor(r, Encrypted_Y);
-		BigInteger [] C = new BigInteger[r.bitLength()];
+		BigInteger [] C_a = new BigInteger[xor.length];
+		BigInteger [] C_b = new BigInteger[xor.length];
+
+		// Step 6: Sum XOR and multiply by random 2*t bit number
+		C_a[0] = DGKOperations.sum(xor, dgk_public);
+		BigInteger rho = NTL.generateXBitRandom(2 * dgk_public.getT());
+		C_a[0] = DGKOperations.multiply(C_a[0], rho, dgk_public);
+
+		// Step 7: Create lots of dummy encrypted numbers
+		for (int i = 1; i < xor.length; i++) {
+			C_a[i] = DGKOperations.encrypt(NTL.RandomBnd(dgk_public.getU()), dgk_public);
+		}
+
+		// Delta_B
+		for (int i = 0; i < xor.length; i++) {
+			// Sum XOR part and multiply by 2
+			C_b[i] = DGKOperations.multiply(DGKOperations.sum(xor, dgk_public, i), 2, dgk_public);
+			// subtract 1
+			C_b[i] = DGKOperations.subtract(C_b[i], dgk_public.ONE, dgk_public);
+			// Add XOR bit value at i
+			C_b[i] = DGKOperations.add(C_b[i], xor[i], dgk_public);
+		}
 
 		if (delta_a == 0) {
-			// Step 6: Sum XOR and multiply by random 2*t bit number
-			C[0] = DGKOperations.sum(xor, dgk_public);
-			BigInteger rho = NTL.generateXBitRandom(2 * dgk_public.getT());
-			C[0] = DGKOperations.multiply(C[0], rho, dgk_public);
-
-			// Step 7: Create lots of dummy encrypted numbers
-			for (int i = 1; i < r.bitLength(); i++) {
-				C[i] = DGKOperations.encrypt(NTL.RandomBnd(dgk_public.getU()), dgk_public);
-			}
+			shuffle_bits(C_a);
+			writeObject(C_a);
 		}
 		else {
-			for (int i = 0; i < r.bitLength(); i++) {
-				// Sum XOR part and multiply by 2
-				C[i] = DGKOperations.multiply(DGKOperations.sum(xor, dgk_public, i), 2, dgk_public);
-				// subtract 1
-				C[i] = DGKOperations.subtract(C[i], dgk_public.ONE, dgk_public);
-				// Add XOR bit value at i
-				C[i] = DGKOperations.add(C[i], xor[i], dgk_public);
-			}
+			shuffle_bits(C_b);
+			writeObject(C_b);
 		}
-		shuffle_bits(C);
-		writeObject(C);
+
 		// Bob just runs Protocol 1
 		// I should note that decrypt protocol_one handles getting delta_b
 		// and computing delta and decrypting delta
@@ -155,6 +158,40 @@ public class alice extends socialist_millionaires implements alice_interface {
 
 	public boolean private_equals(BigInteger r) throws HomomorphicException, IOException, ClassNotFoundException {
 		return private_equals(r, rnd.nextInt(2));
+	}
+
+	protected BigInteger [] compute_c(BigInteger x, BigInteger [] Encrypted_Y,
+									  BigInteger [] XOR, int delta_a) throws HomomorphicException {
+
+		BigInteger [] C = new BigInteger[XOR.length + 1];
+		int xor_bit_length = XOR.length;
+		int start_bit_position_x = Math.max(0, xor_bit_length - x.bitLength());
+		int start_bit_position_y = Math.max(0, xor_bit_length - Encrypted_Y.length);
+
+		// Compute the Product of XOR, add s and compute x - y
+		// C_i = sum(XOR) + s + x_i - y_i
+		for (int i = 0; i < XOR.length;i++) {
+			// Retrieve corresponding bits from x and Encrypted_Y
+			int x_bit = NTL.bit(x, i - start_bit_position_x);
+
+			BigInteger y_bit;
+			if (i >= start_bit_position_y) {
+				y_bit = Encrypted_Y[i - start_bit_position_y];
+			}
+			else {
+				y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
+			}
+
+			C[i] = DGKOperations.multiply(DGKOperations.sum(XOR, dgk_public, i), 3, dgk_public);
+			C[i] = DGKOperations.add_plaintext(C[i], 1 - 2L * delta_a, dgk_public);
+			C[i] = DGKOperations.subtract(C[i], y_bit, dgk_public);
+			C[i] = DGKOperations.add_plaintext(C[i], x_bit, dgk_public);
+		}
+
+		//This is c_{-1}
+		C[XOR.length] = DGKOperations.sum(XOR, dgk_public);
+		C[XOR.length] = DGKOperations.add_plaintext(C[XOR.length], delta_a, dgk_public);
+		return C;
 	}
 
 	/**
@@ -175,20 +212,9 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 
 		int delta_a = rnd.nextInt(2);
-
-		BigInteger [] Encrypted_Y;
+		BigInteger [] Encrypted_Y = get_encrypted_bits();
 		BigInteger [] C;
 		BigInteger [] XOR;
-
-		// Step 1: Get Y bits from Bob
-		Encrypted_Y = get_encrypted_bits();
-		BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
-		if (early_terminate.equals(BigInteger.ONE)) {
-			return true;
-		}
-		else if (early_terminate.equals(BigInteger.ZERO)) {
-			return false;
-		}
 
 		// Otherwise, if the bit size is equal, proceed!
 		// Step 2: compute Encrypted X XOR Y
@@ -197,20 +223,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		// Step 3: Alice picks deltaA and computes s 
 
 		// Step 4: Compute C_i
-		C = new BigInteger[Encrypted_Y.length + 1];
-
-		// Compute the Product of XOR, add s and compute x - y
-		// C_i = sum(XOR) + s + x_i - y_i
-		for (int i = 0; i < Encrypted_Y.length;i++) {
-			C[i] = DGKOperations.multiply(DGKOperations.sum(XOR, dgk_public, i), 3, dgk_public);
-			C[i] = DGKOperations.add_plaintext(C[i], 1 - 2 * delta_a, dgk_public);
-			C[i] = DGKOperations.subtract(C[i], Encrypted_Y[i], dgk_public);
-			C[i] = DGKOperations.add_plaintext(C[i], NTL.bit(x, i), dgk_public);
-		}
-
-		//This is c_{-1}
-		C[Encrypted_Y.length] = DGKOperations.sum(XOR, dgk_public);
-		C[Encrypted_Y.length] = DGKOperations.add_plaintext(C[Encrypted_Y.length], delta_a, dgk_public);
+		C = compute_c(x, Encrypted_Y, XOR, delta_a);
 
 		// Step 5: Blinds C_i, Shuffle it and send to Bob
 		for (int i = 0; i < C.length; i++) {
@@ -285,15 +298,8 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 
 		// Step 5A: get Delta B
-
-
-		// Step 5A: get Delta B 
-		if(deltaA == x_leq_y) {
-			deltaB = 0;
-		}
-		else {
-			deltaB = 1;
-		}
+		// Step 5A: get Delta B
+		deltaB = x_leq_y ^ deltaA;
 
 		// Step 5B: Bob sends z/2^l 
 		bob = readObject();
@@ -452,12 +458,16 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return result;
 	}
 
+	public void set_dgk_private_key(DGKPrivateKey dgk_private) {
+		this.dgk_private = dgk_private;
+	}
+
 	public void receivePublicKeys()
 			throws IOException, ClassNotFoundException {
 		Object x;
 		x = readObject();
 		if (x instanceof DGKPublicKey) {
-			System.out.println("Alice Received DGK Public key from Bob");
+			logger.info("Alice Received DGK Public key from Bob");
 			this.setDGKPublicKey((DGKPublicKey) x);
 		}
 		else {
@@ -466,7 +476,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		
 		x = readObject();
 		if(x instanceof PaillierPublicKey) {
-			System.out.println("Alice Received Paillier Public key from Bob");
+			logger.info("Alice Received Paillier Public key from Bob");
 			this.setPaillierPublicKey((PaillierPublicKey) x);
 		}
 		else {
@@ -475,7 +485,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 	
 		x = readObject();
 		if(x instanceof ElGamalPublicKey) {
-			System.out.println("Alice Received ElGamal Public key from Bob");
+			logger.info("Alice Received ElGamal Public key from Bob");
 			this.setElGamalPublicKey((ElGamalPublicKey) x);
 		}
 		else {
@@ -537,7 +547,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 		// deep copy
 		List<BigInteger> arr = new ArrayList<>(input);
-		
 		BigInteger [] sorted_k = new BigInteger[k];
 		
 		boolean activation;
@@ -576,18 +585,50 @@ public class alice extends socialist_millionaires implements alice_interface {
 	}
 	
 	// ---------------------- Everything here is essentially utility functions all Alice will need ----------------
-	
-	// All the comparison protocols seem to require encrypted xor, so just make it into a function
-	// Note, Encrypted Y is encrypted bits from Bob.
-	// X is an unencrypted number we must compare y with.
-	protected BigInteger [] encrypted_xor(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException {
-		BigInteger [] xor_bits = new BigInteger[Encrypted_Y.length];
-		for (int i = 0; i < Encrypted_Y.length; i++) {
-			if (NTL.bit(x, i) == 1) {
-				xor_bits[i] = DGKOperations.subtract(dgk_public.ONE, Encrypted_Y[i], dgk_public);
+
+	// Found the issue; i=0 should be a 0 on the smallest thing first no matter what.
+	public BigInteger [] encrypted_xor(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException {
+		BigInteger [] xor_bits;
+		int xor_bit_length;
+
+		// Step 2: Determine the maximum bit length between x and Encrypted_Y
+		xor_bit_length = Math.max(x.bitLength(), Encrypted_Y.length);
+		if (x.bitLength() != Encrypted_Y.length) {
+            logger.warn("[private_integer_comparison] x has {} bits and y has {} bits", x.bitLength(), Encrypted_Y.length);
+		}
+		else {
+            logger.info("[private_integer_comparison] x has {} bits and y has {} bits", x.bitLength(), Encrypted_Y.length);
+		}
+        logger.info("[private_integer_comparison] Therefore, my xor output has {} bits", xor_bit_length);
+
+		// Step 2: Determine the starting bit position for x and Encrypted_Y
+		int start_bit_position_x = Math.max(0, xor_bit_length - x.bitLength());
+		int start_bit_position_y = Math.max(0, xor_bit_length - Encrypted_Y.length);
+
+		// Remember a xor 0 = a
+		xor_bits = new BigInteger[xor_bit_length];
+		for (int i = 0; i < xor_bit_length; i++) {
+			// Retrieve corresponding bits from x and Encrypted_Y
+			int x_bit;
+			BigInteger y_bit;
+			x_bit = NTL.bit(x, i - start_bit_position_x);
+
+			if (i >= start_bit_position_y) {
+				y_bit = Encrypted_Y[i - start_bit_position_y];
 			}
 			else {
-				xor_bits[i] = Encrypted_Y[i];
+				y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
+			}
+
+			if (dgk_private != null) {
+                logger.debug("i={} x_bit is: {} and y_bit is: {}", i, x_bit, DGKOperations.decrypt(y_bit, dgk_private));
+			}
+
+			if (x_bit == 1) {
+				xor_bits[i] = DGKOperations.subtract(dgk_public.ONE, y_bit, dgk_public);
+			}
+			else {
+				xor_bits[i] = y_bit;
 			}
 		}
 		return xor_bits;
@@ -596,64 +637,11 @@ public class alice extends socialist_millionaires implements alice_interface {
 	protected BigInteger [] get_encrypted_bits() throws HomomorphicException, IOException, ClassNotFoundException {
 		//Step 1: Receive y_i bits from Bob
 		Object o = readObject();
-				
 		if (o instanceof BigInteger[]) {
 			return (BigInteger []) o;
 		}
 		else {
-			System.err.println("Invalid Object received: " + o.getClass().getName());
-			throw new HomomorphicException("Protocol 3 Step 1: Missing Y-bits!");
-		}
-	}
-
-	/*
-	* This is an issue that can occur with all private integer comparison protocols.
-	* What to do if the bit values are NOT the same?
-	* Technically, there is a risk of timing attack as this protocol terminates early if bits aren't 
-	* the same.
-	* But this is beyond my pay grade.
-	* Feel free to PR if you have an idea.
-	* 
-    * Currently, by design of the program
-    * 1- Alice KNOWS that bob will assume deltaB = 0.
-	*
-    * Case 1:
-	* y has more bits than x IMPLIES that y is bigger
-	* x <= y is 1 (true)
-	* given deltaB is 0 by default...
-	* deltaA must be 1
-    * answer = 1 XOR 0 = 1
-    *
-    * Case 2:
-	* x has more bits than x IMPLIES that x is bigger
-    * x <= y is 0 (false)
-	* given deltaB is 0 by default...
-    * deltaA must be 0
-    * answer = 0 XOR 0 = 0
-    */
-	protected BigInteger unequal_bit_check(BigInteger x, BigInteger [] Encrypted_Y) throws IOException {
-
-        // Case 1, delta B is ALWAYS INITIALIZED TO 0
-        // y has more bits -> y is bigger
-        if (x.bitLength() < Encrypted_Y.length) {
-            writeObject(BigInteger.ONE);
-            // x <= y -> 1 (true)
-            System.out.println("Shouldn't be here: x <= y bits");
-            return BigInteger.ONE;
-        }
-
-        // Case 2 delta B is 0
-        // x has more bits -> x is bigger
-        else if(x.bitLength() > Encrypted_Y.length) {
-            writeObject(BigInteger.ZERO);
-            // x <= y -> 0 (false)
-            System.out.println("Shouldn't be here: x > y bits");
-            return BigInteger.ZERO;
-        }
-
-		// Yay, the bits are equal! Continue with the protocol!
-		else {
-			return TWO;
+			throw new HomomorphicException("Invalid Object received: " + o.getClass().getName());
 		}
 	}
 
@@ -702,6 +690,30 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 		else {
 			throw new HomomorphicException("Invalid Object found here: " + o.getClass().getName());
+		}
+	}
+
+	protected BigInteger unequal_bit_check(BigInteger x, BigInteger [] Encrypted_Y) throws IOException {
+        // Case 1, delta B is ALWAYS INITIALIZED TO 0
+        // y has more bits -> y is bigger
+        if (x.bitLength() < Encrypted_Y.length) {
+            writeObject(BigInteger.ONE);
+            // x <= y -> 1 (true)
+			logger.warn("[Protocol 1] Shouldn't be here: x <= y bits");
+            return BigInteger.ONE;
+        }
+
+        // Case 2 delta B is 0
+        // x has more bits -> x is bigger
+        else if(x.bitLength() > Encrypted_Y.length) {
+            writeObject(BigInteger.ZERO);
+            // x <= y -> 0 (false)
+			logger.warn("[Protocol 1] Shouldn't be here: x > y bits");
+            return BigInteger.ZERO;
+        }
+		else {
+			logger.info("[Protocol 1] x and y have the same number of bits, proceeding with the rest of private integer comparison");
+			return TWO;
 		}
 	}
 

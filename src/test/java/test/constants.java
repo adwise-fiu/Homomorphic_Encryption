@@ -11,7 +11,8 @@ public interface constants {
     BigInteger FIVE = new BigInteger("5");
     BigInteger TWENTY = new BigInteger("20");
     BigInteger TWENTY_FIVE = new BigInteger("25");
-    BigInteger FOURTY_NINE = new BigInteger("49");
+    BigInteger THIRTY = new BigInteger("30");
+    BigInteger FORTY_NINE = new BigInteger("49");
     BigInteger FIFTY = new BigInteger("50");
     BigInteger FIFTY_ONE = new BigInteger("51");
     BigInteger HUNDRED = new BigInteger("100");

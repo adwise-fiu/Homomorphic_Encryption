@@ -7,8 +7,12 @@ import security.paillier.PaillierCipher;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class bob_joye extends bob_veugen {
+public class bob_joye extends bob {
+    private static final Logger logger = LogManager.getLogger(bob_joye.class);
+
     public bob_joye(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
         super(a, b, c);
     }
@@ -26,19 +30,11 @@ public class bob_joye extends bob_veugen {
         BigInteger encrypted_delta_l;
         int delta_l;
         int delta_l_prime;
+        boolean x_leq_y;
 
         Object o = readObject();
         if (o instanceof BigInteger) {
             big_m_prime = (BigInteger) o;
-        }
-        else {
-            throw new HomomorphicException("In joye_protocol2(), I did NOT get a BigInteger");
-        }
-
-        o = readObject();
-        if (o instanceof BigInteger) {
-            encrypted_delta_l = (BigInteger) o;
-            delta_l = (int) DGKOperations.decrypt(encrypted_delta_l, dgk_private);
         }
         else {
             throw new HomomorphicException("In joye_protocol2(), I did NOT get a BigInteger");
@@ -61,13 +57,25 @@ public class bob_joye extends bob_veugen {
 
         // Create a function to run Protocol1 and capture delta_b?
         // or run a protocol_one, instead of decrypt delta, does same but returns delta_b?
-        if(Protocol1(little_m_prime)) {
-            delta_l_prime = 1 ^ delta_l;
+        x_leq_y = Protocol1(little_m_prime);
+
+        o = readObject();
+        if (o instanceof BigInteger) {
+            encrypted_delta_l = (BigInteger) o;
+            delta_l = (int) DGKOperations.decrypt(encrypted_delta_l, dgk_private);
+        }
+        else {
+            throw new HomomorphicException("In joye_protocol2(), I did NOT get a BigInteger");
+        }
+
+        if(x_leq_y) {
+            delta_l_prime = delta_l ^ 1;
         }
         else {
             delta_l_prime = delta_l;
         }
 
+        // Compare values that did NOT get the mod {2^{t}}
         if (big_m_prime.divide(powT).mod(TWO).equals(BigInteger.ZERO)) {
             beta_l_prime = delta_l_prime;
         }

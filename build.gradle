@@ -23,6 +23,8 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.14.0'
+    // or the latest version available
+    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
 }
 
 // Commenting because it doesn't work well on TravisCI

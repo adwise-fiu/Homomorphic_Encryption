@@ -110,7 +110,7 @@ public final class NTL implements CipherConstants
 		if (k < 0) {
 			return 0;
 		}
-		String bit = a.toString(2);//get it in Binary
+		String bit = a.toString(2); // get it in Binary
 		if (bit.charAt((int) k)== '0') {
 			return 0;
 		}

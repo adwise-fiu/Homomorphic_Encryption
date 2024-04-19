@@ -4,8 +4,8 @@ import java.io.*;
 import java.math.BigInteger;
 import java.security.PublicKey;
 
-public final class PaillierPublicKey implements Serializable, PaillierKey, PublicKey
-{
+public final class PaillierPublicKey implements Serializable, PaillierKey, PublicKey {
+	@Serial
 	private static final long serialVersionUID = -4009702553030484256L;
 
 	public final int key_size;

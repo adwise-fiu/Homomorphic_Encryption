@@ -9,8 +9,12 @@ import java.util.Random;
 import security.misc.CipherConstants;
 import security.misc.NTL;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
 {
+	private static final Logger logger = LogManager.getLogger(ElGamalKeyPairGenerator.class);
 	private int key_size = KEY_SIZE;
 	private SecureRandom random = null;
 	private final boolean additive;
@@ -37,7 +41,7 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 		// (a) take a random prime p with getPrime() function. p = 2 * p' + 1 with prime(p') = true
 		start_time = System.nanoTime();
 		BigInteger p = getPrime(key_size, random);
-		System.out.println("Obtaining p and q time: " + (System.nanoTime() - start_time)/BILLION + " seconds.");
+		logger.info("Obtaining p and q time: " + (System.nanoTime() - start_time)/BILLION + " seconds.");
 		
 		// (b) take a random element in [Z/Z[p]]* (p' order)
 		BigInteger g;
@@ -69,7 +73,7 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 				break;
 			}
 		}
-		System.out.println("Obtaining Generator g time: " + (System.nanoTime() - start_time)/BILLION + " seconds.");
+		logger.info("Obtaining Generator g time: " + (System.nanoTime() - start_time)/BILLION + " seconds.");
 		
 		// (c) take x random in [0, p' - 1]
 		BigInteger x = NTL.RandomBnd(q);
@@ -79,10 +83,10 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 		ElGamalPrivateKey sk = new ElGamalPrivateKey(p, x, g, h, this.additive);
 		ElGamalPublicKey pk = new ElGamalPublicKey(p, g, h, this.additive);
 		if (this.additive) {
-			System.out.println("El-Gamal Key pair generated! (Supports Addition over Ciphertext/Scalar Multiplication");
+			logger.info("El-Gamal Key pair generated! (Supports Addition over Ciphertext/Scalar Multiplication");
 		}
 		else {
-			System.out.println("El-Gamal Key pair generated! (Supports Multiplication over Ciphertext)");
+			logger.info("El-Gamal Key pair generated! (Supports Multiplication over Ciphertext)");
 		}
 		return new KeyPair(pk, sk);
 	}

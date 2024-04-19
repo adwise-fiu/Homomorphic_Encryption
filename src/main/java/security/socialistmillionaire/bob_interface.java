@@ -8,6 +8,8 @@ import java.net.Socket;
 
 public interface bob_interface {
 
+    void encrypted_equals() throws IOException, HomomorphicException, ClassNotFoundException;
+
     // Used to compare alice's private integer x and Bob's private integer y
     boolean Protocol1(BigInteger y)
             throws IOException, IllegalArgumentException, HomomorphicException, ClassNotFoundException;

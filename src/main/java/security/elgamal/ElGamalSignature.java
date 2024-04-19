@@ -47,11 +47,9 @@ public class ElGamalSignature implements CipherConstants
 		BigInteger check;
 
 		if (r.compareTo(BigInteger.ZERO) <= 0 || r.compareTo(public_key.p.subtract(BigInteger.ONE)) > 0) {
-			//System.err.println("(ElGamal Signature) r: " + r + " and " + public_key.p.subtract(BigInteger.ONE));
 			return false;
 		}
 		if (s.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(public_key.p.subtract(TWO)) > 0) {
-			//System.err.println("(ElGamal Signature) s: " + s + " and " + public_key.p.subtract(TWO));
 			return false;
 		}
 		// h = y = g^x

@@ -8,8 +8,12 @@ import java.util.Map;
 
 import security.misc.CipherConstants;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, PrivateKey, Runnable, CipherConstants
 {
+	private static final Logger logger = LogManager.getLogger(ElGamalPrivateKey.class);
 	//Private Key parameters
 	final BigInteger x;
 	final Map <BigInteger, BigInteger> LUT;
@@ -62,7 +66,7 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 		// Assume maximum value is u: biggest value in DGK which is the closest prime from 2^l l = 16 default.
 		BigInteger decrypt_size = FIELD_SIZE.add(FIELD_SIZE).subtract(TWO).add(TWO.pow(16));
 		long start_time = System.nanoTime();
-		System.out.println("Building Lookup Table g^m --> m for ElGamal");
+		logger.info("Building Lookup Table g^m --> m for ElGamal");
 		BigInteger message = BigInteger.ZERO;
 		while (!message.equals(decrypt_size)) {
 			BigInteger gm = this.g.modPow(message, this.p);
@@ -77,7 +81,7 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 			this.LUT.put(gm, message);
 			message = message.subtract(BigInteger.ONE);
 		}
-		System.out.println("Finished Building Lookup Table g^m --> m for ElGamal in " + 
+		logger.info("Finished Building Lookup Table g^m --> m for ElGamal in " +
 				(System.nanoTime() - start_time)/BigInteger.TEN.pow(9).longValue() + " seconds");
 	}
 

@@ -9,11 +9,8 @@ import security.misc.CipherConstants;
 
 public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Runnable, CipherConstants
 {
-	/**
-	 * The type fingerprint that is set to indicate serialization compatibility with a previous version of the type.
-	 */
+	@Serial
 	private static final long serialVersionUID = -1613333167285302035L;
-	
 	final BigInteger n;
 	final BigInteger g;
 	final BigInteger h;
@@ -27,6 +24,7 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 	final int t;
 	final int k;
 	public final BigInteger ONE;
+	public final BigInteger ZERO;
 
 	//DGK Constructor with ALL parameters
 	public DGKPublicKey(BigInteger n, BigInteger g, BigInteger h, BigInteger u,
@@ -39,7 +37,8 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		this.l = l; 
 		this.t = t;
 		this.k = k;
-		ONE = DGKOperations.encrypt(BigInteger.ONE, this);
+		ONE = DGKOperations.encrypt(1, this);
+		ZERO = DGKOperations.encrypt(0, this);
 	}
 
 	public void writeKey(String dgk_public_key_file)  throws IOException {
@@ -63,7 +62,7 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 	}
 
 	public BigInteger ZERO() {
-		return DGKOperations.encrypt(0, this);
+		return ZERO;
 	}
 
 	/**
