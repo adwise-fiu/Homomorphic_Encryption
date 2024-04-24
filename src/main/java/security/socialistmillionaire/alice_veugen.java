@@ -37,27 +37,26 @@ public class alice_veugen extends alice {
         BigInteger [] C;
         BigInteger [] Encrypted_Y = get_encrypted_bits();
 
-        BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
-        if (early_terminate.equals(BigInteger.ONE)) {
-            return true;
-        }
-        else if (early_terminate.equals(BigInteger.ZERO)) {
-            return false;
-        }
-
-        // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y
         XOR = encrypted_xor(x, Encrypted_Y);
 
         // Step 3: delta A is computed on initialization, it is 0 or 1.
-
-        // Step 4A: Generate C_i, see c_{-1} to test for equality!
-        // Step 4B: alter C_i using Delta A
-        // C_{-1} = C_i[yBits], will be computed at the end...
         C = new BigInteger [XOR.length + 1];
+        int start_bit_position_x = Math.max(0, XOR.length - x.bitLength());
+        int start_bit_position_y = Math.max(0, XOR.length - Encrypted_Y.length);
 
         for (int i = 0; i < XOR.length; i++) {
-            int x_bit = NTL.bit(x, i);
+            // Retrieve corresponding bits from x and Encrypted_Y
+            int x_bit;
+            BigInteger y_bit;
+            x_bit = NTL.bit(x, i - start_bit_position_x);
+
+            if (i >= start_bit_position_y) {
+                y_bit = Encrypted_Y[i - start_bit_position_y];
+            }
+            else {
+                y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
+            }
 
             // i in L, since bit x_i is equal to delta_A
             if(x_bit == deltaA) {
@@ -65,12 +64,12 @@ public class alice_veugen extends alice {
                 if (deltaA == 0) {
                     // Step 4 = [1] - [y_i bit] + [c_i]
                     // Step 4 = [c_i] - [y_i bit] + [1]
-                    C[i] = DGKOperations.subtract(C[i], Encrypted_Y[i], dgk_public);
+                    C[i] = DGKOperations.subtract(C[i], y_bit, dgk_public);
                     C[i] = DGKOperations.add_plaintext(C[i], 1, dgk_public);
                 }
                 else {
                     // Step 4 = [y_i] + [c_i]
-                    C[i]= DGKOperations.add(C[i], Encrypted_Y[i], dgk_public);
+                    C[i]= DGKOperations.add(C[i], y_bit, dgk_public);
                 }
 
                 // Remember Step 5, blind it.
