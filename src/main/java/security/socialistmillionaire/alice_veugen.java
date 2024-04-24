@@ -70,10 +70,6 @@ public class alice_veugen extends alice {
             }
         }
 
-        // This is c_{-1}
-        C[XOR.length] = DGKOperations.sum(XOR, dgk_public);
-        C[XOR.length] = DGKOperations.add_plaintext(C[XOR.length], deltaA, dgk_public);
-
         // Step 5: Apply the Blinding to C_i and send it to Bob
         for (int i = 0; i < XOR.length; i++) {
             // if the index i is NOT in L, just place a random NON-ZERO
@@ -81,12 +77,17 @@ public class alice_veugen extends alice {
             if(bit != deltaA) {
                 C[XOR.length - 1 - i] = DGKOperations.encrypt(rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
             }
+            else {
+                C[XOR.length - 1 - i] = DGKOperations.multiply(C[XOR.length - 1 - i], rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
+            }
         }
-        // Blind and Shuffle bits!
+
+        // This is c_{-1}
+        C[XOR.length] = DGKOperations.sum(XOR, dgk_public);
+        C[XOR.length] = DGKOperations.add_plaintext(C[XOR.length], deltaA, dgk_public);
+
+        // Shuffle and send bits!
         C = shuffle_bits(C);
-        for (int i = 0; i < C.length; i++) {
-            C[i] = DGKOperations.multiply(C[i], rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
-        }
         writeObject(C);
 
         // Run Extra steps to help Alice decrypt Delta
