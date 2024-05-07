@@ -424,13 +424,11 @@ public class alice extends socialist_millionaires implements alice_interface {
 			y_prime = PaillierCipher.add_plaintext(y, b, paillier_public);
 		}
 		// x' = x + a
-		toBob.writeObject(x_prime);
-		toBob.flush();
+		writeObject(x_prime);
 
 		// y' = y + b
-		toBob.writeObject(y_prime);
-		toBob.flush();
-		
+		writeObject(y_prime);
+
 		// Step 2
 		
 		// Step 3
@@ -679,8 +677,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		 * Plus the info doesn't really reveal anything to Bob.
 		 */
 		// Blind = NTL.RandomBnd(dgk_public.getU());
-		toBob.writeObject(DGKOperations.add_plaintext(delta, blind, dgk_public));
-		toBob.flush();
+		writeObject(DGKOperations.add_plaintext(delta, blind, dgk_public));
 
 		o = readObject();
 		if (o instanceof BigInteger) {

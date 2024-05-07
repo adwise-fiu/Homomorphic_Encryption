@@ -1,5 +1,7 @@
 package security.paillier;
 
+import security.misc.HomomorphicException;
+
 import java.io.*;
 import java.math.BigInteger;
 import java.security.PublicKey;
@@ -14,12 +16,21 @@ public final class PaillierPublicKey implements Serializable, PaillierKey, Publi
 	final BigInteger n;
 	final BigInteger modulus;
 	final BigInteger g;
+	BigInteger ZERO = null;
 
 	public PaillierPublicKey(int key_size, BigInteger n, BigInteger modulus, BigInteger g) {
 		this.key_size = key_size;
 		this.n = n;
 		this.modulus = modulus;
 		this.g = g;
+
+	}
+
+	public BigInteger ZERO() throws HomomorphicException {
+		if (ZERO == null) {
+			this.ZERO = PaillierCipher.encrypt(0, this);
+		}
+		return this.ZERO;
 	}
 
 	public String toString() {

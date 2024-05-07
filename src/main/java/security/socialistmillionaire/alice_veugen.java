@@ -264,8 +264,7 @@ public class alice_veugen extends alice {
             z = PaillierCipher.subtract(z, y, paillier_public);
             N = paillier_public.getN();
         }
-        toBob.writeObject(z);
-        toBob.flush();
+        writeObject(z);
 
         // Step 2: Bob decrypts[[z]] and computes beta = z (mod 2^l)
 
@@ -276,8 +275,8 @@ public class alice_veugen extends alice {
 
         // See Optimization 3: true --> Use Modified Protocol 3
         if(r.add(TWO.pow(dgk_public.getL() + 1)).compareTo(N) < 0) {
-            toBob.writeBoolean(false);
-            toBob.flush();
+            writeBoolean(false);
+;
             if(Protocol1(alpha)) {
                 x_leq_y = 1;
             }
@@ -285,10 +284,9 @@ public class alice_veugen extends alice {
                 x_leq_y = 0;
             }
         }
-        else
-        {
-            toBob.writeBoolean(true);
-            toBob.flush();
+        else {
+            writeBoolean(true);
+
             if(Modified_Protocol3(alpha, r, deltaA)) {
                 x_leq_y = 1;
             }

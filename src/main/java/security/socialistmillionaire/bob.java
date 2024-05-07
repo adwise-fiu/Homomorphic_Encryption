@@ -279,8 +279,8 @@ public class bob extends socialist_millionaires implements bob_interface
 			else {
 				answer = PaillierCipher.decrypt((BigInteger) x, paillier_private).intValue();
 			}
-			toAlice.writeInt(answer);
-			toAlice.flush();
+			writeInt(answer);
+
 		}
 		else {
 			throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
