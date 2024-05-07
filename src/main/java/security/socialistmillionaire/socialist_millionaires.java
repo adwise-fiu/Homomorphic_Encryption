@@ -10,14 +10,13 @@ import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
 import security.misc.CipherConstants;
+import security.misc.InstrumentationAgent;
 import security.paillier.PaillierPrivateKey;
 import security.paillier.PaillierPublicKey;
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
-import java.lang.instrument.Instrumentation;
 
 public abstract class socialist_millionaires implements CipherConstants
 {
-	protected Instrumentation instrumentation;
 	protected long bytes_sent = 0;
 	protected static final SecureRandom rnd = new SecureRandom();
 	protected final static int SIGMA = 80;
@@ -138,7 +137,7 @@ public abstract class socialist_millionaires implements CipherConstants
 	}
 	
 	public void writeObject(Object o) throws IOException {
-		bytes_sent += instrumentation.getObjectSize(o);
+		bytes_sent += InstrumentationAgent.getObjectSize(o);
 		if(toBob != null) {
 			toBob.writeObject(o);
 			toBob.flush();
