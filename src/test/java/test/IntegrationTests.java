@@ -186,6 +186,10 @@ public class IntegrationTests implements constants
 
 			andrew.join();
 			yujia.join();
+
+
+			logger.info("Bob wrote {} bytes to the socket", all_bobs[i].get_bytes_sent());
+			logger.info("Alice wrote {} bytes to the socket", all_alice[i].get_bytes_sent());
 		}
 	}
 
@@ -210,5 +214,8 @@ public class IntegrationTests implements constants
 
 		andrew.join();
 		yujia.join();
+
+        logger.info("El Gamal bob wrote {} bytes to the socket", bob_version_two.get_bytes_sent());
+		logger.info("El Gamal alice wrote {} bytes to the socket", Niu.get_bytes_sent());
 	}
 }

@@ -3,6 +3,7 @@ package security.misc;
 import java.lang.instrument.Instrumentation;
 
 public class InstrumentationAgent {
+	// I ran the commands to compile the JAR file within misc folder and moved the Instrumentation jar file to libs
 	// https://www.baeldung.com/java-size-of-object
 	private static volatile Instrumentation globalInstrumentation;
 
