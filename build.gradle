@@ -74,8 +74,7 @@ tasks.named('jar') {
     manifest {
         attributes(
                 'Implementation-Title': project.name,
-                'Implementation-Version': project.version,
-                //'Premain-class': security.misc.InstrumentationAgent
+                'Implementation-Version': project.version
         )
     }
 }

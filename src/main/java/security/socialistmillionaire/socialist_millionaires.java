@@ -137,14 +137,20 @@ public abstract class socialist_millionaires implements CipherConstants
 	}
 	
 	public void writeObject(Object o) throws IOException {
-		bytes_sent += InstrumentationAgent.getObjectSize(o);
+		try {
+			bytes_sent += InstrumentationAgent.getObjectSize(o);
+		}
+		catch (IllegalStateException ignored) {
+
+		}
+
 		if(toBob != null) {
 			toBob.writeObject(o);
 			toBob.flush();
 		}
 		else {
 			toAlice.writeObject(o);
-			toAlice.flush();	
+			toAlice.flush();
 		}
 	}
 	

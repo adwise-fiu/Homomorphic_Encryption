@@ -9,36 +9,88 @@ Homomorphic Encryption is a Java library that implements the following partially
 * Goldwasser-Micali  
 * DGK  
 
-As the partially homomorphic encryption systems only support addition with two ciphertexts, other protocols been appended to extend its functionality, in particular:
+As the partially homomorphic encryption systems only support addition with two ciphertexts, 
+other protocols have been appended to extend its functionality, in particular:
 * Secure Multiplication
 * Secure Division
 * Secure Comparison
 
+Thjis Veugen implemented various of [these protocols in Python](https://github.com/TNO-PET/).
+
 ## Installation
-Please retrieve the JAR file from [here](https://github.com/AndrewQuijano/Homomorphic_Encryption/tags)
+Please retrieve the JAR file from [here](https://github.com/AndrewQuijano/Homomorphic_Encryption/releases)
 
-As this library uses Java 8, the JAR file can be imported into an Android project.
+Alternatively, you can download the repository and create the JAR file to import into another project
+by running the following command, you will find a `crypto.jar` file in the `build/libs/` directory.
+```bash
+./gradlew jar
+```
 
-To fix the risk of serialization, I used the [Apache Common IO library](https://commons.apache.org/proper/commons-io/)
+### Minimum required steps
+We used ObjectInputValidatingStreams,
+so if you use Gradle, import the [Apache Common IO library](https://commons.apache.org/proper/commons-io/) into your project as well with the library.
+
+### Optional—Track the number of bytes
+If you want to track the number of bytes sent by Alice/Bob, we also added instrumentation.
+To install this, there are more steps:
+1. You need to include the InstrumentationAgent.jar file
+2. We also need to make the following changes to your build.gradle
+
+If you want to enable tracking number of bytes used when testing, you need the JVM arguments
+```gradle
+test {
+    testLogging {
+// Make sure output from
+// standard out or error is shown
+// in Gradle output.
+        showStandardStreams = true
+    }
+
+    // Set JVM arguments to include your agent
+    jvmArgs = [
+            '-javaagent:libs/InstrumentationAgent.jar' // Change this to your agent JAR path
+    ]
+}
+```
+You would also need to upgrade your run in `build.gradle` as follows with JVM argument and passing arguments with -P:
+
+```gradle
+// Define a task to run your Java application with the agent
+tasks.register('runWithAgent', JavaExec) {
+    mainClass.set(project.findProperty("chooseRole").toString())
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Set JVM arguments to include your agent
+    jvmArgs = [
+            '-javaagent:libs/InstrumentationAgent.jar'
+    ]
+
+    // Pass command-line arguments to your application
+    // gradle run -PchooseRole=PathsBob -Pargs='./data/ownroute3.txt 9000'
+    if (project.hasProperty('args')) {
+        args project.args.split(' ')
+    }
+}
+
+// Configure the 'run' task to depend on 'runWithAgent'
+tasks.run.dependsOn('runWithAgent')
+```
+
+### Other projects using this library
+This library was used in the following research projects, linked here.
+1. [Secure Indoor Localization](https://github.com/adwise-fiu/Secure_Indoor_Localization)
+2. [Enhanced Privacy Preserving Decision Trees](https://github.com/adwise-fiu/Level-Site-PPDT)
+3. [Secure Drone path for collision avoidance](https://github.com/ajluedem/homomorphic-path-comparison/)
+
+The `crypto.jar` file is imported in the `libs` directory.
+
 ## Generate Keys
 To create the keys, run the following commands:
 ```bash
 gradle -g gradle_user_home run -PchooseRole=security.paillier.PaillierKeyPairGenerator
 gradle -g gradle_user_home run -PchooseRole=security.dgk.DGKKeyPairGenerator
 ```
-This will create the key files on the current working directory. It will also
-
-## Create JAR file to import into another project
-To create the JAR file to import into another project, run the following:
-```bash
-./gradlew build
-./gradlew jar
-```
-You will find a `crypto.jar` file in the `build/libs/` directory.
-
-## Usage
-Import the packages as necessary. For basic usage please check Server.java in the test package for basic usage of these cryptography libraries.
-Please view Client.java and Server.java for an example how to compare encrypted numbers, secure multiplication, secure division, etc. 
+This will create the key files on the current working directory.
 
 ### security.socialistmillionaire.alice
 **Initialize**
@@ -84,7 +136,8 @@ See Protocol 3 in "Improving the DGK comparison protocol" in Alice section. Comp
     * If the plaintext has more bits than what the DGK public key supports
 
 **Modified_Protocol3(x)**
-See Protocol 3 in "Correction to 'Improving the DGK comparison protocol'" in Alice section. View the sub-protocol.
+See Protocol 3 in "Correction to 'Improving the DGK comparison protocol'" in the Alice section.
+View the sub-protocol.
 * Parameters
     * x (**BigInteger**) - plaintext
 * Returns
@@ -140,7 +193,7 @@ Please review Protocol 2 in the "Encrypted Integer Division" paper by Thjis Veug
 * Parameters
     * arr (**BigInteger**) - List of Paillier or DGK encrypted value
 * Returns
-    * N/A - arr is list of sorted encrypted values from low to high
+    * N/A - arr is a list of sorted encrypted values from low to high
 * Raises (**HomomorphicException**)
     * N/A
 
@@ -158,7 +211,7 @@ Please review Protocol 2 in the "Encrypted Integer Division" paper by Thjis Veug
     * arr (**List<BigInteger>**) - List of Paillier or DGK encrypted value
     * k - get number of k smallest encrypted numbers
 * Returns
-    * a (**List<BigInteger>**) - new array of size k sorted from low to high
+    * a (**List<BigInteger>**)—new array of size k sorted from low to high
 * Raises (**HomomorphicException**)
     * N/A
 
@@ -716,7 +769,7 @@ Compute the sum of all ciphertexts from 0 up to the index specified by limit.
 * Raises (**HomomorphicException**)
     * N/A
 
-**sum_product(ciphertext, plaintext pk)**
+**Sum_product(ciphertext, plaintext pk)**
 Compute the product of each ciphertext and plaintext. Then sum all the products.
 * Parameters
     * ciphertext (**List<BigInteger>**) - a List of Paillier ciphertexts
@@ -756,15 +809,15 @@ Please make sure to update tests as appropriate.
 ## Authors and acknowledgment
 Code author: Andrew Quijano  
 
-| Name/Title with Link | Authors | Venue | Description
-| ------------- | ------------- |  ------------- | ------------- |
-| [Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting](https://arxiv.org/abs/2008.11612) | Andrew Quijano and Kemal Akkaya | IEEE MASS 2019 | This paper is implemented the libaray in this repository
-| [Efficient and Secure Comparison for On-Line Auctions](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.215.5941&rep=rep1&type=pdf) | Ivan Damgaard, Martin Geisler, and Mikkel Kroigaard | Australasian conference on information security and privacy. | This paper is the first introduction to DGK. There is a correction to this paper listed [here](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.215.5941&rep=rep1&type=pdf)
-|[Improving the DGK comparison protocol](citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.456.5314&rep=rep1&type=pdf)| Thijs Veugen | 2012 IEEE International Workshop on Information Forensics and Security (WIFS) | This paper describes improvements to the DGK comparison protocol. Protocol 4 had a correction shown [here](https://eprint.iacr.org/2018/1100.pdf)
- |[Encrypted Integer Division](https://www.academia.edu/download/51716137/Encrypted_integer_division20170209-12588-kq9aar.pdf)| Thijis Veugen | 2010 IEEE International Workshop on Information Forensics and Security | This repository implements Protocol 2 for Encrypted Division
- |[Correction of a Secure Comparison Protocol for Encrypted Integers in IEEE WIFS 2012](https://link.springer.com/chapter/10.1007/978-3-319-64200-0_11) | Baptiste Vinh Mau & Koji Nuida | 2012 IEEE International Workshop on Information Forensics and Security (WIFS) | This paper describes a secure multiplication protocol used in this repository
- |[A Secure and Optimally Efficient Multi-Authority Election Scheme](citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.57.127&rep=rep1&type=pdf)| Ronald Cramer, Rosario Gennaro, Berry Schoenmakers | | This paper describes how El-Gamal was implemented in this repo
- |[Public-Key Cryptosystems Based on Composite Degree Residuosity Classes](https://link.springer.com/content/pdf/10.1007/3-540-48910-X_16.pdf) | Pascal Paillier | International conference on the theory and applications of cryptographic techniques | This paper is the original paper describing Paillier, which is how it is currently implemented as it has certain advantages over other variations
+| Name/Title with Link                                                                                                                                  | Authors                                             | Venue                                                                               | Description                                                                                                                                                                          |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|-------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting](https://arxiv.org/abs/2008.11612)                                         | Andrew Quijano and Kemal Akkaya                     | IEEE MASS 2019                                                                      | This paper is implemented the library in this repository                                                                                                                             |
+| [Efficient and Secure Comparison for On-Line Auctions](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.215.5941&rep=rep1&type=pdf)          | Ivan Damgaard, Martin Geisler, and Mikkel Kroigaard | Australasian conference on information security and privacy.                        | This paper is the first introduction to DGK. There is a correction to this paper listed [here](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.215.5941&rep=rep1&type=pdf) |
+| [Improving the DGK comparison protocol](citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.456.5314&rep=rep1&type=pdf)                                 | Thijis Veugen                                       | 2012 IEEE International Workshop on Information Forensics and Security (WIFS)       | This paper describes improvements to the DGK comparison protocol. Protocol 4 had a correction shown [here](https://eprint.iacr.org/2018/1100.pdf)                                    |
+| [Encrypted Integer Division](https://www.academia.edu/download/51716137/Encrypted_integer_division20170209-12588-kq9aar.pdf)                          | Thijis Veugen                                       | 2010 IEEE International Workshop on Information Forensics and Security              | This repository implements Protocol 2 for Encrypted Division                                                                                                                         |
+| [Correction of a Secure Comparison Protocol for Encrypted Integers in IEEE WIFS 2012](https://link.springer.com/chapter/10.1007/978-3-319-64200-0_11) | Baptiste Vinh Mau & Koji Nuida                      | 2012 IEEE International Workshop on Information Forensics and Security (WIFS)       | This paper describes a secure multiplication protocol used in this repository                                                                                                        |
+| [A Secure and Optimally Efficient Multi-Authority Election Scheme](citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.57.127&rep=rep1&type=pdf)        | Ronald Cramer, Rosario Gennaro, Berry Schoenmakers  |                                                                                     | This paper describes how El-Gamal was implemented in this repo                                                                                                                       |
+| [Public-Key Cryptosystems Based on Composite Degree Residuosity Classes](https://link.springer.com/content/pdf/10.1007/3-540-48910-X_16.pdf)          | Pascal Paillier                                     | International conference on the theory and applications of cryptographic techniques | This paper is the original paper describing Paillier, which is how it is currently implemented as it has certain advantages over other variations                                    |
 
 The work to create this repository was initially funded by the US NSF REU Site at FIU under the grant number REU CNS-1461119.  
 
