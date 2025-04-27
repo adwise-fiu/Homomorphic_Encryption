@@ -79,6 +79,14 @@ tasks.named('jar') {
     }
 }
 
+tasks.register('generateJavadoc', Javadoc) {
+    source = sourceSets.main.allJava
+    classpath = sourceSets.main.compileClasspath
+    options.encoding = 'UTF-8'
+    options.memberLevel = JavadocMemberLevel.PUBLIC
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
 // Define a task to run your Java application with the agent
 tasks.register('runWithAgent', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
