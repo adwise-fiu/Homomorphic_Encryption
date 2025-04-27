@@ -39,11 +39,8 @@ public class alice_elgamal extends alice_veugen {
         x_prime = ElGamalCipher.multiply(x, a, el_gamal_public);
         y_prime = ElGamalCipher.multiply(y, a, el_gamal_public);
 
-        toBob.writeObject(x_prime);
-        toBob.flush();
-
-        toBob.writeObject(y_prime);
-        toBob.flush();
+        writeObject(x_prime);
+        writeObject(y_prime);
 
         // Step 2
 
@@ -78,11 +75,9 @@ public class alice_elgamal extends alice_veugen {
         b = NTL.RandomBnd(N);
         x_prime = ElGamalCipher.add(x, ElGamalCipher.encrypt(a, el_gamal_public), el_gamal_public);
         y_prime = ElGamalCipher.add(y, ElGamalCipher.encrypt(b, el_gamal_public), el_gamal_public);
-        toBob.writeObject(x_prime);
-        toBob.flush();
 
-        toBob.writeObject(y_prime);
-        toBob.flush();
+        writeObject(x_prime);
+        writeObject(y_prime);
 
         // Step 2
 
@@ -117,8 +112,7 @@ public class alice_elgamal extends alice_veugen {
         // Step 1
         r = NTL.generateXBitRandom(16 - 1);
         z = ElGamalCipher.add(x, ElGamalCipher.encrypt(r, el_gamal_public), el_gamal_public);
-        toBob.writeObject(z);
-        toBob.flush();
+        writeObject(z);
 
         // Step 2: Executed by Bob
 
@@ -176,8 +170,7 @@ public class alice_elgamal extends alice_veugen {
          */
         z = ElGamalCipher.add(x, ElGamalCipher.encrypt(r.add(powL), el_gamal_public), el_gamal_public);
         z = ElGamalCipher.subtract(z, y, el_gamal_public);
-        toBob.writeObject(z);
-        toBob.flush();
+        writeObject(z);
 
         // Step 2: Bob decrypts[[z]] and computes beta = z (mod 2^l)
 
@@ -188,8 +181,8 @@ public class alice_elgamal extends alice_veugen {
 
         // See Optimization 3: true --> Use Modified Protocol 3
         if(r.add(TWO.pow(dgk_public.getL() + 1)).compareTo(N) < 0) {
-            toBob.writeBoolean(false);
-            toBob.flush();
+            writeBoolean(false);
+
             if(Protocol3(alpha, deltaA)) {
                 x_leq_y = 1;
             }
@@ -198,8 +191,8 @@ public class alice_elgamal extends alice_veugen {
             }
         }
         else {
-            toBob.writeBoolean(true);
-            toBob.flush();
+            writeBoolean(true);
+
             if(Modified_Protocol3(alpha, r, deltaA)) {
                 x_leq_y = 1;
             }
@@ -263,8 +256,8 @@ public class alice_elgamal extends alice_veugen {
 
     protected boolean decrypt_protocol_two(ElGamal_Ciphertext result) throws IOException {
         int comparison;
-        toBob.writeObject(result);
-        toBob.flush();
+        writeObject(result);
+
         comparison = fromBob.readInt();
         // IF SOMETHING HAPPENS...GET THE POST MORTEM HERE
         if (comparison != 0 && comparison != 1) {
@@ -287,8 +280,7 @@ public class alice_elgamal extends alice_veugen {
 
         for (int i = 0; i < k; i++) {
             for (int j = 0; j < arr.size() - i - 1; j++) {
-                toBob.writeBoolean(true);
-                toBob.flush();
+                writeBoolean(true);
 
                 // Originally arr[j] > arr[j + 1]
                 if (!this.Protocol4(arr.get(j), arr.get(j + 1))) {
@@ -306,8 +298,7 @@ public class alice_elgamal extends alice_veugen {
         }
 
         // Close Bob
-        toBob.writeBoolean(false);
-        toBob.flush();
+        writeBoolean(false);
         return min;
     }
 }

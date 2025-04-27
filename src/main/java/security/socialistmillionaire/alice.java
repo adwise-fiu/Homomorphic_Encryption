@@ -424,13 +424,11 @@ public class alice extends socialist_millionaires implements alice_interface {
 			y_prime = PaillierCipher.add_plaintext(y, b, paillier_public);
 		}
 		// x' = x + a
-		toBob.writeObject(x_prime);
-		toBob.flush();
+		writeObject(x_prime);
 
 		// y' = y + b
-		toBob.writeObject(y_prime);
-		toBob.flush();
-		
+		writeObject(y_prime);
+
 		// Step 2
 		
 		// Step 3
@@ -679,8 +677,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		 * Plus the info doesn't really reveal anything to Bob.
 		 */
 		// Blind = NTL.RandomBnd(dgk_public.getU());
-		toBob.writeObject(DGKOperations.add_plaintext(delta, blind, dgk_public));
-		toBob.flush();
+		writeObject(DGKOperations.add_plaintext(delta, blind, dgk_public));
 
 		o = readObject();
 		if (o instanceof BigInteger) {
@@ -690,30 +687,6 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 		else {
 			throw new HomomorphicException("Invalid Object found here: " + o.getClass().getName());
-		}
-	}
-
-	protected BigInteger unequal_bit_check(BigInteger x, BigInteger [] Encrypted_Y) throws IOException {
-        // Case 1, delta B is ALWAYS INITIALIZED TO 0
-        // y has more bits -> y is bigger
-        if (x.bitLength() < Encrypted_Y.length) {
-            writeObject(BigInteger.ONE);
-            // x <= y -> 1 (true)
-			logger.warn("[Protocol 1] Shouldn't be here: x <= y bits");
-            return BigInteger.ONE;
-        }
-
-        // Case 2 delta B is 0
-        // x has more bits -> x is bigger
-        else if(x.bitLength() > Encrypted_Y.length) {
-            writeObject(BigInteger.ZERO);
-            // x <= y -> 0 (false)
-			logger.warn("[Protocol 1] Shouldn't be here: x > y bits");
-            return BigInteger.ZERO;
-        }
-		else {
-			logger.info("[Protocol 1] x and y have the same number of bits, proceeding with the rest of private integer comparison");
-			return TWO;
 		}
 	}
 

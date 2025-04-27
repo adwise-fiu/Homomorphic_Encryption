@@ -55,12 +55,11 @@ public class bob_elgamal extends bob_veugen {
         x_prime = ElGamalCipher.decrypt(enc_x_prime, el_gamal_private);
         y_prime = ElGamalCipher.decrypt(enc_y_prime, el_gamal_private);
         if(addition) {
-            toAlice.writeObject(ElGamalCipher.encrypt(x_prime.add(y_prime), el_gamal_public));
+            writeObject(ElGamalCipher.encrypt(x_prime.add(y_prime), el_gamal_public));
         }
         else {
-            toAlice.writeObject(ElGamalCipher.encrypt(x_prime.subtract(y_prime), el_gamal_public));
+            writeObject(ElGamalCipher.encrypt(x_prime.subtract(y_prime), el_gamal_public));
         }
-        toAlice.flush();
     }
 
     public void multiplication()
@@ -97,8 +96,7 @@ public class bob_elgamal extends bob_veugen {
         // Step 3
         x_prime = ElGamalCipher.decrypt(enc_x_prime, el_gamal_private);
         y_prime = ElGamalCipher.decrypt(enc_y_prime, el_gamal_private);
-        toAlice.writeObject(ElGamalCipher.encrypt(x_prime.multiply(y_prime), el_gamal_public));
-        toAlice.flush();
+        writeObject(ElGamalCipher.encrypt(x_prime.multiply(y_prime), el_gamal_public));
     }
 
     public void division(long divisor)
@@ -126,8 +124,8 @@ public class bob_elgamal extends bob_veugen {
         }
 
         c = z.divide(BigInteger.valueOf(divisor));
-        toAlice.writeObject(ElGamalCipher.encrypt(c, el_gamal_public));
-        toAlice.flush();
+        writeObject(ElGamalCipher.encrypt(c, el_gamal_public));
+
         /*
          *  Unlike Comparison, it is decided Bob shouldn't know the answer.
          *  This is because Bob KNOWS d, and can decrypt [x/d]
@@ -201,9 +199,8 @@ public class bob_elgamal extends bob_veugen {
         else {
             zeta_two = ElGamalCipher.encrypt(z.divide(powL), el_gamal_public);
         }
-        toAlice.writeObject(zeta_one);
-        toAlice.writeObject(zeta_two);
-        toAlice.flush();
+        writeObject(zeta_one);
+        writeObject(zeta_two);
 
         //Step 6-7: Alice Computes [[x >= y]]
         //Step 8 (UNOFFICIAL): Alice needs the answer...
@@ -216,8 +213,7 @@ public class bob_elgamal extends bob_veugen {
         x = readObject();
         if (x instanceof ElGamal_Ciphertext) {
             answer = ElGamalCipher.decrypt((ElGamal_Ciphertext) x, el_gamal_private).intValue();
-            toAlice.writeInt(answer);
-            toAlice.flush();
+            writeInt(answer);
         }
         else {
             throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());

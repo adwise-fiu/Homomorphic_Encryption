@@ -37,36 +37,48 @@ public class alice_veugen extends alice {
         BigInteger [] C;
         BigInteger [] Encrypted_Y = get_encrypted_bits();
 
-        BigInteger early_terminate = unequal_bit_check(x, Encrypted_Y);
-        if (early_terminate.equals(BigInteger.ONE)) {
-            return true;
-        }
-        else if (early_terminate.equals(BigInteger.ZERO)) {
-            return false;
-        }
-
-        // if equal bits, proceed!
         // Step 2: compute Encrypted X XOR Y
         XOR = encrypted_xor(x, Encrypted_Y);
 
         // Step 3: delta A is computed on initialization, it is 0 or 1.
-
-        // Step 4A: Generate C_i, see c_{-1} to test for equality!
-        // Step 4B: alter C_i using Delta A
-        // C_{-1} = C_i[yBits], will be computed at the end...
         C = new BigInteger [XOR.length + 1];
+        int start_bit_position_x = Math.max(0, XOR.length - x.bitLength());
+        int start_bit_position_y = Math.max(0, XOR.length - Encrypted_Y.length);
 
         for (int i = 0; i < XOR.length; i++) {
-            C[i] = DGKOperations.sum(XOR, dgk_public, XOR.length - 1 - i);
-            if (deltaA == 0) {
-                // Step 4 = [1] - [y_i bit] + [c_i]
-                // Step 4 = [c_i] - [y_i bit] + [1]
-                C[i] = DGKOperations.subtract(C[i], Encrypted_Y[XOR.length - 1 - i], dgk_public);
-                C[i] = DGKOperations.add_plaintext(C[i], 1, dgk_public);
+            // Retrieve corresponding bits from x and Encrypted_Y
+            int x_bit;
+            BigInteger y_bit;
+            x_bit = NTL.bit(x, i - start_bit_position_x);
+
+            if (i >= start_bit_position_y) {
+                y_bit = Encrypted_Y[i - start_bit_position_y];
             }
             else {
-                // Step 4 = [y_i] + [c_i]
-                C[i]= DGKOperations.add(C[i], Encrypted_Y[XOR.length - 1 - i], dgk_public);
+                y_bit = dgk_public.ZERO(); // If Encrypted_Y is shorter, treat the missing bits as zeros
+            }
+
+            // i in L, since bit x_i is equal to delta_A
+            if(x_bit == deltaA) {
+                C[i] = DGKOperations.sum(XOR, dgk_public, i);
+                if (deltaA == 0) {
+                    // Step 4 = [1] - [y_i bit] + [c_i]
+                    // Step 4 = [c_i] - [y_i bit] + [1]
+                    C[i] = DGKOperations.subtract(C[i], y_bit, dgk_public);
+                    C[i] = DGKOperations.add_plaintext(C[i], 1, dgk_public);
+                }
+                else {
+                    // Step 4 = [y_i] + [c_i]
+                    C[i]= DGKOperations.add(C[i], y_bit, dgk_public);
+                }
+
+                // Remember Step 5, blind it.
+                C[i] = DGKOperations.multiply(C[i], rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
+            }
+            // i NOT in L, since bit x_i is NOT equal to delta_A
+            else {
+                // Skip to Step 5, place a random non-zero number to encrypt
+                C[i] = DGKOperations.encrypt(rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
             }
         }
 
@@ -74,19 +86,8 @@ public class alice_veugen extends alice {
         C[XOR.length] = DGKOperations.sum(XOR, dgk_public);
         C[XOR.length] = DGKOperations.add_plaintext(C[XOR.length], deltaA, dgk_public);
 
-        // Step 5: Apply the Blinding to C_i and send it to Bob
-        for (int i = 0; i < XOR.length; i++) {
-            // if the index i is NOT in L, just place a random NON-ZERO
-            int bit = NTL.bit(x, i);
-            if(bit != deltaA) {
-                C[XOR.length - 1 - i] = DGKOperations.encrypt(rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
-            }
-        }
-        // Blind and Shuffle bits!
+        // Shuffle and send bits!
         C = shuffle_bits(C);
-        for (int i = 0; i < C.length; i++) {
-            C[i] = DGKOperations.multiply(C[i], rnd.nextInt(dgk_public.getL()) + 1, dgk_public);
-        }
         writeObject(C);
 
         // Run Extra steps to help Alice decrypt Delta
@@ -210,10 +211,10 @@ public class alice_veugen extends alice {
         C[encAlphaXORBeta.length] = DGKOperations.add_plaintext(C[encAlphaXORBeta.length], deltaA, dgk_public);
 
         // Step I: SHUFFLE BITS AND BLIND WITH EXPONENT
-        C = shuffle_bits(C);
         for (int i = 0; i < C.length; i++) {
             C[i] = DGKOperations.multiply(C[i], rnd.nextInt(dgk_public.getU().intValue()) + 1, dgk_public);
         }
+        C = shuffle_bits(C);
         writeObject(C);
 
         // Run Extra steps to help Alice decrypt Delta
@@ -263,8 +264,7 @@ public class alice_veugen extends alice {
             z = PaillierCipher.subtract(z, y, paillier_public);
             N = paillier_public.getN();
         }
-        toBob.writeObject(z);
-        toBob.flush();
+        writeObject(z);
 
         // Step 2: Bob decrypts[[z]] and computes beta = z (mod 2^l)
 
@@ -275,8 +275,8 @@ public class alice_veugen extends alice {
 
         // See Optimization 3: true --> Use Modified Protocol 3
         if(r.add(TWO.pow(dgk_public.getL() + 1)).compareTo(N) < 0) {
-            toBob.writeBoolean(false);
-            toBob.flush();
+            writeBoolean(false);
+;
             if(Protocol1(alpha)) {
                 x_leq_y = 1;
             }
@@ -284,10 +284,9 @@ public class alice_veugen extends alice {
                 x_leq_y = 0;
             }
         }
-        else
-        {
-            toBob.writeBoolean(true);
-            toBob.flush();
+        else {
+            writeBoolean(true);
+
             if(Modified_Protocol3(alpha, r, deltaA)) {
                 x_leq_y = 1;
             }

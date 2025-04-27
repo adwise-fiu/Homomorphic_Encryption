@@ -116,9 +116,8 @@ public class bob_veugen extends bob {
                 zeta_two =  PaillierCipher.encrypt(z.divide(powL), paillier_public);
             }
         }
-        toAlice.writeObject(zeta_one);
-        toAlice.writeObject(zeta_two);
-        toAlice.flush();
+        writeObject(zeta_one);
+        writeObject(zeta_two);
 
         //Step 6 - 7: Alice Computes [[x >= y]]
 

@@ -10,12 +10,14 @@ import security.dgk.DGKPublicKey;
 import security.elgamal.ElGamalPrivateKey;
 import security.elgamal.ElGamalPublicKey;
 import security.misc.CipherConstants;
+import security.misc.InstrumentationAgent;
 import security.paillier.PaillierPrivateKey;
 import security.paillier.PaillierPublicKey;
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 
 public abstract class socialist_millionaires implements CipherConstants
 {
+	protected long bytes_sent = 0;
 	protected static final SecureRandom rnd = new SecureRandom();
 	protected final static int SIGMA = 80;
 
@@ -79,6 +81,10 @@ public abstract class socialist_millionaires implements CipherConstants
 		return el_gamal_public;
 	}
 
+	public long get_bytes_sent() {
+		return this.bytes_sent;
+	}
+
 	public boolean readBoolean() throws IOException {
 		if(fromBob != null) {
 			return fromBob.readBoolean();
@@ -89,6 +95,7 @@ public abstract class socialist_millionaires implements CipherConstants
 	}
 
 	public void writeBoolean(boolean value) throws IOException {
+		bytes_sent += 4;
 		if(toBob != null) {
 			toBob.writeBoolean(value);
 			toBob.flush();
@@ -109,6 +116,7 @@ public abstract class socialist_millionaires implements CipherConstants
 	}
 
 	public void writeInt(int value) throws IOException {
+		bytes_sent += 4;
 		if (toBob != null) {
 			toBob.writeInt(value);
 			toBob.flush();
@@ -129,13 +137,20 @@ public abstract class socialist_millionaires implements CipherConstants
 	}
 	
 	public void writeObject(Object o) throws IOException {
+		try {
+			bytes_sent += InstrumentationAgent.getObjectSize(o);
+		}
+		catch (IllegalStateException ignored) {
+
+		}
+
 		if(toBob != null) {
 			toBob.writeObject(o);
 			toBob.flush();
 		}
 		else {
 			toAlice.writeObject(o);
-			toAlice.flush();	
+			toAlice.flush();
 		}
 	}
 	
