@@ -1,9 +1,8 @@
 package test;
 
+import edu.fiu.adwise.homomorphic_encryption.elgamal.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import security.elgamal.*;
-import security.misc.HomomorphicException;
 
 import java.math.BigInteger;
 import java.security.KeyPair;

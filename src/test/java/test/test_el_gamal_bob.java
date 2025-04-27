@@ -1,7 +1,7 @@
 package test;
 
-import security.misc.HomomorphicException;
-import security.socialistmillionaire.bob_elgamal;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.bob_elgamal;
 
 import java.io.IOException;
 import java.net.ServerSocket;

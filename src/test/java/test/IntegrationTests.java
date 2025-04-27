@@ -1,14 +1,14 @@
 package test;
 
-import security.dgk.DGKOperations;
-import security.dgk.DGKPrivateKey;
-import security.dgk.DGKPublicKey;
-import security.elgamal.ElGamalPrivateKey;
-import security.misc.HomomorphicException;
-import security.misc.NTL;
-import security.paillier.PaillierKeyPairGenerator;
-import security.dgk.DGKKeyPairGenerator;
-import security.elgamal.ElGamalKeyPairGenerator;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierKeyPairGenerator;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKKeyPairGenerator;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalKeyPairGenerator;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -16,9 +16,9 @@ import java.net.Socket;
 import java.security.KeyPair;
 import java.util.List;
 
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import security.socialistmillionaire.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

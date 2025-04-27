@@ -1,0 +1,92 @@
+package edu.fiu.adwise.homomorphic_encryption.paillier;
+
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+
+import java.io.*;
+import java.math.BigInteger;
+import java.security.PublicKey;
+
+public final class PaillierPublicKey implements Serializable, PaillierKey, PublicKey {
+	@Serial
+	private static final long serialVersionUID = -4009702553030484256L;
+
+	public final int key_size;
+
+	// n = pq is a product of two large primes (such N is known as RSA modulus)
+	final BigInteger n;
+	final BigInteger modulus;
+	final BigInteger g;
+	BigInteger ZERO = null;
+
+	public PaillierPublicKey(int key_size, BigInteger n, BigInteger modulus, BigInteger g) {
+		this.key_size = key_size;
+		this.n = n;
+		this.modulus = modulus;
+		this.g = g;
+
+	}
+
+	public BigInteger ZERO() throws HomomorphicException {
+		if (ZERO == null) {
+			this.ZERO = PaillierCipher.encrypt(0, this);
+		}
+		return this.ZERO;
+	}
+
+	public String toString() {
+		String answer = "";
+		answer += "k1 = " + this.key_size + ", " + '\n';
+		answer += "n = " + this.n + ", " + '\n';
+		answer += "modulus = " + this.modulus + '\n';
+		answer += "g = " + this.g + '\n';
+		return answer;
+	}
+
+	public void writeKey(String paillier_public_key_file) throws IOException {
+		// Write the key to a file
+		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(paillier_public_key_file))) {
+			oos.writeObject(this);
+			oos.flush();
+		}
+	}
+
+	public static PaillierPublicKey readKey(String paillier_public_key) throws IOException, ClassNotFoundException {
+		PaillierPublicKey pk;
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(paillier_public_key))) {
+			pk = (PaillierPublicKey) ois.readObject();
+		}
+		return pk;
+	}
+
+	public BigInteger getN() {
+		return this.n;
+	}
+
+	public BigInteger getModulus() {
+		return this.modulus;
+	}
+
+	public String getAlgorithm() {
+		return "Paillier";
+	}
+
+	public String getFormat() {
+		return "X.509";
+	}
+
+	public byte[] getEncoded() 
+	{
+		return null;
+	}
+
+	public boolean equals (Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		PaillierPublicKey that = (PaillierPublicKey) o;
+		return this.toString().equals(that.toString());
+	}
+}

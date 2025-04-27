@@ -5,15 +5,16 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.util.Arrays;
 
-import security.dgk.DGKOperations;
-import security.dgk.DGKPrivateKey;
-import security.dgk.DGKPublicKey;
-import security.misc.HomomorphicException;
-import security.misc.NTL;
-import security.paillier.PaillierCipher;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
-import security.socialistmillionaire.alice;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice_joye;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierCipher;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice;
 
 import static org.junit.Assert.*;
 import org.apache.logging.log4j.LogManager;
@@ -97,7 +98,7 @@ public class test_alice implements Runnable, constants
 		}
 
 		if (dgk_mode) {
-			if (Niu.getClass() == security.socialistmillionaire.alice.class) {
+			if (Niu.getClass() == alice.class) {
                 logger.info("{}: Skipping Sorting because will crash with this alice version...", alice_class);
 				return;
 			}
@@ -248,7 +249,7 @@ public class test_alice implements Runnable, constants
 		boolean answer;
 
 		if (dgk_mode) {
-			if (Niu.getClass() != security.socialistmillionaire.alice.class) {
+			if (Niu.getClass() != alice.class) {
 				for (int i = 0; i < low.length; i++) {
 					// Original - Skipped
 					// Veugen (X > Y) - false
@@ -263,7 +264,7 @@ public class test_alice implements Runnable, constants
 					// Joye (X >= Y) - true
 					answer = Niu.Protocol2(DGKOperations.encrypt(mid[i], dgk_public_key),
 							DGKOperations.encrypt(mid[i], dgk_public_key));
-					if (Niu.getClass() == security.socialistmillionaire.alice_joye.class) {
+					if (Niu.getClass() == alice_joye.class) {
 						assertTrue(answer);
 					}
 					else {

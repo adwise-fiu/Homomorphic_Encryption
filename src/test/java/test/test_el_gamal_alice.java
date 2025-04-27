@@ -1,12 +1,12 @@
 package test;
 
-import security.elgamal.ElGamalCipher;
-import security.elgamal.ElGamalPrivateKey;
-import security.elgamal.ElGamalPublicKey;
-import security.elgamal.ElGamal_Ciphertext;
-import security.misc.HomomorphicException;
-import security.misc.NTL;
-import security.socialistmillionaire.alice_elgamal;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalCipher;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamalPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.elgamal.ElGamal_Ciphertext;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.alice_elgamal;
 
 import java.io.IOException;
 import java.math.BigInteger;

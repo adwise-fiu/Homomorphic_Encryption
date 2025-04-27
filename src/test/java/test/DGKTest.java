@@ -2,11 +2,11 @@ package test;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import security.dgk.DGKKeyPairGenerator;
-import security.dgk.DGKOperations;
-import security.dgk.DGKPrivateKey;
-import security.dgk.DGKPublicKey;
-import security.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKKeyPairGenerator;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 
 import java.math.BigInteger;
 import java.security.KeyPair;

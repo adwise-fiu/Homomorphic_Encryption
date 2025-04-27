@@ -1,10 +1,10 @@
 # logs
 logs/
 
-# Keys
-dgk
+# Avoid saving keys from UtilTest
+dgk.priv
+paillier.priv
 dgk.pub
-paillier
 paillier.pub
 
 codecov

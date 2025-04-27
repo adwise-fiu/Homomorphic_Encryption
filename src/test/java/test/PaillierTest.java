@@ -1,10 +1,10 @@
 package test;
 
+import edu.fiu.adwise.homomorphic_encryption.paillier.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import security.misc.HomomorphicException;
-import security.paillier.*;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 
 import java.math.BigInteger;
 import java.security.KeyPair;

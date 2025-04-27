@@ -5,8 +5,9 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import security.misc.HomomorphicException;
-import security.socialistmillionaire.bob;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.bob_joye;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
+import edu.fiu.adwise.homomorphic_encryption.socialistmillionaire.bob;
 
 import static org.junit.Assert.*;
 import org.apache.logging.log4j.LogManager;
@@ -132,7 +133,7 @@ public class test_bob implements Runnable, constants
 		boolean answer;
 
 		if (dgk_mode) {
-			if (andrew.getClass() != security.socialistmillionaire.bob.class) {
+			if (andrew.getClass() != bob.class) {
 				for (int i = 0; i < mid.length; i++) {
 					// Original - Skipped
 					// Veugen (X > Y) - false
@@ -144,7 +145,7 @@ public class test_bob implements Runnable, constants
 					// Veugen (X > Y) - false
 					// Joye (X >= Y) - true
 					answer = andrew.Protocol2();
-					if (andrew.getClass() == security.socialistmillionaire.bob_joye.class) {
+					if (andrew.getClass() == bob_joye.class) {
 						assertTrue(answer);
 					}
 					else{
@@ -187,7 +188,7 @@ public class test_bob implements Runnable, constants
         logger.info("{}: Testing Sorting, DGK Mode:{}", bob_class_name, dgk_mode);
 		andrew.setDGKMode(dgk_mode);
 		if (dgk_mode) {
-			if (andrew.getClass() == security.socialistmillionaire.bob.class) {
+			if (andrew.getClass() == bob.class) {
                 logger.info("{}: Skipping Sorting because will crash with this alice version...", bob_class_name);
 				return;
 			}

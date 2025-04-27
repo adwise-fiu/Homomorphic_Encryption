@@ -2,12 +2,12 @@ package test;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import security.dgk.DGKKeyPairGenerator;
-import security.dgk.DGKPrivateKey;
-import security.dgk.DGKPublicKey;
-import security.paillier.PaillierKeyPairGenerator;
-import security.paillier.PaillierPrivateKey;
-import security.paillier.PaillierPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKKeyPairGenerator;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPublicKey;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierKeyPairGenerator;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
+import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPublicKey;
 
 import java.io.IOException;
 import java.security.KeyPair;
@@ -43,7 +43,7 @@ public class UtilTest implements constants {
     @Test
     public void test_store_dgk() throws IOException, ClassNotFoundException {
         dgk_public_key.writeKey("dgk.pub");
-        dgk_private_key.writeKey("dgk");
+        dgk_private_key.writeKey("dgk.priv");
         logger.info("DGK Write Key");
 
         DGKPublicKey other_dgk_pub = DGKPublicKey.readKey("dgk.pub");
@@ -59,7 +59,7 @@ public class UtilTest implements constants {
     @Test
     public void test_store_paillier() throws IOException, ClassNotFoundException {
         paillier_public_key.writeKey("paillier.pub");
-        paillier_private_key.writeKey("paillier");
+        paillier_private_key.writeKey("paillier.priv");
 
         PaillierPublicKey other_paillier_pub = PaillierPublicKey.readKey("paillier.pub");
         PaillierPrivateKey other_paillier_private = PaillierPrivateKey.readKey("paillier");
