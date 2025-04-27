@@ -1,0 +1,19 @@
+Documentation:
+  - '**/*.md'
+
+Github-files:
+  - '.github/**'
+
+Tests:
+  - 'src/tests/**'
+
+Papers:
+  - 'papers/**'
+
+Gradle:
+    - 'build.gradle'
+    - '**/build.gradle'
+    - '**/gradle.properties'
+    - '**/settings.gradle'
+    - '**/gradlew'
+    - '**/gradlew.bat'

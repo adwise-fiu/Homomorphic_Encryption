@@ -1,0 +1,43 @@
+name: Publish JAR file to release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      v-version: ${{ steps.version.outputs.v-version }}
+    steps:
+      - name: Get next version
+        uses: reecetech/version-increment@2023.10.2
+        id: version
+        with:
+          release_branch: main
+          use_api: true
+          increment: patch
+
+  upload_release:
+    needs: [ create_release ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project sources
+        uses: actions/checkout@v4
+
+      - name: Create JAR file
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: '17'
+          cache: 'gradle'
+      - run: sh gradlew jar
+
+      - name: Release the JAR file
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.create_release.outputs.v-version }}
+          files: build/libs/crypto.jar
+          token: ${{ secrets.GITHUB_TOKEN }}
