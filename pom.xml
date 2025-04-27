@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.github.andrewquijano</groupId>
+    <artifactId>homomorphic_encryption</artifactId>
+    <version>2.0.0</version>
+    <name>Homomorphic Encryption</name>
+    <description>A Java Library that implements various partially homomorphic encryption schemes, and includes various operations e. g. addition, subtraction, multiplication, division and comparison</description>
+    <url>https://github.com/adwise-fiu/Homomorphic_Encryption</url>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>AndrewQuijano</id>
+            <name>Andrew Quijano</name>
+            <email>andrew.quijano@nyu.edu</email>
+        </developer>
+    </developers>
+
+    <dependencies>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+    </dependencies>
+
+    <scm>
+        <url>https://github.com/adwise-fiu/Homomorphic_Encryption</url>
+        <connection>scm:git:git://github.com/adwise-fiu/Homomorphic_Encryption.git</connection>
+        <developerConnection>scm:git:ssh://github.com/adwise-fiu/Homomorphic_Encryption/tree/master</developerConnection>
+    </scm>
+</project>
