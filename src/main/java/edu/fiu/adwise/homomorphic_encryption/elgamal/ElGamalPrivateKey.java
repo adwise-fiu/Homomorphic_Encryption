@@ -4,6 +4,7 @@
  */
 package edu.fiu.adwise.homomorphic_encryption.elgamal;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.PrivateKey;
@@ -26,18 +27,27 @@ import org.apache.logging.log4j.Logger;
  *
  */
 public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, PrivateKey, Runnable, CipherConstants {
+	@Serial
+	private static final long serialVersionUID = 9160045368787508459L;
 	private static final Logger logger = LogManager.getLogger(ElGamalPrivateKey.class);
-	//Private Key parameters
+	/** The private key parameter \( x \) used in the ElGamal encryption scheme. */
 	final BigInteger x;
-	final Map <BigInteger, BigInteger> LUT;
+
+	/** The lookup table mapping \( g^m \mod p \) to \( m \) for decryption. */
+	final Map<BigInteger, BigInteger> LUT;
 
 	// Taken from ElGamal Public Key
+	/** The prime modulus \( p \) used in the ElGamal encryption scheme. */
 	final BigInteger p;
-	final BigInteger g;
-	private final BigInteger h;
-	boolean additive;
 
-	private static final long serialVersionUID = 9160045368787508459L;
+	/** The generator \( g \) used in the ElGamal encryption scheme. */
+	final BigInteger g;
+
+	/** The public key component \( h \) derived from \( g^x \mod p \). */
+	private final BigInteger h;
+
+	/** Indicates whether additive homomorphic encryption is enabled. */
+	boolean additive;
 
 	/**
 	 * Constructs an ElGamalPrivateKey with the specified parameters.

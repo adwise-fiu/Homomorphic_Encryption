@@ -21,27 +21,52 @@ import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
 public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey {
 	@Serial
 	private static final long serialVersionUID = 4574519230502483629L;
-	// Private Key Parameters
-	final BigInteger p; // First prime factor of n
-	private final BigInteger q; // Second prime factor of n
-	final BigInteger vp; // Precomputed value for decryption
-	private final BigInteger vq; // Precomputed value for decryption
-	final Map<BigInteger, Long> LUT; // Lookup table for decryption
 
-	// Public key parameters
-	final BigInteger n; // Modulus
-	final BigInteger g; // Generator
-	private final BigInteger h; // Auxiliary generator
-	private final long u; // Upper bound for plaintext values
-	private final BigInteger bigU; // BigInteger representation of u
+	// Private Key Parameters
+	/** The first prime factor of the modulus \( n \). */
+	final BigInteger p;
+
+	/** The second prime factor of the modulus \( n \). */
+	private final BigInteger q;
+
+	/** A precomputed value for decryption using the first prime factor \( p \). */
+	final BigInteger vp;
+
+	/** A precomputed value for decryption using the second prime factor \( q \). */
+	private final BigInteger vq;
+
+	/** The lookup table (LUT) for decryption, mapping ciphertext values to plaintext values. */
+	final Map<BigInteger, Long> LUT;
+
+	// Public Key Parameters
+	/** The modulus \( n \) used in the encryption scheme. */
+	final BigInteger n;
+
+	/** The generator \( g \) used in the encryption scheme. */
+	final BigInteger g;
+
+	/** An auxiliary generator \( h \) used in the encryption scheme. */
+	private final BigInteger h;
+
+	/** The upper bound for plaintext values in the encryption scheme. */
+	private final long u;
+
+	/** The BigInteger representation of the upper bound \( u \). */
+	private final BigInteger bigU;
 
 	// Key Parameters
-	private final int l; // Bit length of plaintext
-	private final int t; // Security parameter
-	private final int k; // Key length
+	/** The bit length of plaintext values. */
+	private final int l;
+
+	/** The security parameter \( t \) used in the encryption scheme. */
+	private final int t;
+
+	/** The key length \( k \) used in the encryption scheme. */
+	private final int k;
 
 	// Signature
-	public final BigInteger v; // Product of vp and vq
+	/** The product of \( vp \) and \( vq \), used for decryption. */
+	public final BigInteger v;
 
 	/**
 	 * Constructs a DGKPrivateKey using the provided private key parameters and public key.

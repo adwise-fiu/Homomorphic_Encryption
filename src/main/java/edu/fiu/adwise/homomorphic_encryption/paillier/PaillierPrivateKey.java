@@ -19,17 +19,28 @@ public final class PaillierPrivateKey implements Serializable, PaillierKey, Priv
 	@Serial
 	private static final long serialVersionUID = -3342551807566493368L;
 
-	// k1 is the security parameter. It is the number of bits in n.
+	/** The security parameter \( k_1 \), representing the number of bits in \( n \). */
 	private final int key_size;
 
+	/** The value of \( n \), which is the product of two large primes \( p \) and \( q \). */
 	final BigInteger n;
+
+	/** The modulus \( n^2 \), used in the Paillier cryptosystem. */
 	final BigInteger modulus;
+
+	/** The generator \( g \), used in the encryption process. */
 	final BigInteger g;
 
+	/** The Carmichael's function value \( \lambda \), calculated as lcm(\( p-1 \), \( q-1 \)). */
 	final BigInteger lambda;
+
+	/** The modular inverse of \( \lambda \) modulo \( n \). */
 	private final BigInteger mu;
 
+	/** The precomputed value \( \rho \), used for decryption optimization. */
 	final BigInteger rho;
+
+	/** The smallest divisor of lcm(\( p-1 \), \( q-1 \)). */
 	private final BigInteger alpha;
 
 	/**

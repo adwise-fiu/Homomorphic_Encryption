@@ -17,7 +17,10 @@ import java.security.PublicKey;
 public class GMPublicKey implements Serializable, PublicKey, GMKey {
 	@Serial
 	private static final long serialVersionUID = -235857914395127699L;
+	/** The modulus \( n \), which is the product of two large primes. */
 	protected final BigInteger n;
+
+	/** A quadratic non-residue modulo \( n \), used in the encryption process. */
 	protected final BigInteger y;
 
 	/**

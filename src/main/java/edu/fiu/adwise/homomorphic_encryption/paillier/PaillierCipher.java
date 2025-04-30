@@ -234,7 +234,8 @@ public final class PaillierCipher implements CipherConstants {
 	 * @param ciphertext - Paillier ciphertext
 	 * @param divisor - plaintext value
 	 * @param public_key - was used to encrypt ciphertext
-	 * @return Encrypted Paillier value equal to ciphertext/plaintext
+	 * @return product - Encrypted Paillier value equal to ciphertext/plaintext
+	 * @throws HomomorphicException - If an invalid input was found
      */
 	public static BigInteger divide(BigInteger ciphertext, BigInteger divisor, PaillierPublicKey public_key)
 			throws HomomorphicException {
@@ -245,12 +246,11 @@ public final class PaillierCipher implements CipherConstants {
 	 * Computes the L function used in the Paillier cryptosystem.
 	 * The function is defined as L(u) = (u - 1) / n.
 	 *
-	 * @param u The input value as a {@link BigInteger}.
-	 * @param n The modulus value as a {@link BigInteger}.
+	 * @param u - The input value as a {@link BigInteger}.
+	 * @param n - The modulus value as a {@link BigInteger}.
 	 * @return The result of the L function as a {@link BigInteger}.
 	 */
-	static BigInteger L(BigInteger u, BigInteger n)
-	{
+	static BigInteger L(BigInteger u, BigInteger n) {
 		return u.subtract(BigInteger.ONE).divide(n);
 	}
 
@@ -258,6 +258,8 @@ public final class PaillierCipher implements CipherConstants {
 	 * Compute the sum of the encrypted Paillier values
 	 * @param values - Array of Encrypted Paillier values 
 	 * @param public_key - PaillierPublicKey used to encrypt all the values
+	 * @return sum - the encrypted sum of all values in the array
+	 * @throws HomomorphicException - If an invalid input was found
      */
 	public static BigInteger sum(BigInteger [] values, PaillierPublicKey public_key)
 			throws HomomorphicException {
@@ -272,7 +274,9 @@ public final class PaillierCipher implements CipherConstants {
 	 * Compute the sum of the encrypted Paillier values
 	 * @param values - Array of Encrypted Paillier values
 	 * @param public_key - PaillierPublicKey used to encrypt the values
-	 * @param limit - Sum values up to this index value in the list
+	 * @param limit - Sum values up to this index value in the array
+	 * @return sum - the encrypted sum of all values in the array
+	 * @throws HomomorphicException - If an invalid input was found
      */
 	public static BigInteger sum(BigInteger [] values, PaillierPublicKey public_key, int limit)
 			throws HomomorphicException {
@@ -295,11 +299,11 @@ public final class PaillierCipher implements CipherConstants {
 	 * Compute the encrypted sum of all Paillier values
 	 * @param values - List of Paillier encrypted values by PaillierPublicKey public_key
 	 * @param public_key - PaillierPublicKey used to encrypt every element in values list.
-	 * @return Encrypted Paillier sum
+	 * @return sum - the encrypted sum of all values in the list
+	 * @throws HomomorphicException - If an invalid input was found
      */
 	public static BigInteger sum(List<BigInteger> values, PaillierPublicKey public_key) 
-			throws HomomorphicException
-	{
+			throws HomomorphicException {
 		BigInteger sum = PaillierCipher.encrypt(BigInteger.ZERO, public_key);
 		for (BigInteger value : values) {
 			sum = PaillierCipher.add(sum, value, public_key);
@@ -312,6 +316,8 @@ public final class PaillierCipher implements CipherConstants {
 	 * @param values - List of Encrypted Paillier values
 	 * @param public_key - PaillierPublicKey used to encrypt the list of values
 	 * @param limit - maximum index to sum up to in the area
+	 * @return sum - the encrypted sum of all values in the list
+	 * @throws HomomorphicException - If an invalid input was found
      */
 	public static BigInteger sum(List<BigInteger> values, PaillierPublicKey public_key, int limit) 
 			throws HomomorphicException {
@@ -336,8 +342,7 @@ public final class PaillierCipher implements CipherConstants {
 	 * @param ciphertext - List of Paillier ciphertext
 	 * @param plaintext - List of plaintext
 	 * @return Encrypted sum product
-	 * @throws HomomorphicException
-	 * If the lists of encrypted values and plaintext values are not equal
+	 * @throws HomomorphicException - If the lists of encrypted values and plaintext values are not equal
 	 */
 	public static BigInteger sum_product (List<BigInteger> ciphertext, List<Long> plaintext, PaillierPublicKey public_key) 
 			throws HomomorphicException {
@@ -362,8 +367,7 @@ public final class PaillierCipher implements CipherConstants {
 	 * @param plaintext - Array of plaintext values
 	 * @param public_key - Paillier Public Key used to encrypt values in ciphertext list
 	 * @return Encrypted sum-product
-	 * @throws HomomorphicException
-	 * - If the size of plaintext array and ciphertext array isn't equal
+	 * @throws HomomorphicException - If the size of plaintext array and ciphertext array isn't equal
 	 */
 	public static BigInteger sum_product (BigInteger[] ciphertext, Long[] plaintext, PaillierPublicKey public_key)
 			throws HomomorphicException

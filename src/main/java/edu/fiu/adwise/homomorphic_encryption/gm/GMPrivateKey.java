@@ -18,10 +18,14 @@ public class GMPrivateKey implements Serializable, PrivateKey, GMKey
 {
 	@Serial
 	private static final long serialVersionUID = -6003066379615503599L;
+	/** The first prime factor of the modulus \( n \). */
 	protected final BigInteger p;
-	protected final BigInteger q;
-	protected final BigInteger n;
 
+	/** The second prime factor of the modulus \( n \). */
+	protected final BigInteger q;
+
+	/** The modulus \( n \), computed as the product of \( p \) and \( q \). */
+	protected final BigInteger n;
 
 	/**
 	 * Constructs a new {@code GMPrivateKey} with the specified prime factors \( p \) and \( q \).

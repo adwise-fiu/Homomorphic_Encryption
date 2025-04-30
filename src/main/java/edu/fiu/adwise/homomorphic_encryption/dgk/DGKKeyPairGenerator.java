@@ -18,8 +18,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * DGKKeyPairGenerator is responsible for generating DGK key pairs.
- * It implements the CipherConstants interface and extends KeyPairGeneratorSpi.
+ * This class is responsible for generating DGK key pairs (public and private keys)
+ * used in the DGK cryptosystem. It extends the {@link KeyPairGeneratorSpi} class
+ * and implements the {@link CipherConstants} interface.
  */
 public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
 {
@@ -69,6 +70,7 @@ public final class DGKKeyPairGenerator extends KeyPairGeneratorSpi implements Ci
 	 * @param l - sets size of plaintext
 	 * @param t - security parameter
 	 * @param k - number of bits of keys
+	 * @throws HomomorphicException If invalid parameters are provided
 	 */
 	public DGKKeyPairGenerator(int l, int t, int k) throws HomomorphicException
 	{

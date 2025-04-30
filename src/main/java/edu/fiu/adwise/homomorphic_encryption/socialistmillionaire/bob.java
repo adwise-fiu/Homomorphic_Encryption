@@ -189,7 +189,7 @@ public class bob extends socialist_millionaires implements bob_interface
 	 * @param y the plaintext value to encrypt.
 	 * @return an array of encrypted bits.
 	 */
-	public BigInteger [] encrypt_bits(BigInteger y) {
+	public BigInteger [] encrypt_bits(BigInteger y) throws HomomorphicException {
 		BigInteger [] Encrypted_Y = new BigInteger[y.bitLength()];
 		for (int i = 0; i < y.bitLength(); i++) {
 			Encrypted_Y[i] = DGKOperations.encrypt(NTL.bit(y, i), dgk_public);

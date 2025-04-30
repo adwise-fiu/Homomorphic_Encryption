@@ -15,9 +15,16 @@ import java.security.PublicKey;
 public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_Key {
 	@Serial
 	private static final long serialVersionUID = -6796919675914392847L;
+	/** The prime modulus \( p \) used in the ElGamal encryption scheme. */
 	final BigInteger p;
+
+	/** The generator \( g \) used in the ElGamal encryption scheme. */
 	final BigInteger g;
+
+	/** The public key component \( h \) derived from \( g^x \mod p \). */
 	final BigInteger h;
+
+	/** Indicates whether additive homomorphic encryption is enabled. */
 	public boolean additive;
 
 	/**

@@ -10,31 +10,28 @@ import java.io.*;
 import java.math.BigInteger;
 import java.security.PublicKey;
 
+/**
+ * Represents the public key for the Paillier cryptosystem.
+ * This class implements the Serializable, Paillier_Key, PublicKey, Runnable, and CipherConstants interfaces.
+ * It provides methods for key generation and serialization for encryption operations.
+ */
 public final class PaillierPublicKey implements Serializable, PaillierKey, PublicKey {
 	@Serial
 	private static final long serialVersionUID = -4009702553030484256L;
 
-	/**
-	 * The size of the key in bits.
-	 */
+	/** The size of the key in bits. */
 	public final int key_size;
 
-	/**
-	 * The value of n, which is the product of two large primes (p and q).
-	 */
+	/** The value of n, which is the product of two large primes (p and q). */
 	final BigInteger n;
 
-	/**
-	 * The modulus, which is n^2.
-	 */
+	/** The modulus, which is n^2 */
 	final BigInteger modulus;
-	/**
-	 * The generator g used in the Paillier cryptosystem.
-	 */
+
+	/** The generator g used in the Paillier cryptosystem. */
 	final BigInteger g;
-	/**
-	 * Cached value representing the encryption of zero.
-	 */
+
+	/** Cached value representing the encryption of zero. */
 	BigInteger ZERO = null;
 
 	/**

@@ -10,6 +10,7 @@ import java.security.PublicKey;
 import java.util.HashMap;
 
 import edu.fiu.adwise.homomorphic_encryption.misc.CipherConstants;
+import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 
 /**
  * Represents the public key for the DGK (Damgård-Geisler-Krøigaard) cryptosystem.
@@ -19,20 +20,42 @@ import edu.fiu.adwise.homomorphic_encryption.misc.CipherConstants;
 public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Runnable, CipherConstants {
 	@Serial
 	private static final long serialVersionUID = -1613333167285302035L;
+	/** The modulus \( n \) used in the DGK cryptosystem. */
 	final BigInteger n;
+
+	/** The generator \( g \) used in the DGK cryptosystem. */
 	final BigInteger g;
+
+	/** The secondary generator \( h \) used in the DGK cryptosystem. */
 	final BigInteger h;
+
+	/** The order of the subgroup as a long value. */
 	final long u;
+
+	/** The order of the subgroup as a BigInteger. */
 	final BigInteger bigU;
-	final HashMap <Long, BigInteger> gLUT = new HashMap<>();
-	private final HashMap <Long, BigInteger> hLUT = new HashMap<>();
-	
+
+	/** The lookup table for \( g^i \mod n \) values. */
+	final HashMap<Long, BigInteger> gLUT = new HashMap<>();
+
+	/** The lookup table for \( h^i \mod n \) values. */
+	private final HashMap<Long, BigInteger> hLUT = new HashMap<>();
+
 	// Key Parameters
+	/** The bit length of plaintext values. */
 	final int l;
+
+	/** The security parameter used in the DGK cryptosystem. */
 	final int t;
+
+	/** The key length used in the DGK cryptosystem. */
 	final int k;
-	public final BigInteger ONE;
-	public final BigInteger ZERO;
+
+	/** The encrypted representation of the value 1. */
+	public BigInteger ONE = null;
+
+	/** The encrypted representation of the value 0. */
+	public BigInteger ZERO = null;
 
 	/**
 	 * Constructs a DGKPublicKey with all required parameters.
@@ -55,8 +78,6 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		this.l = l; 
 		this.t = t;
 		this.k = k;
-		ONE = DGKOperations.encrypt(1, this);
-		ZERO = DGKOperations.encrypt(0, this);
 	}
 
 	/**
@@ -95,8 +116,12 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 
 	/**
 	 * @return The encrypted representation of 0.
+	 * @throws HomomorphicException - If an invalid input was found, this should be impossible in this case
 	 */
-	public BigInteger ZERO() {
+	public BigInteger ZERO() throws HomomorphicException {
+		if (ZERO == null) {
+			ZERO = DGKOperations.encrypt(0, this);
+		}
 		return ZERO;
 	}
 
