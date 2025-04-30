@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 ADWISE Lab, Florida International University (FIU), AndrewQuijano
+ * Licensed under the MIT License. See LICENSE file in the project root for details.
+ */
 package edu.fiu.adwise.homomorphic_encryption.elgamal;
 
 import java.io.Serializable;
@@ -21,8 +25,7 @@ import org.apache.logging.log4j.Logger;
  * for decryption.</p>
  *
  */
-public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, PrivateKey, Runnable, CipherConstants
-{
+public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, PrivateKey, Runnable, CipherConstants {
 	private static final Logger logger = LogManager.getLogger(ElGamalPrivateKey.class);
 	//Private Key parameters
 	final BigInteger x;
@@ -123,8 +126,7 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 			this.LUT.put(gm, message);
 			message = message.subtract(BigInteger.ONE);
 		}
-		logger.info("Finished Building Lookup Table g^m --> m for ElGamal in " +
-				(System.nanoTime() - start_time)/BigInteger.TEN.pow(9).longValue() + " seconds");
+        logger.info("Finished Building Lookup Table g^m --> m for ElGamal in {} seconds", (System.nanoTime() - start_time) / BigInteger.TEN.pow(9).longValue());
 	}
 
 	/**

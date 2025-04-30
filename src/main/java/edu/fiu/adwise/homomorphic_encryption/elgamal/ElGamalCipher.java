@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 ADWISE Lab, Florida International University (FIU), AndrewQuijano
+ * Licensed under the MIT License. See LICENSE file in the project root for details.
+ */
 package edu.fiu.adwise.homomorphic_encryption.elgamal;
 
 import java.math.BigInteger;
@@ -14,8 +18,7 @@ import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
  * Reference:
  * <a href="https://github.com/dlitz/pycrypto/blob/master/lib/Crypto/PublicKey/ElGamal.py">...</a>
  */
-public class ElGamalCipher
-{
+public class ElGamalCipher {
 	/**
 	 * Encrypts a plaintext message using the ElGamal public key.
 	 *

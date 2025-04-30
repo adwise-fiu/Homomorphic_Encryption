@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 ADWISE Lab, Florida International University (FIU), AndrewQuijano
+ * Licensed under the MIT License. See LICENSE file in the project root for details.
+ */
 package edu.fiu.adwise.homomorphic_encryption.elgamal;
 
 import java.math.BigInteger;
@@ -12,8 +16,7 @@ import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
  * For more details, see <a href="https://en.wikipedia.org/wiki/ElGamal_signature_scheme">ElGamal Signature Scheme</a>.
  * </p>
  */
-public class ElGamalSignature implements CipherConstants
-{
+public class ElGamalSignature implements CipherConstants {
 	/**
 	 * Signs a message using the ElGamal private key.
 	 * <p>

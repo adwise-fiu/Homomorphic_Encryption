@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 ADWISE Lab, Florida International University (FIU), AndrewQuijano
+ * Licensed under the MIT License. See LICENSE file in the project root for details.
+ */
 package edu.fiu.adwise.homomorphic_encryption.paillier;
 
 import java.io.FileOutputStream;
@@ -58,9 +62,11 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 	}
 
 	/**
-	 * Main method to generate and save Paillier public and private keys to files.
+	 * Initializes the Paillier key pair generator with the specified key size and random number generator.
 	 *
-	 * @param args Command-line arguments (not used).
+	 * @param key_size The size of the key in bits. Must be an even number and at least {@code KEY_SIZE}.
+	 * @param random   The {@link SecureRandom} instance to use for key generation. Can be {@code null}.
+	 * @throws IllegalArgumentException If the key size is not even or is less than {@code KEY_SIZE}.
 	 */
 	public void initialize(int key_size, SecureRandom random) {
 		this.rnd = random;

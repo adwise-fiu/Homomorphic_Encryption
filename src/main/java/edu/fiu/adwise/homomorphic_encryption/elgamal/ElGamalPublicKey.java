@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 ADWISE Lab, Florida International University (FIU), AndrewQuijano
+ * Licensed under the MIT License. See LICENSE file in the project root for details.
+ */
 package edu.fiu.adwise.homomorphic_encryption.elgamal;
 
 import java.io.Serial;
@@ -8,8 +12,7 @@ import java.security.PublicKey;
 /**
  * Represents the public key for the ElGamal encryption scheme.
  */
-public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_Key
-{
+public final class ElGamalPublicKey implements Serializable, PublicKey, ElGamal_Key {
 	@Serial
 	private static final long serialVersionUID = -6796919675914392847L;
 	final BigInteger p;

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 ADWISE Lab, Florida International University (FIU), AndrewQuijano
+ * Licensed under the MIT License. See LICENSE file in the project root for details.
+ */
 package edu.fiu.adwise.homomorphic_encryption.dgk;
 
 import java.io.*;
@@ -12,8 +16,7 @@ import edu.fiu.adwise.homomorphic_encryption.misc.CipherConstants;
  * This class implements the Serializable, DGK_Key, PublicKey, Runnable, and CipherConstants interfaces.
  * It provides methods for key generation, serialization, and lookup table generation for encryption operations.
  */
-public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Runnable, CipherConstants
-{
+public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Runnable, CipherConstants {
 	@Serial
 	private static final long serialVersionUID = -1613333167285302035L;
 	final BigInteger n;

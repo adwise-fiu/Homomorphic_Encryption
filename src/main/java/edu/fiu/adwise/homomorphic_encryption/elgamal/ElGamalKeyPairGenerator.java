@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 ADWISE Lab, Florida International University (FIU), AndrewQuijano
+ * Licensed under the MIT License. See LICENSE file in the project root for details.
+ */
 package edu.fiu.adwise.homomorphic_encryption.elgamal;
 
 import java.math.BigInteger;
@@ -16,8 +20,7 @@ import org.apache.logging.log4j.Logger;
  * This class is responsible for generating ElGamal key pairs.
  * It supports both additive and multiplicative modes of the ElGamal cryptosystem.
  */
-public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
-{
+public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants {
 	private static final Logger logger = LogManager.getLogger(ElGamalKeyPairGenerator.class);
 	private int key_size = KEY_SIZE;
 	private SecureRandom random = null;
