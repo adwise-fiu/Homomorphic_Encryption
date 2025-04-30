@@ -12,15 +12,23 @@ import org.apache.logging.log4j.Logger;
 
 import edu.fiu.adwise.homomorphic_encryption.misc.CipherConstants;
 
-public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
-{
+/**
+ * This class is responsible for generating Paillier key pairs (public and private keys)
+ * used in the Paillier cryptosystem. It extends the {@link KeyPairGeneratorSpi} class
+ * and implements the {@link CipherConstants} interface.
+ */
+public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants {
 	private static final Logger logger = LogManager.getLogger(PaillierKeyPairGenerator.class);
 	private int key_size = KEY_SIZE;
 	private SecureRandom rnd = null;
 
-	// Use this function to generate public and private key
+	/**
+	 * Main method to generate and save Paillier public and private keys to files.
+	 *
+	 * @param args Command-line arguments (not used).
+	 */
 	public static void main(String []  args) {
-		String paillier_private_key_file = "paillier";
+		String paillier_private_key_file = "paillier.priv";
 		String paillier_public_key_file = "paillier.pub";
 		KeyPair paillier;
 		PaillierPublicKey pk;
@@ -48,9 +56,13 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public void initialize(int key_size, SecureRandom random) 
-	{
+
+	/**
+	 * Main method to generate and save Paillier public and private keys to files.
+	 *
+	 * @param args Command-line arguments (not used).
+	 */
+	public void initialize(int key_size, SecureRandom random) {
 		this.rnd = random;
 		if (key_size % 2 != 0) {
 			throw new IllegalArgumentException("Require even number of bits!");
@@ -61,8 +73,12 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 		this.key_size = key_size;
 	}
 
-	public KeyPair generateKeyPair() 
-	{
+	/**
+	 * Generates a Paillier key pair (public and private keys).
+	 *
+	 * @return A {@link KeyPair} containing the Paillier public and private keys.
+	 */
+	public KeyPair generateKeyPair() {
 		if (this.rnd == null) {
 			rnd = new SecureRandom();
 		}
@@ -101,9 +117,12 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 		return new KeyPair(pk, sk);
 	}
 
-	// Find the smallest divisor!
-    // Find alpha
-	// alpha | lcm(p - 1, q - 1)
+	/**
+	 * Finds the smallest divisor of the given Least Common Multiple (LCM) value.
+	 *
+	 * @param LCM The least common multiple of (p - 1) and (q - 1).
+	 * @return The smallest divisor of the LCM.
+	 */
 	private static BigInteger find_alpha(BigInteger LCM) {
 		BigInteger alpha = TWO;
 		while(true) {
@@ -113,11 +132,18 @@ public class PaillierKeyPairGenerator extends KeyPairGeneratorSpi implements Cip
 			alpha = alpha.add(BigInteger.ONE);
 		}
 	}
-	
-	// Build generator
+
+	/**
+	 * Finds a generator g for the Paillier cryptosystem.
+	 *
+	 * @param g       The initial candidate for the generator.
+	 * @param lambda  The Carmichael's function value.
+	 * @param modulus The modulus value (n^2).
+	 * @param n       The value of n (p * q).
+	 * @return A valid generator g.
+	 */
 	private static BigInteger find_g(BigInteger g, BigInteger lambda, BigInteger modulus, BigInteger n) {
-		while(true)
-		{
+		while(true) {
 			if(PaillierCipher.L(g.modPow(lambda, modulus), n).gcd(n).equals(BigInteger.ONE)) {
 				return g;		
 			}

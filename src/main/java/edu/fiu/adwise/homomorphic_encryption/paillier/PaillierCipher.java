@@ -10,10 +10,19 @@ import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
 
 /**
- * @author Andrew Quijano
- * This class contains the Paillier cipher that supports 
- * Paillier operations on BigIntegers.
- * As it extends from CipherSpi, it can also encrypt byte arrays as well.
+ * This class implements the Paillier cryptosystem, which supports homomorphic encryption operations
+ * on {@link BigInteger} values. It provides methods for encryption, decryption, addition, subtraction,
+ * scalar multiplication, and division (only works under VERY specific circumstances) of encrypted values, as well as utility methods for summation and
+ * sum-product calculations.
+ *
+ * <p>The Paillier cryptosystem is a probabilistic asymmetric encryption scheme that allows
+ * homomorphic addition and scalar multiplication of ciphertexts.</p>
+ *
+ * <p>Note: This class is final and cannot be extended. It implements the {@link CipherConstants} interface.</p>
+ *
+ * <p>For more details on the Paillier cryptosystem, refer to the original paper by Pascal Paillier:
+ * "Public-Key Cryptosystems Based on Composite Degree Residuosity Classes".</p>
+ *
  */
 public final class PaillierCipher implements CipherConstants {
 
@@ -22,20 +31,19 @@ public final class PaillierCipher implements CipherConstants {
 	//-----------------------BigInteger Paillier----------------------------------------------
 
 	/**
-	 * Encrypt with PaillierPublicKey
-	 * Compute ciphertext = g^{m}r^{n} (mod n^2)
-	 * @return ciphertext
-	 * @throws HomomorphicException
-	 * 	- If the plaintext is larger than the plaintext supported by Paillier Public Key,
-	 * an exception will be thrown
+	 * Encrypts a plaintext using the provided Paillier public key.
+	 * The ciphertext is computed as {@code g^m * r^n mod n^2}.
+	 *
+	 * @param plaintext The plaintext to encrypt as a {@link BigInteger}.
+	 * @param public_key The {@link PaillierPublicKey} used for encryption.
+	 * @return The encrypted ciphertext as a {@link BigInteger}.
+	 * @throws HomomorphicException If the plaintext is negative or exceeds the supported range.
 	 */
 	public static BigInteger encrypt(BigInteger plaintext, PaillierPublicKey public_key)
 			throws HomomorphicException 
 	{
 		if (plaintext.signum() == -1) {
-			logger.warn("Encryption Invalid Parameter: the plaintext is not in Zu (plaintext < 0)"
-					+ " value of Plain Text is: " + plaintext + " will be encrypted as " +
-					NTL.POSMOD(plaintext, public_key.getN()));
+            logger.warn("Encryption Invalid Parameter: the plaintext is not in Zu (plaintext < 0) value of Plain Text is: {} will be encrypted as {}", plaintext, NTL.POSMOD(plaintext, public_key.getN()));
 		}
 		else if (plaintext.compareTo(public_key.n) >= 0) {
 			throw new HomomorphicException("Encryption Invalid Parameter: the plaintext is not in N"
@@ -48,18 +56,27 @@ public final class PaillierCipher implements CipherConstants {
 		return NTL.POSMOD(tmp1.multiply(tmp2), public_key.modulus);
 	}
 
+	/**
+	 * Encrypts a plaintext represented as a {@code long} using the provided Paillier public key.
+	 *
+	 * @param plaintext The plaintext to encrypt as a {@code long}.
+	 * @param public_key The {@link PaillierPublicKey} used for encryption.
+	 * @return The encrypted ciphertext as a {@link BigInteger}.
+	 * @throws HomomorphicException If the plaintext is negative or exceeds the supported range.
+	 */
 	public static BigInteger encrypt(long plaintext, PaillierPublicKey public_key)
 			throws HomomorphicException {
 		return PaillierCipher.encrypt(BigInteger.valueOf(plaintext), public_key);
 	}
 
 	/**
-	 * Compute plaintext = L(c^(lambda) mod n^2) * rho mod n
-	 * @param ciphertext - Paillier ciphertext
-	 * @param private_key - used to decrypt ciphertext
-	 * @return plaintext
-	 * @throws HomomorphicException
-	 * 	- If the ciphertext is larger than N^2, an exception will be thrown
+	 * Decrypts a ciphertext using the provided Paillier private key.
+	 * The plaintext is computed as {@code L(c^lambda mod n^2) * rho mod n}.
+	 *
+	 * @param ciphertext The ciphertext to decrypt as a {@link BigInteger}.
+	 * @param private_key The {@link PaillierPrivateKey} used for decryption.
+	 * @return The decrypted plaintext as a {@link BigInteger}.
+	 * @throws HomomorphicException If the ciphertext is negative or exceeds the supported range.
 	 */
 	public static BigInteger decrypt(BigInteger ciphertext, PaillierPrivateKey private_key) 
 			throws HomomorphicException {
@@ -75,15 +92,16 @@ public final class PaillierCipher implements CipherConstants {
 	}
 
 	/**
-	 * returns the sum of the Paillier encrypted values
-	 * Note: The result is still encrypted
-	 * Warning: If the sum exceeds N, it is subject to N
-	 * @param ciphertext1 - Encrypted Paillier value
-	 * @param ciphertext2 - Encrypted Paillier value
-	 * @param public_key - used to encrypt both ciphertexts
-	 * @return sum
-	 * @throws HomomorphicException 
-	 * - If either ciphertext is greater than N or negative, throw an exception
+	 * Performs homomorphic addition of two Paillier encrypted values.
+	 * The result is still encrypted and computed as the product of the two ciphertexts modulo n^2.
+	 *
+	 * <p>Note: If the sum exceeds n, it is reduced modulo n.</p>
+	 *
+	 * @param ciphertext1 The first encrypted Paillier value as a {@link BigInteger}.
+	 * @param ciphertext2 The second encrypted Paillier value as a {@link BigInteger}.
+	 * @param public_key The {@link PaillierPublicKey} used to encrypt both ciphertexts.
+	 * @return The encrypted sum of the two ciphertexts as a {@link BigInteger}.
+	 * @throws HomomorphicException If either ciphertext is negative or exceeds n^2.
 	 */
 	public static BigInteger add(BigInteger ciphertext1, BigInteger ciphertext2, PaillierPublicKey public_key) 
 			throws HomomorphicException {
@@ -95,16 +113,18 @@ public final class PaillierCipher implements CipherConstants {
 		}
 		return ciphertext1.multiply(ciphertext2).mod(public_key.modulus);
 	}
-	
+
 	/**
-	 * returns the sum of the Paillier encrypted value and plaintext value
-	 * Warning: If the sum exceeds N, it is subject to mod N
-	 * @param ciphertext - Paillier encrypted value
-	 * @param plaintext - plaintext value to multiply the ciphertext with
-	 * @param public_key - was used to encrypt ciphertext
-	 * @return Encrypted sum of ciphertext and plaintext
-	 * @throws HomomorphicException 
-	 * - If a ciphertext is negative or exceeds N^2 or plaintext is negative or exceeds N
+	 * Performs homomorphic addition of a Paillier encrypted value and a plaintext value.
+	 * The result is encrypted and computed as the product of the ciphertext and g^plaintext modulo n^2.
+	 *
+	 * <p>Note: If the sum exceeds n, it is reduced modulo n.</p>
+	 *
+	 * @param ciphertext The encrypted Paillier value as a {@link BigInteger}.
+	 * @param plaintext The plaintext value to add as a {@link BigInteger}.
+	 * @param public_key The {@link PaillierPublicKey} used to encrypt the ciphertext.
+	 * @return The encrypted sum of the ciphertext and plaintext as a {@link BigInteger}.
+	 * @throws HomomorphicException If the ciphertext is negative or exceeds n^2, or if the plaintext is negative or exceeds n.
 	 */
 	public static BigInteger add_plaintext(BigInteger ciphertext, BigInteger plaintext, PaillierPublicKey public_key)
 			throws HomomorphicException {
@@ -117,28 +137,32 @@ public final class PaillierCipher implements CipherConstants {
 		}
 		return ciphertext.multiply(public_key.g.modPow(plaintext, public_key.modulus)).mod(public_key.modulus);
 	}
-	
-	/**
-	 * Subtract ciphertext1 and ciphertext 2
-	 * @param ciphertext1 - Paillier ciphertext
-	 * @param ciphertext2 - Paillier ciphertext
-	 * @param public_key - used to encrypt both ciphertexts
-	 * @return Paillier encrypted ciphertext with ciphertext1 - ciphertext2
-     */
 
+	/**
+	 * Performs homomorphic subtraction of two Paillier encrypted values.
+	 * The result is encrypted and computed as the product of the first ciphertext and the modular inverse of the second ciphertext modulo n^2.
+	 *
+	 * @param ciphertext1 The first encrypted Paillier value as a {@link BigInteger}.
+	 * @param ciphertext2 The second encrypted Paillier value as a {@link BigInteger}.
+	 * @param public_key The {@link PaillierPublicKey} used to encrypt both ciphertexts.
+	 * @return The encrypted result of ciphertext1 - ciphertext2 as a {@link BigInteger}.
+	 * @throws HomomorphicException If either ciphertext is negative or exceeds n^2.
+	 */
 	public static BigInteger subtract(BigInteger ciphertext1, BigInteger ciphertext2, PaillierPublicKey public_key)
 			throws HomomorphicException {
 		BigInteger neg_ciphertext2 = multiply(ciphertext2, public_key.n.subtract(BigInteger.ONE), public_key);
 		return ciphertext1.multiply(neg_ciphertext2).mod(public_key.modulus);
 	}
-	
+
 	/**
-	 * Computes encrypted Paillier value of the cipher-text subtracted by the plaintext
-	 * Warning: If the difference goes negative, add N.
-	 * @param ciphertext - Encrypted Paillier value
-	 * @param plaintext - plaintext value
-	 * @param public_key - used to encrypt ciphertext
-	 * @return Paillier encrypted ciphertext with ciphertext - plaintext
+	 * Computes the encrypted Paillier value of the ciphertext subtracted by the plaintext.
+	 * If the difference is negative, the result is adjusted by adding N.
+	 *
+	 * @param ciphertext The encrypted Paillier value as a {@link BigInteger}.
+	 * @param plaintext The plaintext value to subtract as a {@link BigInteger}.
+	 * @param public_key The {@link PaillierPublicKey} used to encrypt the ciphertext.
+	 * @return The encrypted result of ciphertext - plaintext as a {@link BigInteger}.
+	 * @throws HomomorphicException If an error occurs during the operation.
 	 */
 	public static BigInteger subtract_plaintext(BigInteger ciphertext, BigInteger plaintext,
 												PaillierPublicKey public_key) throws HomomorphicException {
@@ -148,12 +172,14 @@ public final class PaillierCipher implements CipherConstants {
 	}
 
 	/**
-	 * y - [x] = y + [-x] = [-x] + y
-	 * Computes encrypted Paillier value of the cipher-text subtracted by the plaintext
-	 * @param plaintext - plaintext value
-	 * @param ciphertext - Encrypted Paillier value
-	 * @param public_key - used to encrypt ciphertext
-	 * @return Paillier encrypted ciphertext with plaintext - ciphertext
+	 * Computes the encrypted Paillier value of the plaintext subtracted by the ciphertext.
+	 * This is equivalent to y - [x] = y + [-x] = [-x] + y.
+	 *
+	 * @param plaintext The plaintext value to subtract as a {@link BigInteger}.
+	 * @param ciphertext The encrypted Paillier value as a {@link BigInteger}.
+	 * @param public_key The {@link PaillierPublicKey} used to encrypt the ciphertext.
+	 * @return The encrypted result of plaintext - ciphertext as a {@link BigInteger}.
+	 * @throws HomomorphicException If an error occurs during the operation.
 	 */
 	public static BigInteger subtract_ciphertext(BigInteger plaintext, BigInteger ciphertext,
 												PaillierPublicKey public_key) throws HomomorphicException {
@@ -162,17 +188,15 @@ public final class PaillierCipher implements CipherConstants {
 		return add_plaintext(inverse_ciphertext, plaintext, public_key);
 	}
 
-	
 	/**
-	 * Compute the Paillier encrypted value of ciphertext multiplied by the plaintext.
-	 * @param ciphertext - Paillier encrypted value
-	 * @param plaintext - plaintext value to multiply the ciphertext with
-	 * @param public_key - Paillier Public key that encrypted the ciphertext
-	 * @return encrypted(ciphertext  plaintext)
-	 * @throws HomomorphicException 
-	 * If ciphertext is negative or exceeds N^2 or plaintext exceeds N
+	 * Computes the Paillier encrypted value of a ciphertext multiplied by a plaintext.
+	 *
+	 * @param ciphertext The Paillier encrypted value as a {@link BigInteger}.
+	 * @param plaintext The plaintext value to multiply the ciphertext with as a {@link BigInteger}.
+	 * @param public_key The {@link PaillierPublicKey} used to encrypt the ciphertext.
+	 * @return The encrypted result of ciphertext * plaintext as a {@link BigInteger}.
+	 * @throws HomomorphicException If the ciphertext is negative, exceeds n^2, or if the plaintext is negative or exceeds n.
 	 */
-
 	public static BigInteger multiply(BigInteger ciphertext, BigInteger plaintext, PaillierPublicKey public_key)
 			throws HomomorphicException {
 		if (ciphertext.signum() == -1 || ciphertext.compareTo(public_key.modulus) > 0) {
@@ -184,6 +208,15 @@ public final class PaillierCipher implements CipherConstants {
 		return ciphertext.modPow(plaintext, public_key.modulus);
 	}
 
+	/**
+	 * Computes the Paillier encrypted value of a ciphertext multiplied by a scalar.
+	 *
+	 * @param ciphertext1 The Paillier encrypted value as a {@link BigInteger}.
+	 * @param scalar The scalar value to multiply the ciphertext with as a {@code long}.
+	 * @param public_key The {@link PaillierPublicKey} used to encrypt the ciphertext.
+	 * @return The encrypted result of ciphertext * scalar as a {@link BigInteger}.
+	 * @throws HomomorphicException If the ciphertext is negative, exceeds n^2, or if the scalar is negative or exceeds n.
+	 */
 	public static BigInteger multiply(BigInteger ciphertext1, long scalar, PaillierPublicKey public_key)
 			throws HomomorphicException {
 		return multiply(ciphertext1, BigInteger.valueOf(scalar), public_key);
@@ -205,7 +238,12 @@ public final class PaillierCipher implements CipherConstants {
 	}
 
 	/**
-	 * L(u) = (u - 1)/n
+	 * Computes the L function used in the Paillier cryptosystem.
+	 * The function is defined as L(u) = (u - 1) / n.
+	 *
+	 * @param u The input value as a {@link BigInteger}.
+	 * @param n The modulus value as a {@link BigInteger}.
+	 * @return The result of the L function as a {@link BigInteger}.
 	 */
 	static BigInteger L(BigInteger u, BigInteger n)
 	{
@@ -250,7 +288,7 @@ public final class PaillierCipher implements CipherConstants {
 	}
 
 	/**
-	 * Compute the encrypted sum of the list of all Paillier values
+	 * Compute the encrypted sum of all Paillier values
 	 * @param values - List of Paillier encrypted values by PaillierPublicKey public_key
 	 * @param public_key - PaillierPublicKey used to encrypt every element in values list.
 	 * @return Encrypted Paillier sum
@@ -291,7 +329,7 @@ public final class PaillierCipher implements CipherConstants {
 	 * the array of Encrypted and plaintext values.
 	 * Then it computes the encrypted sum.
 	 * @param public_key - Paillier Public Key used to encrypt list of ciphertext
-	 * @param ciphertext - List of ciphertext
+	 * @param ciphertext - List of Paillier ciphertext
 	 * @param plaintext - List of plaintext
 	 * @return Encrypted sum product
 	 * @throws HomomorphicException
@@ -318,7 +356,7 @@ public final class PaillierCipher implements CipherConstants {
 	 * Then it computes the encrypted sum.
 	 * @param ciphertext - Array of Encrypted Paillier values
 	 * @param plaintext - Array of plaintext values
-	 * @param public_key - Paillier Public Key used to encrypt values in cipher-text list
+	 * @param public_key - Paillier Public Key used to encrypt values in ciphertext list
 	 * @return Encrypted sum-product
 	 * @throws HomomorphicException
 	 * - If the size of plaintext array and ciphertext array isn't equal
