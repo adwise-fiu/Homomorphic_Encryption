@@ -12,6 +12,10 @@ import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * This class is responsible for generating ElGamal key pairs.
+ * It supports both additive and multiplicative modes of the ElGamal cryptosystem.
+ */
 public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements CipherConstants
 {
 	private static final Logger logger = LogManager.getLogger(ElGamalKeyPairGenerator.class);
@@ -19,10 +23,22 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 	private SecureRandom random = null;
 	private final boolean additive;
 
+	/**
+	 * Constructs an ElGamalKeyPairGenerator.
+	 *
+	 * @param additive Specifies whether the key pair supports additive operations.
+	 */
 	public ElGamalKeyPairGenerator(boolean additive) {
 		this.additive = additive;
 	}
-	
+
+	/**
+	 * Initializes the key pair generator with the specified key size and random number generator.
+	 *
+	 * @param key_size The size of the key to generate (in bits).
+	 * @param random   The secure random number generator to use.
+	 * @throws IllegalArgumentException If the key size is less than half of the default key size.
+	 */
 	public void initialize(int key_size, SecureRandom random) {
 		if (key_size < KEY_SIZE/2) {
 			throw new IllegalArgumentException("I am allowing minimum 1024 minimum. Note it isn't safe now though." +
@@ -32,6 +48,11 @@ public class ElGamalKeyPairGenerator extends KeyPairGeneratorSpi implements Ciph
 		this.random = random;
 	}
 
+	/**
+	 * Generates an ElGamal key pair.
+	 *
+	 * @return A {@link KeyPair} containing the public and private keys.
+	 */
 	public KeyPair generateKeyPair() {
 		long start_time;
 		if(this.random == null) {

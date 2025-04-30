@@ -7,11 +7,22 @@ import edu.fiu.adwise.homomorphic_encryption.misc.CipherConstants;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
 
-// Reference
-// https://github.com/dlitz/pycrypto/blob/master/lib/Crypto/PublicKey/ElGamal.py
+/**
+ * This class provides methods for encryption, decryption, and homomorphic operations
+ * using the ElGamal cryptosystem. It supports both additive and multiplicative modes.
+ * <p>
+ * Reference:
+ * <a href="https://github.com/dlitz/pycrypto/blob/master/lib/Crypto/PublicKey/ElGamal.py">...</a>
+ */
 public class ElGamalCipher
 {
-	// --------------------------BigInteger ElGamal---------------------------------------
+	/**
+	 * Encrypts a plaintext message using the ElGamal public key.
+	 *
+	 * @param plaintext The plaintext message to encrypt.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The encrypted ciphertext.
+	 */
 	public static ElGamal_Ciphertext encrypt(BigInteger plaintext, ElGamalPublicKey public_key) {
 		if(public_key.additive) {
 			return Encrypt_Homomorph(plaintext, public_key);
@@ -21,11 +32,25 @@ public class ElGamalCipher
 		}
 	}
 
+	/**
+	 * Encrypts a plaintext message (long) using the ElGamal public key.
+	 *
+	 * @param plaintext The plaintext message to encrypt.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The encrypted ciphertext.
+	 */
 	public static ElGamal_Ciphertext encrypt(long plaintext, ElGamalPublicKey public_key) {
 		BigInteger message = BigInteger.valueOf(plaintext);
 		return encrypt(message, public_key);
 	}
 
+	/**
+	 * Decrypts a ciphertext using the ElGamal private key.
+	 *
+	 * @param ciphertext The ciphertext to decrypt.
+	 * @param private_key The ElGamal private key used for decryption.
+	 * @return The decrypted plaintext message.
+	 */
 	public static BigInteger decrypt(ElGamal_Ciphertext ciphertext, ElGamalPrivateKey private_key) {
 		if(private_key.additive) {
 			return Decrypt_Homomorph(ciphertext, private_key);	
@@ -35,9 +60,12 @@ public class ElGamalCipher
 		}
 	}
 
-	/*
-	 * @param (p,g,h) public key
-	 * @param message message	
+	/**
+	 * Encrypts a plaintext message using the standard ElGamal encryption scheme.
+	 *
+	 * @param plaintext The plaintext message to encrypt.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The encrypted ciphertext.
 	 */
 	private static ElGamal_Ciphertext Encrypt(BigInteger plaintext, ElGamalPublicKey public_key) {
 		BigInteger pPrime = public_key.p.subtract(BigInteger.ONE).divide(ElGamalKeyPairGenerator.TWO);
@@ -48,11 +76,12 @@ public class ElGamalCipher
 		return new ElGamal_Ciphertext(gr, hrgm);
 	}
 
-	/*
-	 * Encrypt ElGamal homomorphic
+	/**
+	 * Encrypts a plaintext message using the homomorphic ElGamal encryption scheme.
 	 *
-	 * @param (p, g, h) public key
-	 * @param message
+	 * @param plaintext The plaintext message to encrypt.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The encrypted ciphertext.
 	 */
 	private static ElGamal_Ciphertext Encrypt_Homomorph(BigInteger plaintext, ElGamalPublicKey public_key) {
 		BigInteger pPrime = public_key.p.subtract(BigInteger.ONE).divide(ElGamalKeyPairGenerator.TWO);
@@ -63,22 +92,24 @@ public class ElGamalCipher
 		return new ElGamal_Ciphertext(public_key.g.modPow(r, public_key.p), hr.multiply(gm).mod(public_key.p));
 	}
 
-	/*
-	 * Decrypt ElGamal
+	/**
+	 * Decrypts a ciphertext using the standard ElGamal decryption scheme.
 	 *
-	 * @param (p, x) secret key
-	 * @param (gr, mhr) = (g^r, m * h^r)
-	 * @return the decrypted message
+	 * @param ciphertext The ciphertext to decrypt.
+	 * @param private_key The ElGamal private key used for decryption.
+	 * @return The decrypted plaintext message.
 	 */
 	private static BigInteger Decrypt(ElGamal_Ciphertext ciphertext, ElGamalPrivateKey private_key) {
 		BigInteger hr = ciphertext.gr.modPow(private_key.x, private_key.p);
 		return ciphertext.hrgm.multiply(hr.modInverse(private_key.p)).mod(private_key.p);
 	}
 
-	/*
-	 * @param (p, x) secret key
-	 * @param (gr, mhr) = (g^r, h^r * g^m)
-	 * @return the decrypted message
+	/**
+	 * Decrypts a ciphertext using the homomorphic ElGamal decryption scheme.
+	 *
+	 * @param ciphertext The ciphertext to decrypt.
+	 * @param private_key The ElGamal private key used for decryption.
+	 * @return The decrypted plaintext message.
 	 */
 	private static BigInteger Decrypt_Homomorph(ElGamal_Ciphertext ciphertext, ElGamalPrivateKey private_key) {
 		// h^r (mod p) = g^{r * x} (mod p)
@@ -105,9 +136,16 @@ public class ElGamalCipher
 
 	// --------------BigInteger Homomorphic Operations---------------------------
 
-	public static ElGamal_Ciphertext multiply_scalar(ElGamal_Ciphertext ciphertext1,
-													 BigInteger scalar, ElGamalPublicKey public_key)
-	{
+	/**
+	 * Multiplies a ciphertext by a scalar value in additive mode.
+	 *
+	 * @param ciphertext1 The ciphertext to be multiplied.
+	 * @param scalar The scalar value to multiply the ciphertext by.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The resulting ciphertext after multiplication.
+	 * @throws IllegalArgumentException If the cipher is in multiplicative mode.
+	 */
+	public static ElGamal_Ciphertext multiply_scalar(ElGamal_Ciphertext ciphertext1, BigInteger scalar, ElGamalPublicKey public_key) {
 		if(public_key.additive) {
 			ElGamal_Ciphertext answer;
 			answer = new ElGamal_Ciphertext(ciphertext1.gr.modPow(scalar, public_key.p),
@@ -118,12 +156,29 @@ public class ElGamalCipher
 			throw new IllegalArgumentException("Method is not permitted since ElGamal Cipher is using multiplicative mode!");
 		}
 	}
-	
+
+	/**
+	 * Multiplies a ciphertext by a scalar value (long) in additive mode.
+	 *
+	 * @param ciphertext1 The ciphertext to be multiplied.
+	 * @param scalar The scalar value to multiply the ciphertext by.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The resulting ciphertext after multiplication.
+	 */
 	public static ElGamal_Ciphertext multiply_scalar(ElGamal_Ciphertext ciphertext1,
 													 long scalar, ElGamalPublicKey public_key) {
 		return multiply_scalar(ciphertext1, BigInteger.valueOf(scalar), public_key);
 	}
-	
+
+	/**
+	 * Multiplies two ciphertexts in multiplicative mode.
+	 *
+	 * @param ciphertext1 The first ciphertext.
+	 * @param ciphertext2 The second ciphertext.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The resulting ciphertext after multiplication.
+	 * @throws IllegalArgumentException If the cipher is in additive mode.
+	 */
 	public static ElGamal_Ciphertext multiply(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2, ElGamalPublicKey public_key)
 	{
 		if(public_key.additive) {
@@ -137,6 +192,15 @@ public class ElGamalCipher
 		}
 	}
 
+	/**
+	 * Divides one ciphertext by another in multiplicative mode.
+	 *
+	 * @param ciphertext1 The dividend ciphertext.
+	 * @param ciphertext2 The divisor ciphertext.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The resulting ciphertext after division.
+	 * @throws IllegalArgumentException If the cipher is in additive mode.
+	 */
 	public static ElGamal_Ciphertext divide(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2, ElGamalPublicKey public_key)
 	{
 		if(public_key.additive) {
@@ -155,8 +219,16 @@ public class ElGamalCipher
 		}
 	}
 
-	public static ElGamal_Ciphertext add(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2, ElGamalPublicKey public_key)
-	{
+	/**
+	 * Adds two ciphertexts in additive mode.
+	 *
+	 * @param ciphertext1 The first ciphertext.
+	 * @param ciphertext2 The second ciphertext.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The resulting ciphertext after addition.
+	 * @throws IllegalArgumentException If the cipher is in multiplicative mode.
+	 */
+	public static ElGamal_Ciphertext add(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2, ElGamalPublicKey public_key) {
 		if(public_key.additive) {
 			ElGamal_Ciphertext answer;
 			answer = new ElGamal_Ciphertext(ciphertext1.gr.multiply(ciphertext2.gr).mod(public_key.p), 
@@ -168,9 +240,17 @@ public class ElGamalCipher
 		}
 	}
 
+	/**
+	 * Subtracts one ciphertext from another in additive mode.
+	 *
+	 * @param ciphertext1 The ciphertext to subtract from.
+	 * @param ciphertext2 The ciphertext to subtract.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The resulting ciphertext after subtraction.
+	 * @throws IllegalArgumentException If the cipher is in multiplicative mode.
+	 */
 	public static ElGamal_Ciphertext subtract(ElGamal_Ciphertext ciphertext1, ElGamal_Ciphertext ciphertext2,
-											  ElGamalPublicKey public_key)
-	{
+											  ElGamalPublicKey public_key) {
 		if(public_key.additive) {
 			ElGamal_Ciphertext neg_ciphertext2;
 			ElGamal_Ciphertext ciphertext;
@@ -183,6 +263,15 @@ public class ElGamalCipher
 		}
 	}
 
+	/**
+	 * Computes the sum of a list of ciphertexts in additive mode.
+	 *
+	 * @param values The list of ciphertexts to sum.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @param limit The maximum number of ciphertexts to sum.
+	 * @return The resulting ciphertext after summation.
+	 * @throws HomomorphicException If the cipher is not in additive mode.
+	 */
 	public static ElGamal_Ciphertext sum(List<ElGamal_Ciphertext> values, ElGamalPublicKey public_key, int limit)
 			throws HomomorphicException {
 
@@ -206,6 +295,15 @@ public class ElGamalCipher
 		return sum;
 	}
 
+	/**
+	 * Computes the sum of an array of ciphertexts in additive mode.
+	 *
+	 * @param values The array of ciphertexts to sum.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @param limit The maximum number of ciphertexts to sum.
+	 * @return The resulting ciphertext after summation.
+	 * @throws HomomorphicException If the cipher is not in additive mode.
+	 */
 	public static ElGamal_Ciphertext sum(ElGamal_Ciphertext [] values, ElGamalPublicKey public_key, int limit)
 			throws HomomorphicException {
 		if (!public_key.additive) {
@@ -229,6 +327,16 @@ public class ElGamalCipher
 		return sum;
 	}
 
+	/**
+	 * Computes the sum of products of ciphertexts and plaintexts in additive mode.
+	 *
+	 * @param cipher The array of ciphertexts.
+	 * @param plain The array of plaintexts.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The resulting ciphertext after summation of products.
+	 * @throws HomomorphicException If the cipher is not in additive mode.
+	 * @throws IllegalArgumentException If the arrays are not of the same size.
+	 */
 	public static ElGamal_Ciphertext sum_product (ElGamal_Ciphertext [] cipher, Long [] plain,
 												  ElGamalPublicKey public_key) throws HomomorphicException {
 		if (!public_key.additive) {
@@ -246,6 +354,16 @@ public class ElGamalCipher
 		return ElGamalCipher.sum(product_vector, public_key, product_vector.length);
 	}
 
+	/**
+	 * Computes the sum of products of the ciphertexts and plaintexts in additive mode.
+	 *
+	 * @param cipher The list of ciphertexts.
+	 * @param plain The list of plaintexts.
+	 * @param public_key The ElGamal public key used for encryption.
+	 * @return The resulting ciphertext after summation of products.
+	 * @throws HomomorphicException If the cipher is not in additive mode.
+	 * @throws IllegalArgumentException If the lists are not of the same size.
+	 */
 	public static ElGamal_Ciphertext sum_product (List<ElGamal_Ciphertext> cipher, List<Long> plain,
 												  ElGamalPublicKey public_key) throws HomomorphicException {
 		if (!public_key.additive) {

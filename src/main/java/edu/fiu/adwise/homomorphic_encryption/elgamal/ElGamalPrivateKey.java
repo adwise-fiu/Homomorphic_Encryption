@@ -11,6 +11,16 @@ import edu.fiu.adwise.homomorphic_encryption.misc.CipherConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Represents the private key for the ElGamal encryption scheme.
+ * This class implements multiple interfaces to provide functionality for cryptographic operations,
+ * serialization, and multithreading.
+ *
+ * <p>The ElGamalPrivateKey class includes parameters for the private key, as well as the public key
+ * components (p, g, h). It also supports additive homomorphic encryption by generating a lookup table
+ * for decryption.</p>
+ *
+ */
 public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, PrivateKey, Runnable, CipherConstants
 {
 	private static final Logger logger = LogManager.getLogger(ElGamalPrivateKey.class);
@@ -26,6 +36,15 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 
 	private static final long serialVersionUID = 9160045368787508459L;
 
+	/**
+	 * Constructs an ElGamalPrivateKey with the specified parameters.
+	 *
+	 * @param p        The prime modulus.
+	 * @param x        The private key parameter.
+	 * @param g        The generator.
+	 * @param h        The public key component.
+	 * @param additive Whether additive homomorphic encryption is enabled.
+	 */
 	public ElGamalPrivateKey(BigInteger p, BigInteger x, BigInteger g, BigInteger h, boolean additive) {
 		this.p = p;
 		this.x = x;
@@ -41,26 +60,49 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 		}
 	}
 
+	/**
+	 * Sets whether additive homomorphic encryption is enabled.
+	 *
+	 * @param additive True to enable additive homomorphic encryption, false otherwise.
+	 */
 	public void set_additive(boolean additive) {
 		this.additive = additive;
 	}
 
+	/**
+	 * Returns the algorithm name.
+	 *
+	 * @return The algorithm name, "ElGamal".
+	 */
 	public String getAlgorithm()
 	{
 		return "ElGamal";
 	}
 
+	/**
+	 * Returns the format of the key.
+	 *
+	 * @return The format, "PKCS#8".
+	 */
 	public String getFormat() 
 	{
 		return "PKCS#8";
 	}
 
+	/**
+	 * Returns the encoded form of the key.
+	 *
+	 * @return The encoded key, or null if not supported.
+	 */
 	public byte[] getEncoded() 
 	{
 		return null;
 	}
 
-	// Generate Lookup Table, plain text space is [0, p - 1)
+	/**
+	 * Generates the lookup table for decryption.
+	 * The table maps g^m mod p to m for plaintext space [0, p - 1).
+	 */
 	private void decrypt_table() {
 		// Get maximum size of x - y + r + 2^l
 		// Assume maximum value is u: biggest value in DGK which is the closest prime from 2^l l = 16 default.
@@ -85,11 +127,19 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 				(System.nanoTime() - start_time)/BigInteger.TEN.pow(9).longValue() + " seconds");
 	}
 
+	/**
+	 * Runs the decryption table generation in a separate thread.
+	 */
 	public void run() 
 	{
 		decrypt_table();
 	}
 
+	/**
+	 * Returns a string representation of the private key.
+	 *
+	 * @return A string containing the key parameters.
+	 */
 	public String toString() {
 		String answer = "";
 		answer += "p=" + this.p + '\n';
@@ -99,6 +149,11 @@ public final class ElGamalPrivateKey implements ElGamal_Key, Serializable, Priva
 		return answer;
 	}
 
+	/**
+	 * Returns the prime modulus p.
+	 *
+	 * @return The prime modulus p.
+	 */
 	public BigInteger getP() 
 	{
 		return this.p;
