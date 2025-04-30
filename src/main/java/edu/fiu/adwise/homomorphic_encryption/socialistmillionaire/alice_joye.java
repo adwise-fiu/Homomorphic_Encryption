@@ -16,15 +16,35 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents Alice's implementation of the Joye and Salehi protocol for secure computation.
+ * This class extends the base `alice` class and provides methods for secure comparison
+ * and related cryptographic operations using homomorphic encryption.
+ * See the paper "Private yet Efficient Decision Tree Evaluation"
+ * <a href="https://link.springer.com/content/pdf/10.1007/978-3-319-95729-6_16.pdf">paper link</a>
+ */
 public class alice_joye extends alice {
     private static final Logger logger = LogManager.getLogger(alice_joye.class);
 
+    /**
+     * Default constructor for the `alice_joye` class.
+     */
     public alice_joye() {
         super();
     }
 
-    // Alice has all values WITHOUT the prime
-    // In the paper, the server is Alice (has encrypted values), and the client is Bob (has keys)
+    /**
+     * Executes Protocol 2 for secure comparison between two encrypted values.
+     * This protocol involves multiple steps, including randomization, XOR computation,
+     * and secure communication with Bob.
+     *
+     * @param x the first encrypted value.
+     * @param y the second encrypted value.
+     * @return {@code true} if {@code x >= y}, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     */
     public boolean Protocol2(BigInteger x, BigInteger y) throws IOException, HomomorphicException, ClassNotFoundException {
         BigInteger big_m;
         BigInteger u_l;
@@ -89,6 +109,17 @@ public class alice_joye extends alice {
         return decrypt_protocol_one(beta_l);
     }
 
+    /**
+     * Executes Protocol 1 for secure comparison of a single unencrypted value with another unencrypted value from Bob.
+     * This protocol computes the XOR of the input value with encrypted bits and
+     * performs secure communication with Bob.
+     *
+     * @param x the encrypted value to compare.
+     * @return {@code true} if {@code x <= y}, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     */
     public boolean Protocol1(BigInteger x) throws HomomorphicException, IOException, ClassNotFoundException {
         BigInteger [] Encrypted_Y = get_encrypted_bits();
         BigInteger [] XOR = encrypted_xor(x, Encrypted_Y);
@@ -97,6 +128,20 @@ public class alice_joye extends alice {
         return Protocol0(x, delta_a, XOR, Encrypted_Y);
     }
 
+
+    /**
+     * Computes the array of encrypted values (C) used in the Joye protocol.
+     * This method combines XOR results, encrypted bits, and other parameters
+     * to generate the required encrypted values.
+     *
+     * @param x the plaintext value.
+     * @param Encrypted_Y the array of encrypted bits.
+     * @param XOR the XOR results of the plaintext and encrypted bits.
+     * @param delta_a the delta value for Alice.
+     * @param set_l the set of indices used in the computation.
+     * @return an array of encrypted values (C).
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
+     */
     public BigInteger [] compute_c(BigInteger x, BigInteger [] Encrypted_Y,
                                       BigInteger [] XOR, int delta_a, List<Integer> set_l) throws HomomorphicException {
 
@@ -148,6 +193,16 @@ public class alice_joye extends alice {
         return C;
     }
 
+    /**
+     * Forms the set of indices (L) used in the Joye and Salehi protocol.
+     * This method ensures that the size of the set matches the required threshold
+     * to protect against timing attacks.
+     *
+     * @param x the plaintext value.
+     * @param delta_a the delta value for Alice.
+     * @param XOR the XOR results of the plaintext and encrypted bits.
+     * @return a list of indices forming the set L.
+     */
     public List<Integer> form_set_l(BigInteger x, int delta_a, BigInteger [] XOR) {
         List<Integer> set_l = new ArrayList<>();
         int floor_t_div_two = (int) Math.floor((float) XOR.length/2);
@@ -177,7 +232,20 @@ public class alice_joye extends alice {
         return set_l;
     }
 
-    // This function is the equivalent of the protocol on Figure 1 on Joye and Salehi's paper
+    /**
+     * Executes Protocol 0, which is the core of the Joye protocol.
+     * This method computes the encrypted values (C), sends them to Bob, and
+     * retrieves the result of the secure comparison.
+     *
+     * @param x the plaintext value.
+     * @param delta_a the delta value for Alice.
+     * @param XOR the XOR results of the plaintext and encrypted bits.
+     * @param Encrypted_Y the array of encrypted bits.
+     * @return {@code true} if {@code x <= y}, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     */
     private boolean Protocol0(BigInteger x, int delta_a, BigInteger [] XOR, BigInteger [] Encrypted_Y)
             throws IOException, ClassNotFoundException, HomomorphicException {
 
@@ -190,6 +258,15 @@ public class alice_joye extends alice {
         return decrypt_protocol_one(delta_a);
     }
 
+    /**
+     * Computes the delta value (delta_a) for Alice based on the Hamming weight of the input.
+     * This method ensures that the delta value is selected securely and consistently.
+     *
+     * @param x the plaintext value.
+     * @param t_bits the number of bits to consider.
+     * @return the computed delta value (delta_a).
+     * @throws HomomorphicException if an error occurs during the computation.
+     */
     public static int compute_delta_a(BigInteger x, int t_bits) throws HomomorphicException {
         // Step 2, Compute Hamming Weight and Select delta A
         int delta_a;
@@ -209,6 +286,14 @@ public class alice_joye extends alice {
         return delta_a;
     }
 
+    /**
+     * Computes the Hamming weight of a given value.
+     * The Hamming weight is the number of 1 bits in the binary representation of the value.
+     *
+     * @param value the value whose Hamming weight is to be computed.
+     * @return the Hamming weight of the value.
+     * @throws HomomorphicException if the value is negative.
+     */
     public static int hamming_weight(BigInteger value) throws HomomorphicException {
         if (value.signum() < 0) {
             throw new HomomorphicException("I'm unsure if Hamming weight is defined for negative");

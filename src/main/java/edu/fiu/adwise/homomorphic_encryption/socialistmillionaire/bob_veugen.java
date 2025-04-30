@@ -16,18 +16,54 @@ import java.security.KeyPair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * See the papers "Improving the DGK comparison protocol" and Correction to ”Improving the DGK comparison
+ * protocol” by Thjis Veugen, You can find these in the papers directory!
+ * Represents Bob's implementation of the Veugen protocol for secure comparison.
+ * This class extends the base `Bob` class and provides methods for secure computation
+ * using homomorphic encryption schemes such as DGK and Paillier.
+ */
 public class bob_veugen extends bob {
     private static final Logger logger = LogManager.getLogger(bob_veugen.class);
 
+    /**
+     * Constructs a `bob_veugen` instance with three key pairs.
+     *
+     * @param a the first key pair (Paillier or DGK).
+     * @param b the second key pair (DGK or Paillier).
+     * @param c the third key pair (optional, e.g., ElGamal).
+     * @throws IllegalArgumentException if the provided key pairs are invalid or mismatched.
+     */
     public bob_veugen(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
         super(a, b, c);
     }
 
+    /**
+     * Constructs a `bob_veugen` instance with two key pairs.
+     *
+     * @param a the first key pair (Paillier or DGK).
+     * @param b the second key pair (DGK or Paillier).
+     * @throws IllegalArgumentException if the provided key pairs are invalid or mismatched.
+     */
     public bob_veugen(KeyPair a, KeyPair b) throws IllegalArgumentException {
         super(a, b);
     }
 
-    // Use this for Using Modified Protocol3 within Protocol 4
+    /**
+     * See the paper "Improving the DGK comparison protocol", this implements Protocol 3.
+     * This is an improved version of Protocol 1, initially created by DGK, see original bob class
+     *
+     * This protocol determines if a value `z` is less than `(N - 1) / 2` and securely
+     * communicates the result to Alice.
+     *
+     * @param beta the value to compare.
+     * @param z the encrypted value to compare against.
+     * @return {@code true} if the comparison result is valid, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IllegalArgumentException if invalid arguments are provided.
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
+     */
     boolean Modified_Protocol3(BigInteger beta, BigInteger z)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
 
@@ -53,7 +89,17 @@ public class bob_veugen extends bob {
     }
 
     /**
-     * Please review Correction to Improving the DGK comparison protocol - Protocol 3
+     * See the paper Correction to "Improving the DGK comparison protocol", this implements Protocol 3.
+     * This is an improved version of Protocol 1, initially created by DGK, see original bob class
+     *
+     * This protocol involves multiple steps, including decryption, modular arithmetic,
+     * and secure communication with Alice to determine the comparison result.
+     *
+     * @return {@code true} if the comparison result indicates {@code x >= y}, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
+     * @throws IllegalArgumentException if the protocol constraints are violated.
      */
     public boolean Protocol2()
             throws IOException, ClassNotFoundException, HomomorphicException {

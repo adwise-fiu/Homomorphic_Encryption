@@ -15,22 +15,52 @@ import java.math.BigInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * See the papers "Improving the DGK comparison protocol" and Correction to ”Improving the DGK comparison
+ * protocol” by Thjis Veugen, You can find these in the papers directory!
+ * Represents Alice's implementation of the Veugen protocol for secure comparison.
+ * This class extends the base `alice` class and provides methods for secure computation
+ * using homomorphic encryption schemes such as DGK and Paillier.
+ */
 public class alice_veugen extends alice {
     private static final Logger logger = LogManager.getLogger(alice_veugen.class);
 
+    /**
+     * Constructs an instance of `alice_veugen`.
+     */
     public alice_veugen() {
         super();
     }
 
+
     /**
-     * Please review the bob
-     * @param x - plaintext value
-     * @return X <= Y
+     * See the paper "Improving the DGK comparison protocol", this implements Protocol 3.
+     * This is an improved version of Protocol 1, initially created by DGK, see original alice class
+     *
+     * This protocol determines if the plaintext value `x` is less than or equal to `y`
+     *
+     * @param x the plaintext value to compare.
+     * @return {@code true} if {@code x <= y}, {@code false} otherwise.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
      */
     public boolean Protocol1(BigInteger x) throws ClassNotFoundException, IOException, HomomorphicException {
         return Protocol3(x, rnd.nextInt(2));
     }
 
+    /**
+     * See the paper "Improving the DGK comparison protocol", this implements Protocol 3.
+     * This is an improved version of Protocol 1, initially created by DGK, see original alice class
+     *
+     * This protocol determines if the plaintext value `x` is less than or equal to `y`
+     *
+     * @param x the plaintext value to compare.
+     * @return {@code true} if {@code x <= y}, {@code false} otherwise.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
+     */
     boolean Protocol3(BigInteger x, int deltaA)
             throws ClassNotFoundException, IOException, HomomorphicException {
         if(x.bitLength() > dgk_public.getL()) {
@@ -98,9 +128,21 @@ public class alice_veugen extends alice {
         return decrypt_protocol_one(deltaA);
     }
 
-
     /**
-     * Primarily used in Protocol 4.
+     * See the paper "Improving the DGK comparison protocol", this implements Protocol 4, Steps 4a - 4j
+     * See the paper Corrrection to "Improving the DGK comparison protocol", this implements Protocol 3, Steps 4a - 4j
+     *
+     * These steps are identical, essentially this is another way for alice and bob to compare an unencrypted number. I split this out
+     * from the main protocol so I can properly debug when implementin this sub-protocol.
+     * This is an improved version of Protocol 1, initially created by DGK, see original alice class
+     *
+     * @param alpha the plaintext value alpha.
+     * @param r a random value used in the protocol.
+     * @param deltaA a random bit (0 or 1) used in the protocol.
+     * @return {@code true} if {@code x <= y}, {@code false} otherwise..
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
      */
     boolean Modified_Protocol3(BigInteger alpha, BigInteger r, int deltaA)
             throws ClassNotFoundException, IOException, HomomorphicException
@@ -226,10 +268,15 @@ public class alice_veugen extends alice {
     }
 
     /**
+     * See the paper Corrrection to "Improving the DGK comparison protocol", this implements Protocol 3, Steps 4a - 4j
      *
-     * @param x - Encrypted Paillier value OR Encrypted DGK value
-     * @param y - Encrypted Paillier value OR Encrypted DGK value
-     * @throws IOException - socket errors
+     * This is Veugen's improved encrypted integer comparison protocol from DGK
+     * @param x the encrypted value to compare.
+     * @param y the encrypted value to compare against.
+     * @return {@code true} if {@code x >= y}, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
      */
     public boolean Protocol2(BigInteger x, BigInteger y)
             throws IOException, ClassNotFoundException, HomomorphicException {
@@ -280,7 +327,6 @@ public class alice_veugen extends alice {
         // See Optimization 3: true --> Use Modified Protocol 3
         if(r.add(TWO.pow(dgk_public.getL() + 1)).compareTo(N) < 0) {
             writeBoolean(false);
-;
             if(Protocol1(alpha)) {
                 x_leq_y = 1;
             }
@@ -290,7 +336,6 @@ public class alice_veugen extends alice {
         }
         else {
             writeBoolean(true);
-
             if(Modified_Protocol3(alpha, r, deltaA)) {
                 x_leq_y = 1;
             }

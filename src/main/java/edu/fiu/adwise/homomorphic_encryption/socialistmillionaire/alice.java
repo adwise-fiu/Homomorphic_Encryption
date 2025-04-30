@@ -30,14 +30,33 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * The {@code alice} class represents Alice in the Socialist Millionaire's Problem.
+ * It implements the {@code alice_interface} and extends {@code socialist_millionaires}.
+ * This class provides methods for secure equality testing and other cryptographic operations
+ * using homomorphic encryption techniques.
+ * <p>
+ * This specific class implements the first generation of encrypted comparison protocols
+ */
 public class alice extends socialist_millionaires implements alice_interface {
 
 	private static final Logger logger = LogManager.getLogger(alice.class);
 
+	/**
+	 * Default constructor for the {@code alice} class.
+	 * Initializes the {@code isDGK} flag to {@code false}.
+	 */
 	public alice() {
 		this.isDGK = false;
 	}
 
+	/**
+	 * Constructor for the {@code alice} class that accepts a client socket.
+	 *
+	 * @param clientSocket the client socket to communicate with Bob.
+	 * @throws IOException if an I/O error occurs when setting up the socket.
+	 * @throws NullPointerException if the provided {@code clientSocket} is {@code null}.
+	 */
 	public alice (Socket clientSocket) throws IOException {
 		if(clientSocket != null) {
 			set_socket(clientSocket);
@@ -48,6 +67,12 @@ public class alice extends socialist_millionaires implements alice_interface {
 		this.isDGK = false;
 	}
 
+	/**
+	 * Sets up the socket for communication with Bob using a standard {@code Socket}.
+	 *
+	 * @param socket the socket to communicate with Bob.
+	 * @throws IOException if an I/O error occurs when setting up the socket.
+	 */
 	public void set_socket(Socket socket) throws IOException {
 		toBob = new ObjectOutputStream(socket.getOutputStream());
 		fromBob = new ValidatingObjectInputStream(socket.getInputStream());
@@ -65,31 +90,23 @@ public class alice extends socialist_millionaires implements alice_interface {
 		);
 		this.fromBob.accept("[B");
 		this.fromBob.accept("[L*");
-	}
 
-	public void set_socket(SSLSocket socket) throws IOException {
-		toBob = new ObjectOutputStream(socket.getOutputStream());
-		fromBob = new ValidatingObjectInputStream(socket.getInputStream());
-		this.fromBob.accept(
-				PaillierPublicKey.class,
-				DGKPublicKey.class,
-				ElGamalPublicKey.class,
-				GMPublicKey.class,
-				java.math.BigInteger.class,
-				java.lang.Number.class,
-				ElGamal_Ciphertext.class,
-				java.util.HashMap.class,
-				java.lang.Long.class,
-				java.lang.String.class
-		);
-		this.fromBob.accept("[B");
-		this.fromBob.accept("[L*");
-		this.tls_socket_in_use = true;
+		// Set TLS flag if the socket is an instance of SSLSocket
+		if (socket instanceof SSLSocket) {
+			this.tls_socket_in_use = true;
+		}
 	}
 
 	/**
-	 * Review "Protocol 1 EQT-1"
-	 * from the paper "Secure Equality Testing Protocols in the Two-Party Setting"
+	 * Performs encrypted equality testing between two encrypted values {@code a} and {@code b}.
+	 * Implements "Protocol 1 EQT-1" from the paper "Secure Equality Testing Protocols in the Two-Party Setting".
+	 *
+	 * @param a the first encrypted value.
+	 * @param b the second encrypted value.
+	 * @return {@code true} if the two values are equal, {@code false} otherwise.
+	 * @throws HomomorphicException if a homomorphic encryption error occurs.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
 	 */
 	public boolean encrypted_equals(BigInteger a, BigInteger b) throws HomomorphicException, IOException, ClassNotFoundException {
 		// Party A generates a sufficiently large (l + 1 + k bits) random
@@ -119,7 +136,16 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return private_equals(r, delta_a);
 	}
 
-	// Used only within encrypted_equals
+	/**
+	 * Performs an equality check as part of the encrypted equality testing protocol.
+	 * This function is 'protected' as it is used by the public 'encrypted_equals' function
+	 * @param r the random value used in the protocol.
+	 * @param delta_a a random bit chosen by Alice.
+	 * @return {@code true} if the two values are equal, {@code false} otherwise.
+	 * @throws HomomorphicException if a homomorphic encryption error occurs.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 */
 	protected boolean private_equals(BigInteger r, int delta_a) throws HomomorphicException, IOException, ClassNotFoundException {
 		BigInteger [] Encrypted_Y = get_encrypted_bits();
         logger.info("Received Encrypted {} from bob for private_equals check", Encrypted_Y.length);
@@ -162,10 +188,37 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return decrypt_protocol_one(delta_a);
 	}
 
+	/**
+	 * Performs an equality check as part of the encrypted equality testing protocol.
+	 * This function is 'protected' as it is used by the public 'encrypted_equals' function
+	 * @param r the random value used in the protocol.
+	 * @return {@code true} if the two values are equal, {@code false} otherwise.
+	 * @throws HomomorphicException if a homomorphic encryption error occurs.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 */
 	public boolean private_equals(BigInteger r) throws HomomorphicException, IOException, ClassNotFoundException {
 		return private_equals(r, rnd.nextInt(2));
 	}
 
+	/**
+	 * Computes the array of encrypted values \( C \) used in the secure comparison protocol.
+	 * Each element \( C_i \) is calculated based on the XOR of the encrypted bits of \( x \) and \( y \),
+	 * along with additional parameters such as \( \delta_a \).
+	 *
+	 * <p>The computation follows the formula:
+	 * \( C_i = \text{sum}(XOR) + s + x_i - y_i \), where \( s \) is a function of \( \delta_a \).
+	 * <p>
+	 * This method is used in the context of the secure comparison protocol for both the original DGK
+	 * comparison protocol and Veugen's approach
+	 *
+	 * @param x the plaintext value whose bits are compared.
+	 * @param Encrypted_Y the array of encrypted bits of the second value \( y \).
+	 * @param XOR the array of encrypted XOR results between the bits of \( x \) and \( y \).
+	 * @param delta_a a random bit chosen by Alice for the protocol.
+	 * @return an array of encrypted values \( C \), where the last element \( C_{-1} \) is a special sum.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	protected BigInteger [] compute_c(BigInteger x, BigInteger [] Encrypted_Y,
 									  BigInteger [] XOR, int delta_a) throws HomomorphicException {
 
@@ -201,14 +254,15 @@ public class alice extends socialist_millionaires implements alice_interface {
 	}
 
 	/**
-	 * Please see Protocol 1 with Bob which has parameter y
-	 * Computes the truth value of X <= Y
-	 * @param x - plaintext value
-	 * @return X <= Y
-	 * @throws IOException - Socket Errors
-	 * @throws ClassNotFoundException - Required for casting objects
-	 * @throws IllegalArgumentException - If x or y have more bits 
-	 * than that is supported by the DGK Keys provided
+	 * Executes Protocol 1 to securely compute whether {@code x <= y} in a two-party setting.
+	 * This protocol uses homomorphic encryption to ensure privacy during the comparison.
+	 *
+	 * @param x the plaintext value to compare.
+	 * @return {@code true} if {@code x <= y}, {@code false} otherwise.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws IllegalArgumentException if the bit length of X exceeds the limit defined by the DGK public key.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
 	 */
 	public boolean Protocol1(BigInteger x)
 			throws IOException, IllegalArgumentException, HomomorphicException, ClassNotFoundException {
@@ -243,10 +297,16 @@ public class alice extends socialist_millionaires implements alice_interface {
 	}
 
 	/**
-	 * 
-	 * @param x - Encrypted Paillier value OR Encrypted DGK value
-	 * @param y - Encrypted Paillier value OR Encrypted DGK value
-	 * @return X >= Y
+	 * Executes Protocol 2 to securely compute whether X >= Y in a two-party setting.
+	 * This protocol uses homomorphic encryption to ensure privacy during the comparison.
+	 *
+	 * @param x the encrypted value of X (Paillier or DGK encrypted).
+	 * @param y the encrypted value of Y (Paillier or DGK encrypted).
+	 * @return {@code true} if {@code x >= y}, {@code false} otherwise.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 * @throws IllegalArgumentException if the protocol is used with unsupported encryption schemes or invalid parameters.
 	 */
 	public boolean Protocol2(BigInteger x, BigInteger y) 
 			throws IOException, ClassNotFoundException, HomomorphicException
@@ -333,7 +393,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 		 * Since the result is encrypted...I need to send
 		 * this back to Bob (Android Phone) to decrypt the solution...
 		 * 
-		 * Bob by definition would know the answer as well.
+		 * Bob, by definition, would know the answer as well.
 		 */
 		return decrypt_protocol_two(result);
 	}
@@ -344,7 +404,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 	 * @param x - Encrypted Paillier value or Encrypted DGK value
 	 * @param d - plaintext divisor
 	 * @throws IOException            - Any socket errors
-	 * @throws HomomorphicException   Constraints: 0 <= x <= N * 2^{-sigma} and 0 <= d < N
+	 * @throws HomomorphicException if the constraints {@code 0 <= x <= N * 2^(-sigma)} or {@code 0 <= d < N} are violated.
 	 */
 	public BigInteger division(BigInteger x, long d)
 			throws IOException, ClassNotFoundException,  HomomorphicException {
@@ -406,9 +466,23 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return answer;
 	}
 
+	/**
+	 * See the paper "Correction of a Secure Comparison Protocol for Encrypted Integers in IEEE WIFS 2012
+	 * (Short Paper)"
+	 * Performs secure multiplication of two encrypted values using homomorphic encryption.
+	 * This method ensures privacy by adding random blinding factors to the inputs before computation.
+	 * The protocol involves communication with Bob to compute the product securely.
+	 * by Mau et al.
+	 * @param x the first encrypted value.
+	 * @param y the second encrypted value.
+	 * @return the encrypted result of the multiplication \( x \times y \).
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws IllegalArgumentException if the received object is not of the expected type.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	public BigInteger multiplication(BigInteger x, BigInteger y) 
-			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
-	{
+			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
 		Object in;
 		BigInteger x_prime;
 		BigInteger y_prime;
@@ -462,10 +536,26 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return result;
 	}
 
+	/**
+	 * Sets the DGK private key for Alice.
+	 * This key is used for decryption and other operations in the DGK cryptosystem.
+	 * You should NOT be using this function! This is only here to help with testing!
+	 * Alice should never be getting Bob's private key!!!!
+	 *
+	 * @param dgk_private the DGK private key to be set.
+	 */
 	public void set_dgk_private_key(DGKPrivateKey dgk_private) {
 		this.dgk_private = dgk_private;
 	}
 
+	/**
+	 * Receives public keys from Bob and sets them for Alice.
+	 * This method handles DGK, Paillier, and ElGamal public keys.
+	 * If a specific key is not received, the corresponding field is set to null.
+	 *
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 */
 	public void receivePublicKeys()
 			throws IOException, ClassNotFoundException {
 		Object x;
@@ -496,9 +586,21 @@ public class alice extends socialist_millionaires implements alice_interface {
 			el_gamal_public = null;
 		}
 	}
-	
 
-	// Use Bubble sort to get K-biggest or smallest values. You can sort the whole list too if you want
+
+	/**
+	 * Retrieves the k largest or smallest values from the input array using a bubble sort algorithm.
+	 * The method can sort the entire array or only extract the k largest/smallest values.
+	 *
+	 * @param input the array of BigInteger values to process.
+	 * @param k the number of values to retrieve.
+	 * @param smallest_first if true, retrieves the k smallest values; otherwise, retrieves the k largest values.
+	 * @return an array containing the k largest or smallest values.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws IllegalArgumentException if k is invalid or out of bounds.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	public BigInteger[] getKValues(BigInteger [] input, int k, boolean smallest_first)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
@@ -542,7 +644,21 @@ public class alice extends socialist_millionaires implements alice_interface {
 		writeBoolean(false);
 		return sorted_k;
 	}
-	
+
+	/**
+	 * Retrieves the k largest or smallest values from the input list using a bubble sort algorithm.
+	 * The method can sort the entire list or only extract the k largest/smallest values.
+	 * This operation involves secure comparisons using homomorphic encryption.
+	 *
+	 * @param input the list of BigInteger values to process.
+	 * @param k the number of values to retrieve.
+	 * @param smallest_first if true, retrieves the k smallest values; otherwise, retrieves the k largest values.
+	 * @return an array containing the k largest or smallest values.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws IllegalArgumentException if k is invalid or out of bounds.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	public BigInteger[] getKValues(List<BigInteger> input, int k,  boolean smallest_first)
 			throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
 	{
@@ -591,6 +707,18 @@ public class alice extends socialist_millionaires implements alice_interface {
 	// ---------------------- Everything here is essentially utility functions all Alice will need ----------------
 
 	// Found the issue; i=0 should be a 0 on the smallest thing first no matter what.
+	/**
+	 * Computes the XOR operation between the bits of a plaintext value and an array of encrypted bits.
+	 * The XOR operation is performed bit by bit, ensuring compatibility with homomorphic encryption.
+	 * If the encrypted array is shorter than the plaintext value, missing bits are treated as zeros.
+	 * <p>
+	 * This is a function used for all versions of Alice
+	 *
+	 * @param x the plaintext value whose bits are XORed.
+	 * @param Encrypted_Y the array of encrypted bits to XOR with the bits of {@code x}.
+	 * @return an array of encrypted XOR results.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	public BigInteger [] encrypted_xor(BigInteger x, BigInteger [] Encrypted_Y) throws HomomorphicException {
 		BigInteger [] xor_bits;
 		int xor_bit_length;
@@ -638,6 +766,17 @@ public class alice extends socialist_millionaires implements alice_interface {
 		return xor_bits;
 	}
 
+	/**
+	 * Retrieves an array of encrypted bits from Bob.
+	 * This method reads an object from the input stream and validates that it is an array of {@code BigInteger}.
+	 * <p>
+	 * This is a function used for all versions of Alice
+	 *
+	 * @return an array of encrypted bits received from Bob.
+	 * @throws HomomorphicException if the received object is not of the expected type.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 */
 	protected BigInteger [] get_encrypted_bits() throws HomomorphicException, IOException, ClassNotFoundException {
 		//Step 1: Receive y_i bits from Bob
 		Object o = readObject();
@@ -649,6 +788,23 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 	}
 
+	/**
+	 * Executes the decryption protocol to securely compute the value of delta.
+	 * This protocol involves receiving an encrypted value from Bob, performing computations
+	 * based on the value of {@code delta_a}, and sending the result back to Bob.
+	 * The protocol ensures that Alice and Bob can compute the result without revealing
+	 * their private inputs.
+	 * <p>
+	 * This is a function used for all versions of Alice.
+	 * Alice has delta_a, and Bob has delta_b, delta = delta_a XOR delta_b is equal to delta, the comparison result
+	 * Alice wants to get delta without revealing delta_a, hence the blinding step.
+	 *
+	 * @param delta_a a random bit chosen by Alice for the protocol.
+	 * @return {@code true} if the computed delta equals 1, {@code false} otherwise.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	protected boolean decrypt_protocol_one(int delta_a) throws IOException, ClassNotFoundException, HomomorphicException {
 		Object o;
 		BigInteger delta;
@@ -696,7 +852,17 @@ public class alice extends socialist_millionaires implements alice_interface {
 		}
 	}
 
-	// The input result is the encrypted answer of the inequality.
+	/**
+	 * Executes the decryption protocol to securely determine the result of an encrypted inequality.
+	 * This protocol involves sending the encrypted result to Bob for decryption and receiving
+	 * the comparison result. The protocol ensures that Alice and Bob can compute the result
+	 * without revealing their private inputs.
+	 *
+	 * @param result the encrypted result of the inequality.
+	 * @return {@code true} if the comparison result is {@code x >= y}, {@code false} otherwise.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	protected boolean decrypt_protocol_two(BigInteger result) throws IOException, HomomorphicException {
 		BigInteger blind = BigInteger.ZERO;
 		// blind = NTL.RandomBnd(dgk_public.getU());

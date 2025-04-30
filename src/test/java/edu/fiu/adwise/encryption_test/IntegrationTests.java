@@ -2,7 +2,7 @@
  * Copyright (c) 2025 ADWISE Lab, Florida International University (FIU), AndrewQuijano
  * Licensed under the MIT License. See LICENSE file in the project root for details.
  */
-package test;
+package edu.fiu.adwise.encryption_test;
 
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKOperations;
 import edu.fiu.adwise.homomorphic_encryption.dgk.DGKPrivateKey;

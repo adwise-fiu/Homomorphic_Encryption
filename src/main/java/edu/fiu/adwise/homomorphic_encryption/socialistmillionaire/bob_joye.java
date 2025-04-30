@@ -14,17 +14,55 @@ import java.security.KeyPair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Represents Bob's implementation of the Joye and Salehi protocol for secure comparison.
+ * This class extends the base `bob` class and provides methods for secure computation
+ * using homomorphic encryption schemes such as DGK and Paillier.
+ *  See the paper "Private yet Efficient Decision Tree Evaluation"
+ *  <a href="https://link.springer.com/content/pdf/10.1007/978-3-319-95729-6_16.pdf">paper link</a>
+ */
 public class bob_joye extends bob {
     private static final Logger logger = LogManager.getLogger(bob_joye.class);
 
+    /**
+     * Constructs a `bob_joye` instance with three key pairs.
+     *
+     * @param a the first key pair (Paillier or DGK).
+     * @param b the second key pair (DGK or Paillier).
+     * @param c the third key pair (optional, e.g., ElGamal).
+     * @throws IllegalArgumentException if the provided key pairs are invalid or mismatched.
+     */
     public bob_joye(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
         super(a, b, c);
     }
 
+    /**
+     * Constructs a `bob_joye` instance with two key pairs.
+     *
+     * @param a the first key pair (Paillier or DGK).
+     * @param b the second key pair (DGK or Paillier).
+     * @throws IllegalArgumentException if the provided key pairs are invalid or mismatched.
+     */
     public bob_joye(KeyPair a, KeyPair b) throws IllegalArgumentException {
         super(a, b);
     }
 
+    /**
+     * See the paper "Private yet Efficient Decision Tree Evaluation"
+     * <a href="https://link.springer.com/content/pdf/10.1007/978-3-319-95729-6_16.pdf">paper link</a>
+     *
+     * Read Section 3.2 of the paper/Figure 2 for Bob
+     * Executes Protocol 2 for secure comparison of encrypted values.
+     * This protocol involves multiple steps, including decryption, modular arithmetic,
+     * and secure communication with Alice to determine the comparison result.
+     *
+     * I should note, Protocol1 bob does NOT change from the original DGK or Veugen protocol for Bob, hence no need to
+     * reimplement the methods here.
+     * @return {@code true} if the comparison result indicates {@code x >= y}, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws HomomorphicException if an error occurs during homomorphic operations.
+     */
     public boolean Protocol2() throws IOException, ClassNotFoundException, HomomorphicException {
         int t;
         int beta_l_prime;

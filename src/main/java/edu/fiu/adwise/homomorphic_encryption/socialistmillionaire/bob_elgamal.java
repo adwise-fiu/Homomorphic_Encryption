@@ -16,15 +16,36 @@ import java.security.KeyPair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Represents Bob's implementation of the multi-party protocols for secure computation with ElGamal cryptography.
+ * This class extends the `bob_veugen` class and provides methods for performing
+ * arithmetic operations and secure comparisons using the ElGamal encryption scheme.
+ */
 public class bob_elgamal extends bob_veugen {
 
     private static final Logger logger = LogManager.getLogger(bob_elgamal.class);
 
+    /**
+     * Constructs a `bob_elgamal` instance with three key pairs.
+     *
+     * @param a the first key pair (ElGamal or other encryption scheme).
+     * @param b the second key pair (ElGamal or other encryption scheme).
+     * @param c the third key pair (optional, e.g., ElGamal).
+     * @throws IllegalArgumentException if the provided key pairs are invalid or mismatched.
+     */
     public bob_elgamal(KeyPair a, KeyPair b, KeyPair c) throws IllegalArgumentException {
         super(a, b, c);
     }
 
-    // Support addition and subtraction
+    /**
+     * Performs addition or subtraction to get the encrypted value of two blinded encrypted values
+     *
+     * @param addition {@code true} for addition, {@code false} for subtraction.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IllegalArgumentException if invalid arguments are provided.
+     * @throws HomomorphicException if the ElGamal keys already support addition natively.
+     */
     public void addition(boolean addition)
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         if (el_gamal_public.additive) {
@@ -66,9 +87,16 @@ public class bob_elgamal extends bob_veugen {
         }
     }
 
+    /**
+     * Performs multiplication on blinded encrypted values from alice.
+     *
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IllegalArgumentException if invalid arguments are provided.
+     * @throws HomomorphicException if the ElGamal keys do not support additive operations.
+     */
     public void multiplication()
-            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
-    {
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         if (!el_gamal_public.additive) {
             throw new HomomorphicException("El Gamal Keys are not using additive version, so you can't " +
                     "outsource multiply");
@@ -103,6 +131,15 @@ public class bob_elgamal extends bob_veugen {
         writeObject(ElGamalCipher.encrypt(x_prime.multiply(y_prime), el_gamal_public));
     }
 
+    /**
+     * Performs division on an encrypted value from alice by a given divisor by Bob.
+     *
+     * @param divisor the divisor to divide the encrypted value by.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws IllegalArgumentException if invalid arguments are provided.
+     * @throws HomomorphicException if the ElGamal keys do not support additive operations.
+     */
     public void division(long divisor)
             throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
 
@@ -139,10 +176,16 @@ public class bob_elgamal extends bob_veugen {
          */
     }
 
-
     /**
-     * if Alice wants to sort a list of encrypted numbers, use this method if you
-     * will consistently sort using Protocol 4
+     * See the papers "Improving the DGK comparison protocol" and Correction to ”Improving the DGK comparison
+     * protocol” by Thjis Veugen, You can find these in the papers directory!
+     * Sorts a list of encrypted numbers using Protocol 4 (see the Veugen papers).
+     * This method is used when Alice wants to sort encrypted numbers securely.
+     *
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IllegalArgumentException if invalid arguments are provided.
+     * @throws HomomorphicException if an error occurs during the sorting process.
      */
     public void sort()
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
@@ -156,6 +199,18 @@ public class bob_elgamal extends bob_veugen {
         logger.info("ElGamal Protocol 4 completed in " + (System.nanoTime() - start_time)/BILLION + " seconds!");
     }
 
+    /**
+     * See the papers "Improving the DGK comparison protocol" and Correction to ”Improving the DGK comparison
+     * protocol” by Thjis Veugen, You can find these in the papers directory!
+     * Sorts a list of encrypted numbers using Protocol 4 (see the Veugen papers).
+     * This method is used when Alice wants to sort encrypted numbers securely.
+     *
+     * @return {@code true} if the comparison result indicates {@code x >= y}, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IllegalArgumentException if invalid arguments are provided.
+     * @throws HomomorphicException if the ElGamal keys do not support additive operations.
+     */
     public boolean Protocol2()
             throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
 
@@ -211,6 +266,13 @@ public class bob_elgamal extends bob_veugen {
         return decrypt_protocol_two();
     }
 
+    /**
+     * Decrypts the result of encrypted protocol comparison and returns the comparison result.
+     *
+     * @return {@code true} if {@code x >= y}, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     */
     protected boolean decrypt_protocol_two() throws IOException, ClassNotFoundException {
         Object x;
         int answer;

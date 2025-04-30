@@ -17,16 +17,33 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Represents Alice's implementation of the ElGamal protocol for secure computation.
+ * This class extends the `alice_veugen` class and provides methods for performing
+ * arithmetic operations and secure comparisons using the ElGamal encryption scheme.
+ */
 public class alice_elgamal extends alice_veugen {
     private static final Logger logger = LogManager.getLogger(alice_elgamal.class);
 
+    /**
+     * Constructs an instance of `alice_elgamal`.
+     */
     public alice_elgamal() {
         super();
     }
 
+    /**
+     * Performs addition on two encrypted values from alice.
+     *
+     * @param x the first encrypted value.
+     * @param y the second encrypted value.
+     * @return the encrypted result of the addition.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IllegalArgumentException if invalid arguments are provided.
+     */
     public ElGamal_Ciphertext addition(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
-            throws IOException, ClassNotFoundException, IllegalArgumentException
-    {
+            throws IOException, ClassNotFoundException, IllegalArgumentException {
         if(el_gamal_public.additive) {
             // Can add both ciphertexts by default
             return ElGamalCipher.add(x, y, el_gamal_public);
@@ -60,9 +77,19 @@ public class alice_elgamal extends alice_veugen {
         return result;
     }
 
+    /**
+     * Performs multiplication on two encrypted values.
+     * Use a multi-party protocol if alice provides two additive El-Gamal encrypted values
+     *
+     * @param x the first encrypted value.
+     * @param y the second encrypted value.
+     * @return the encrypted result of the multiplication.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IllegalArgumentException if invalid arguments are provided.
+     */
     public ElGamal_Ciphertext multiplication(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
-            throws IOException, ClassNotFoundException, IllegalArgumentException
-    {
+            throws IOException, ClassNotFoundException, IllegalArgumentException {
         if(!el_gamal_public.additive) {
             return ElGamalCipher.multiply(x, y, el_gamal_public);
         }
@@ -99,9 +126,19 @@ public class alice_elgamal extends alice_veugen {
         return result;
     }
 
+    /**
+     * Performs division on an encrypted value x from alice by a given divisor from bob.
+     *
+     * @param x the encrypted value to divide.
+     * @param d the divisor.
+     * @return the encrypted result of the division.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IllegalArgumentException if invalid arguments are provided.
+     * @throws HomomorphicException if the ElGamal keys do not support additive operations.
+     */
     public ElGamal_Ciphertext division(ElGamal_Ciphertext x, long d)
-            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException
-    {
+            throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
         if(!el_gamal_public.additive) {
             ElGamalCipher.divide(x, ElGamalCipher.encrypt(BigInteger.valueOf(d), el_gamal_public), el_gamal_public);
             return x;
@@ -147,9 +184,20 @@ public class alice_elgamal extends alice_veugen {
         return answer;
     }
 
+    /**
+     * See the paper Correction to "Improving the DGK comparison protocol", this implements Protocol 3.
+     * This is an improved version of Protocol 1, initially created by DGK, see original bob class
+     * This executes a protocol comparing two encrypted ElGamal values
+     *
+     * @param x the first encrypted value.
+     * @param y the second encrypted value.
+     * @return {@code true} if {@code x >= y}, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws HomomorphicException if an error occurs during the protocol execution.
+     */
     public boolean Protocol4(ElGamal_Ciphertext x, ElGamal_Ciphertext y)
-            throws IOException, ClassNotFoundException, HomomorphicException
-    {
+            throws IOException, ClassNotFoundException, HomomorphicException {
         int deltaB;
         int x_leq_y;
         int deltaA = rnd.nextInt(2);
@@ -258,6 +306,13 @@ public class alice_elgamal extends alice_veugen {
         return decrypt_protocol_two(result);
     }
 
+    /**
+     * Decrypts the result of Protocol 4 and returns the comparison result.
+     *
+     * @param result the encrypted comparison result.
+     * @return {@code true} if the comparison result indicates {@code x >= y}, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs during communication.
+     */
     protected boolean decrypt_protocol_two(ElGamal_Ciphertext result) throws IOException {
         int comparison;
         writeObject(result);
@@ -270,9 +325,19 @@ public class alice_elgamal extends alice_veugen {
         return comparison == 1;
     }
 
+    /**
+     * Retrieves the k smallest encrypted values from a list.
+     *
+     * @param input the list of encrypted values.
+     * @param k the number of smallest values to retrieve.
+     * @return a list of the k smallest encrypted values.
+     * @throws ClassNotFoundException if a class cannot be found during deserialization.
+     * @throws IOException if an I/O error occurs during communication.
+     * @throws IllegalArgumentException if the value of {@code k} is invalid.
+     * @throws HomomorphicException if an error occurs during the sorting process.
+     */
     public List<ElGamal_Ciphertext> getKMin(List<ElGamal_Ciphertext> input, int k)
-            throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException
-    {
+            throws ClassNotFoundException, IOException, IllegalArgumentException, HomomorphicException {
         if(k > input.size() || k <= 0) {
             throw new IllegalArgumentException("Invalid k value! " + k);
         }

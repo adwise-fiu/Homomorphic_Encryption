@@ -27,18 +27,48 @@ import edu.fiu.adwise.homomorphic_encryption.paillier.PaillierPrivateKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * The {@code bob} class represents Bob in the Socialist Millionaire's Problem.
+ * It implements the {@code bob_interface} and extends {@code socialist_millionaires}.
+ * This class provides methods for secure equality testing and other cryptographic operations
+ * using homomorphic encryption techniques.
+ * <p>
+ * This specific class implements the first generation of encrypted comparison protocols
+ */
 public class bob extends socialist_millionaires implements bob_interface
 {
 	private static final Logger logger = LogManager.getLogger(bob.class);
 
+	/**
+	 * Constructs a Bob instance with three key pairs.
+	 *
+	 * @param first the first key pair (Paillier or DGK).
+	 * @param second the second key pair (DGK or Paillier).
+	 * @param third the third key pair (ElGamal), optional.
+	 */
 	public bob(KeyPair first, KeyPair second, KeyPair third) {
 		parse_key_pairs(first, second, third);
 	}
 
+	/**
+	 * Constructs a Bob instance with two key pairs.
+	 *
+	 * @param first the first key pair (Paillier or DGK).
+	 * @param second the second key pair (DGK or Paillier).
+	 */
 	public bob(KeyPair first, KeyPair second) {
 		parse_key_pairs(first, second, null);
 	}
 
+
+	/**
+	 * Parses and assigns the provided key pairs to the appropriate cryptographic schemes.
+	 *
+	 * @param first the first key pair (Paillier or DGK).
+	 * @param second the second key pair (DGK or Paillier).
+	 * @param third the third key pair (ElGamal), optional.
+	 * @throws IllegalArgumentException if the key pairs are not valid or mismatched.
+	 */
 	private void parse_key_pairs(KeyPair first, KeyPair second, KeyPair third) {
 		if (first.getPublic() instanceof PaillierPublicKey) {
 			this.paillier_public = (PaillierPublicKey) first.getPublic();
@@ -77,50 +107,40 @@ public class bob extends socialist_millionaires implements bob_interface
 		powL = TWO.pow(dgk_public.getL());
 	}
 
+	/**
+	 * Sets the socket for communication with Alice.
+	 *
+	 * @param socket the socket to use for communication.
+	 * @throws IOException if an I/O error occurs.
+	 * @throws NullPointerException if the provided socket is null.
+	 */
 	public void set_socket(Socket socket) throws IOException {
-		if(socket != null) {
-			this.toAlice = new ObjectOutputStream(socket.getOutputStream());
-			this.fromAlice = new ValidatingObjectInputStream(socket.getInputStream());
-			this.fromAlice.accept(
-					java.math.BigInteger.class,
-					java.lang.Number.class,
-					java.util.HashMap.class,
-					java.lang.Long.class,
-					ElGamal_Ciphertext.class,
-					java.lang.String.class
-			);
-			this.fromAlice.accept("[B");
-			this.fromAlice.accept("[L*");
-		}
-		else {
-			throw new NullPointerException("Client Socket is null!");
-		}
-	}
+		this.toAlice = new ObjectOutputStream(socket.getOutputStream());
+		this.fromAlice = new ValidatingObjectInputStream(socket.getInputStream());
+		this.fromAlice.accept(
+				java.math.BigInteger.class,
+				java.lang.Number.class,
+				java.util.HashMap.class,
+				java.lang.Long.class,
+				ElGamal_Ciphertext.class,
+				java.lang.String.class
+		);
+		this.fromAlice.accept("[B");
+		this.fromAlice.accept("[L*");
 
-	public void set_socket(SSLSocket socket) throws IOException {
-		if(socket != null) {
-			this.toAlice = new ObjectOutputStream(socket.getOutputStream());
-			this.fromAlice = new ValidatingObjectInputStream(socket.getInputStream());
-			this.fromAlice.accept(
-					java.math.BigInteger.class,
-					java.lang.Number.class,
-					java.util.HashMap.class,
-					java.lang.Long.class,
-					ElGamal_Ciphertext.class,
-					java.lang.String.class
-			);
-			this.fromAlice.accept("[B");
-			this.fromAlice.accept("[L*");
+		// Set TLS flag if the socket is an instance of SSLSocket
+		if (socket instanceof SSLSocket) {
+			this.tls_socket_in_use = true;
 		}
-		else {
-			throw new NullPointerException("Client Socket is null!");
-		}
-		this.tls_socket_in_use = true;
 	}
 
 	/**
-	 * if Alice wants to sort a list of encrypted numbers, use this method if you 
-	 * will consistently sort using Protocol 2
+	 * Sorts a list of encrypted numbers using Protocol 2.
+	 * This method repeatedly invokes Protocol 2 until the sorting is complete.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
 	 */
 	public void sort()
 			throws IOException, ClassNotFoundException, HomomorphicException {
@@ -133,10 +153,13 @@ public class bob extends socialist_millionaires implements bob_interface
         logger.info("Protocol 2 was used {} times!", counter);
         logger.info("Protocol 2 completed in {} seconds!", (System.nanoTime() - start_time) / BILLION);
 	}
-	
-	/*
-	 * Review "Protocol 1 EQT-1"
-	 * from the paper "Secure Equality Testing Protocols in the Two-Party Setting"
+
+	/**.
+	 * Review "Protocol 1 EQT-1" from the paper "Secure Equality Testing Protocols in the Two-Party Setting"
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
 	 */
 	public void encrypted_equals() throws IOException, HomomorphicException, ClassNotFoundException {
 		// Receive x from Alice
@@ -160,6 +183,12 @@ public class bob extends socialist_millionaires implements bob_interface
 		Protocol1(y);
 	}
 
+	/**
+	 * Encrypts the bits of a given plaintext value.
+	 *
+	 * @param y the plaintext value to encrypt.
+	 * @return an array of encrypted bits.
+	 */
 	public BigInteger [] encrypt_bits(BigInteger y) {
 		BigInteger [] Encrypted_Y = new BigInteger[y.bitLength()];
 		for (int i = 0; i < y.bitLength(); i++) {
@@ -168,6 +197,13 @@ public class bob extends socialist_millionaires implements bob_interface
 		return Encrypted_Y;
 	}
 
+	/**
+	 * Computes the delta value (deltaB) for Bob based on the decrypted values in C.
+	 *
+	 * @param C the array of encrypted values.
+	 * @return the computed delta value (deltaB).
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	public int compute_delta_b(BigInteger [] C) throws HomomorphicException {
 		int deltaB = 0;
 		for (BigInteger C_i : C) {
@@ -181,12 +217,18 @@ public class bob extends socialist_millionaires implements bob_interface
 
 	/**
 	 * Please review "Improving the DGK comparison protocol" - Protocol 1
-	 * Nicely enough, this is the same thing Bob needs to do for Veugen, Joye and checking 
+	 * Nicely enough; this is the same thing Bob needs to do for Veugen, Joye and checking
 	 * if two encrypted numbers are equal!
+	 * This is the original protocol from DGK, the improved versions are in alice_veugen.
+	 * This protocol allows Bob to securely compare encrypted values with Alice
+	 * and determine equality without revealing the plaintext values.
 	 *
-	 * @param y - plaintext value
-	 * @return boolean
-	 * @throws IllegalArgumentException - if y has more bits than is supported by provided DGK keys
+	 * @param y the plaintext value to compare.
+	 * @return {@code true} if the comparison result indicates equality, {@code false} otherwise.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws IllegalArgumentException if {@code y} has more bits than supported by the DGK keys.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
 	 */
 	public boolean Protocol1(BigInteger y)
 			throws IOException, ClassNotFoundException, IllegalArgumentException, HomomorphicException {
@@ -232,6 +274,16 @@ public class bob extends socialist_millionaires implements bob_interface
 		return decrypt_protocol_one(deltaB);
 	}
 
+	/**
+	 * Executes the decryption protocol for deltaB.
+	 * This protocol allows Bob to securely send deltaB to Alice and receive the result.
+	 *
+	 * @param deltaB the delta value computed by Bob.
+	 * @return {@code true} if the decrypted result equals 1, {@code false} otherwise.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	protected boolean decrypt_protocol_one(int deltaB) throws IOException, ClassNotFoundException, HomomorphicException {
 		Object o;
 		BigInteger delta;
@@ -260,7 +312,15 @@ public class bob extends socialist_millionaires implements bob_interface
 		}
 	}
 
-	// Bob gets encrypted input from alice to a decrypt comparison result
+	/**
+	 * Executes the decryption protocol for comparison results.
+	 * This protocol allows Bob to decrypt the comparison result sent by Alice.
+	 *
+	 * @return {@code true} if the comparison result indicates {@code x >= y}, {@code false} otherwise.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	protected boolean decrypt_protocol_two() throws IOException, ClassNotFoundException, HomomorphicException {
 		Object x;
 		int answer = -1;
@@ -289,7 +349,7 @@ public class bob extends socialist_millionaires implements bob_interface
 		}
 		else {
 			throw new IllegalArgumentException("Protocol 4, Step 8 Failed " + x.getClass().getName());
-		}
+ 		}
 		// IF SOMETHING HAPPENS...GET TO POST MORTEM HERE
 		if (answer != 0 && answer != 1) {
 			throw new IllegalArgumentException("Invalid Comparison result --> " + answer);
@@ -297,6 +357,17 @@ public class bob extends socialist_millionaires implements bob_interface
 		return answer == 1;
 	}
 
+	/**
+	 * Please review "Improving the DGK comparison protocol" - Protocol 2
+	 * Executes Protocol 2 for secure comparison.
+	 * This protocol allows Bob to securely compare encrypted values with Alice.
+	 * This uses the original comparison protocol from DGK, the improved versions are in alice_veugen and alice_joye.
+	 *
+	 * @return {@code true} if the comparison result indicates {@code x >= y}, {@code false} otherwise.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	public boolean Protocol2()
 			throws ClassNotFoundException, IOException, HomomorphicException {
 		// Step 1: Receive z from Alice
@@ -339,6 +410,16 @@ public class bob extends socialist_millionaires implements bob_interface
 	}
 
 
+	/**
+	 *  See the paper "Correction of a Secure Comparison Protocol for Encrypted Integers in IEEE WIFS 2012
+	 * 	(Short Paper)"
+	 * This performs secure multiplication of two encrypted values.
+	 * This method decrypts the values, performs multiplication, and re-encrypts the result, but the results are blinded by Alice,
+	 * so Bob should not be aware what the actual product is.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 */
 	public void multiplication() 
 			throws IOException, ClassNotFoundException, HomomorphicException
 	{
@@ -377,7 +458,18 @@ public class bob extends socialist_millionaires implements bob_interface
 			writeObject(PaillierCipher.encrypt(x_prime.multiply(y_prime).mod(paillier_public.getN()), paillier_public));
 		}
 	}
-	
+
+	/**
+	 * Please review Protocol 2 in the "Encrypted Integer Division" paper by Thjis Veugen
+	 * Performs secure division of an encrypted value received from Alice by a given divisor.
+	 * The result is encrypted and sent back to Alice. Bob does not learn the plaintext result.
+	 *
+	 * @param divisor the divisor to divide the encrypted value by.
+	 * @throws ClassNotFoundException if a class cannot be found during deserialization.
+	 * @throws IOException if an I/O error occurs during communication.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
+	 * @throws IllegalArgumentException if the received object is not a {@code BigInteger}.
+	 */
 	public void division(long divisor) 
 			throws ClassNotFoundException, IOException, HomomorphicException
 	{
@@ -401,26 +493,33 @@ public class bob extends socialist_millionaires implements bob_interface
 		if(!FAST_DIVIDE) {
 			Protocol1(z.mod(BigInteger.valueOf(divisor)));
 		}
-		// MAYBE IF OVER FLOW HAPPENS?
+		// MAYBE IF OVERFLOW HAPPENING?
 		// Modified_Protocol3(z.mod(powL), z);	
 	
 		c = z.divide(BigInteger.valueOf(divisor));
+
 		if(isDGK) {
-			writeObject(DGKOperations.encrypt(c, dgk_public));	
+			c = DGKOperations.encrypt(c, dgk_public);
 		}
 		else {
-			writeObject(PaillierCipher.encrypt(c, paillier_public));
+			c = PaillierCipher.encrypt(c, paillier_public);
 		}
-		toAlice.flush();
+		writeObject(c);
 		/*
 		 *  Unlike Comparison, it is decided Bob shouldn't know the answer.
 		 *  This is because Bob KNOWS d, and can decrypt [x/d]
 		 *  
-		 *  Since the idea is not leak the numbers themselves, 
+		 *  Since the idea is not to leak the numbers themselves,
 		 *  it is decided Bob shouldn't receive [x/d]
 		 */
 	}
-	
+
+	/**
+	 * Sends Bob's public keys (DGK, Paillier, and ElGamal) to Alice.
+	 * If a key is not available, a placeholder value of {@code BigInteger.ZERO} is sent instead.
+	 *
+	 * @throws IOException if an I/O error occurs during communication.
+	 */
 	public void sendPublicKeys() throws IOException
 	{
 		if(dgk_public != null) {
