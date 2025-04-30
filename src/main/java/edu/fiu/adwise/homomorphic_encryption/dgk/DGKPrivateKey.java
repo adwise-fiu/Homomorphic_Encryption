@@ -8,32 +8,46 @@ import java.util.Map;
 
 import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
 
-public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
-{
+/**
+ * Represents a DGK (Damgård-Geisler-Krøigaard) private key used for homomorphic encryption.
+ * This class implements the {@link Serializable}, {@link DGK_Key}, and {@link PrivateKey} interfaces.
+ * It contains both private and public key parameters, as well as methods for key serialization,
+ * deserialization, and lookup table generation.
+ */
+public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey {
 	@Serial
 	private static final long serialVersionUID = 4574519230502483629L;
 	// Private Key Parameters
-	final BigInteger p;
-	private final BigInteger q;
-	final BigInteger vp;
-	private final BigInteger vq;
-	final Map <BigInteger, Long> LUT;
+	final BigInteger p; // First prime factor of n
+	private final BigInteger q; // Second prime factor of n
+	final BigInteger vp; // Precomputed value for decryption
+	private final BigInteger vq; // Precomputed value for decryption
+	final Map<BigInteger, Long> LUT; // Lookup table for decryption
 
 	// Public key parameters
-	final BigInteger n;
-	final BigInteger g;
-	private final BigInteger h;
-	private final long u;
-	private final BigInteger bigU;
+	final BigInteger n; // Modulus
+	final BigInteger g; // Generator
+	private final BigInteger h; // Auxiliary generator
+	private final long u; // Upper bound for plaintext values
+	private final BigInteger bigU; // BigInteger representation of u
 
 	// Key Parameters
-	private final int l;
-	private final int t;
-	private final int k;
+	private final int l; // Bit length of plaintext
+	private final int t; // Security parameter
+	private final int k; // Key length
 
 	// Signature
-	public final BigInteger v;
+	public final BigInteger v; // Product of vp and vq
 
+	/**
+	 * Constructs a DGKPrivateKey using the provided private key parameters and public key.
+	 *
+	 * @param p       First prime factor of n
+	 * @param q       Second prime factor of n
+	 * @param vp      Precomputed value for decryption
+	 * @param vq      Precomputed value for decryption
+	 * @param pubKey  Corresponding DGK public key
+	 */
 	public DGKPrivateKey (BigInteger p, BigInteger q, BigInteger vp,
 			BigInteger vq, DGKPublicKey pubKey) {
 		this.p = p;
@@ -61,6 +75,12 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 		this.generategLUT();
 	}
 
+	/**
+	 * Serializes the private key to a file.
+	 *
+	 * @param dgk_private_key_file Path to the file where the private key will be saved
+	 * @throws IOException If an I/O error occurs during serialization
+	 */
 	public void writeKey(String dgk_private_key_file) throws IOException {
 		LUT.clear();
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dgk_private_key_file))) {
@@ -69,6 +89,14 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 		}
 	}
 
+	/**
+	 * Deserializes a DGK private key from a file.
+	 *
+	 * @param dgk_private_key Path to the file containing the serialized private key
+	 * @return The deserialized DGKPrivateKey object
+	 * @throws IOException            If an I/O error occurs during deserialization
+	 * @throws ClassNotFoundException If the class of the serialized object cannot be found
+	 */
 	public static DGKPrivateKey readKey(String dgk_private_key) throws IOException, ClassNotFoundException {
 		DGKPrivateKey sk;
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dgk_private_key))) {
@@ -78,6 +106,10 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 		return sk;
 	}
 
+	/**
+	 * Generates the lookup table (LUT) for decryption.
+	 * The LUT maps ciphertext values to their corresponding plaintext values.
+	 */
 	private void generategLUT() {
 		BigInteger gvp = NTL.POSMOD(this.g.modPow(this.vp, this.p), this.p);
 		for (long i = 0; i < this.u; ++i)
@@ -87,7 +119,12 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 		}
 	}
 
-	// Not going to print private key parameters...
+	/**
+	 * Returns a string representation of the public key parameters.
+	 * Private key parameters are excluded for security reasons.
+	 *
+	 * @return A string representation of the public key parameters
+	 */
 	public String toString() {
 		String answer = "";
 		answer += "n: " + this.n + '\n';
@@ -101,30 +138,67 @@ public final class DGKPrivateKey implements Serializable, DGK_Key, PrivateKey
 		return answer;
 	}
 
+	/**
+	 * Returns the upper bound for plaintext values.
+	 *
+	 * @return The upper bound for plaintext values
+	 */
 	public BigInteger getU() {
 		return this.bigU;
 	}
 
+	/**
+	 * Returns the modulus of the key.
+	 *
+	 * @return The modulus of the key
+	 */
 	public BigInteger getN() {
 		return this.n;
 	}
 
+	/**
+	 * Returns the bit length of plaintext values.
+	 *
+	 * @return The bit length of plaintext values
+	 */
 	public int getL() {
 		return this.l;
 	}
 
+	/**
+	 * Returns the algorithm name.
+	 *
+	 * @return The algorithm name ("DGK")
+	 */
 	public String getAlgorithm() {
 		return "DGK";
 	}
 
+	/**
+	 * Returns the format of the key.
+	 *
+	 * @return The format of the key ("PKCS#8")
+	 */
 	public String getFormat() {
 		return "PKCS#8";
 	}
 
+	/**
+	 * Returns the encoded form of the key.
+	 * This implementation returns null as encoding is not supported.
+	 *
+	 * @return null
+	 */
 	public byte[] getEncoded() {
 		return null;
 	}
 
+	/**
+	 * Compares this DGKPrivateKey with another object for equality.
+	 *
+	 * @param o The object to compare with
+	 * @return true if the objects are equal, false otherwise
+	 */
 	public boolean equals (Object o) {
 		if (this == o) {
 			return true;

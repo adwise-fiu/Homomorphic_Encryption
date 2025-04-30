@@ -7,6 +7,11 @@ import java.util.HashMap;
 
 import edu.fiu.adwise.homomorphic_encryption.misc.CipherConstants;
 
+/**
+ * Represents the public key for the DGK (Damgård-Geisler-Krøigaard) cryptosystem.
+ * This class implements the Serializable, DGK_Key, PublicKey, Runnable, and CipherConstants interfaces.
+ * It provides methods for key generation, serialization, and lookup table generation for encryption operations.
+ */
 public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Runnable, CipherConstants
 {
 	@Serial
@@ -26,7 +31,17 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 	public final BigInteger ONE;
 	public final BigInteger ZERO;
 
-	//DGK Constructor with ALL parameters
+	/**
+	 * Constructs a DGKPublicKey with all required parameters.
+	 *
+	 * @param n The modulus.
+	 * @param g The generator.
+	 * @param h The secondary generator.
+	 * @param u The order of the subgroup.
+	 * @param l The bit length of plaintext.
+	 * @param t The security parameter.
+	 * @param k The key size.
+	 */
 	public DGKPublicKey(BigInteger n, BigInteger g, BigInteger h, BigInteger u,
 						int l, int t, int k) {
 		this.n = n;
@@ -41,6 +56,12 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		ZERO = DGKOperations.encrypt(0, this);
 	}
 
+	/**
+	 * Serializes the public key to a file.
+	 *
+	 * @param dgk_public_key_file The file path to save the public key.
+	 * @throws IOException If an I/O error occurs.
+	 */
 	public void writeKey(String dgk_public_key_file)  throws IOException {
 		// clear hashmaps
 		hLUT.clear();
@@ -51,6 +72,14 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		}
 	}
 
+	/**
+	 * Deserializes a DGKPublicKey from a file.
+	 *
+	 * @param dgk_public_key The file path to read the public key from.
+	 * @return The deserialized DGKPublicKey.
+	 * @throws IOException If an I/O error occurs.
+	 * @throws ClassNotFoundException If the class cannot be found.
+	 */
 	public static DGKPublicKey readKey(String dgk_public_key) throws IOException, ClassNotFoundException {
 		DGKPublicKey pk;
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dgk_public_key))) {
@@ -61,19 +90,22 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		return pk;
 	}
 
+	/**
+	 * @return The encrypted representation of 0.
+	 */
 	public BigInteger ZERO() {
 		return ZERO;
 	}
 
 	/**
-	 * @return DGK
+	 * @return The algorithm name ("DGK").
 	 */
 	public String getAlgorithm() {
 		return "DGK";
 	}
 
 	/**
-	 * @return String representation of DGK Public Key
+	 * @return A string representation of the DGK public key.
 	 */
 	public String toString() {
 		String answer = "";
@@ -87,19 +119,31 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		return answer;
 	}
 
+	/**
+	 * @return The format of the key ("X.509").
+	 */
 	public String getFormat() {
 		return "X.509";
 	}
 
+	/**
+	 * @return The encoded form of the key (currently null).
+	 */
 	public byte[] getEncoded() {
 		return null;
 	}
 
+	/**
+	 * Generates the lookup tables for g and h.
+	 */
 	public void run() {
 		this.generatehLUT();
 		this.generategLUT();
 	}
 
+	/**
+	 * Generates the lookup table for h^i mod n values.
+	 */
 	private void generatehLUT() {		
 		for (long i = 0; i < 2L * t; ++i) {
 			// e = 2^i (mod n)
@@ -110,33 +154,57 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 		}
 	}
 
+	/**
+	 * Generates the lookup table for g^i mod n values.
+	 */
 	private void generategLUT() {	
 		for (long i = 0; i < this.u; ++i) {
 			BigInteger out = this.g.modPow(BigInteger.valueOf(i), this.n);
 			this.gLUT.put(i, out);
 		}
 	}
-	
+
+	/**
+	 * @return The order of the subgroup as a long.
+	 */
 	public long getu() {
 		return this.u;
 	}
 
+	/**
+	 * @return The order of the subgroup as a BigInteger.
+	 */
 	public BigInteger getU() {
 		return this.bigU;
 	}
 
+	/**
+	 * @return The modulus n.
+	 */
 	public BigInteger getN() {
 		return this.n;
 	}
 
+	/**
+	 * @return The bit length of plaintext.
+	 */
 	public int getL() {
 		return this.l;
 	}
 
+	/**
+	 * @return The security parameter.
+	 */
 	public int getT() {
 		return this.t;
 	}
 
+	/**
+	 * Compares this DGKPublicKey with another object for equality.
+	 *
+	 * @param o The object to compare with.
+	 * @return True if the objects are equal, false otherwise.
+	 */
 	public boolean equals (Object o) {
 		if (this == o) {
 			return true;
