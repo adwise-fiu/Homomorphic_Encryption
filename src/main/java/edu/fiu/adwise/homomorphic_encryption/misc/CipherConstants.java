@@ -3,34 +3,72 @@ package edu.fiu.adwise.homomorphic_encryption.misc;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-// This interface collects constants used by a lot of
-// 1- KeyPairGenerators
-// 2- Ciphers (ElGamal)
-public interface CipherConstants 
+/**
+ * This interface defines constants used across various cryptographic operations,
+ * particularly in the context of homomorphic encryption schemes.
+ * It includes key sizes, mathematical constants, and utility values.
+ */
+public interface CipherConstants
 {
+	/**
+	 * The default key size (in bits) for cryptographic operations.
+	 */
 	int KEY_SIZE = 2048;
+
+	/**
+	 * A secure random number generator used for cryptographic purposes.
+	 */
 	SecureRandom rnd = new SecureRandom();
 
-	// controls the error probability of the primality testing algorithm
-    int CERTAINTY = 40;
-	// This variable has been needed a lot, but I want to keep it a Java 8 library
-	// So it can be used in Android apps with NO issues
-    BigInteger TWO = new BigInteger("2");
-	
-	// Technically used only in ElGamal Private Key
-    // Same as DGK: U with 16 bits
-    BigInteger FIELD_SIZE = TWO.pow(16).nextProbablePrime();
-	
-	// Used in NTL for Jacobi
-    BigInteger THREE = new BigInteger("3");
+	/**
+	 * The certainty parameter for primality testing algorithms.
+	 * It controls the error probability of the primality test.
+	 */
+	int CERTAINTY = 40;
+
+	/**
+	 * The constant value 2, represented as a {@link BigInteger}.
+	 * Used in various mathematical operations.
+	 */
+	BigInteger TWO = new BigInteger("2");
+
+	/**
+	 * A prime number with 16 bits, used in ElGamal and DGK encryption schemes.
+	 */
+	BigInteger FIELD_SIZE = TWO.pow(16).nextProbablePrime();
+
+	/**
+	 * The constant value 3, represented as a {@link BigInteger}.
+	 * Used in Jacobi symbol calculations.
+	 */
+	BigInteger THREE = new BigInteger("3");
+
+	/**
+	 * The constant value 4, represented as a {@link BigInteger}.
+	 * Used in Jacobi symbol calculations.
+	 */
 	BigInteger FOUR = new BigInteger("4");
+
+	/**
+	 * The constant value 5, represented as a {@link BigInteger}.
+	 * Used in Jacobi symbol calculations.
+	 */
 	BigInteger FIVE = new BigInteger("5");
 
+	/**
+	 * The constant value 8, represented as a {@link BigInteger}.
+	 * Used in Jacobi symbol calculations.
+	 */
 	BigInteger EIGHT = new BigInteger("8");
 
-	// Misc
-    BigInteger NEG_ONE = new BigInteger("-1");
-	
-	// For tracking time in nanoseconds to seconds
-    int BILLION = BigInteger.TEN.pow(9).intValue();
+	/**
+	 * The constant value -1, represented as a {@link BigInteger}.
+	 * Used in mathematical operations and Jacobi symbol calculations.
+	 */
+	BigInteger NEG_ONE = new BigInteger("-1");
+
+	/**
+	 * The number of nanoseconds in one second, used for time tracking.
+	 */
+	int BILLION = BigInteger.TEN.pow(9).intValue();
 }

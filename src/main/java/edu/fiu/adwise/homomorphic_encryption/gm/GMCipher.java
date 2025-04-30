@@ -9,15 +9,21 @@ import edu.fiu.adwise.homomorphic_encryption.misc.CipherConstants;
 import edu.fiu.adwise.homomorphic_encryption.misc.HomomorphicException;
 import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
 
+/**
+ * This class implements the Goldwasser-Micali (GM) encryption scheme.
+ * It provides methods for encrypting, decrypting, and performing XOR operations
+ * on encrypted bits using the GM cryptosystem.
+ */
 public class GMCipher implements CipherConstants
 {
 	//------------------------------------------Original BigInteger Code----------------------------------------
-	
+
 	/**
-	 * Encrypt a BigInteger plaintext using Goldwasser-Micali
-	 * @param message - plaintext message
-	 * @param public_key - used to encrypt plaintext
-	 * @return - Goldwasser-Micali encrypted bits
+	 * Encrypts a BigInteger plaintext using the Goldwasser-Micali encryption scheme.
+	 *
+	 * @param message    The plaintext message to be encrypted.
+	 * @param public_key The public key used for encryption.
+	 * @return An array of BigInteger representing the encrypted bits.
 	 */
 	public static BigInteger [] encrypt(BigInteger message, GMPublicKey public_key) {
 		List<BigInteger> enc_bits = new ArrayList<>();
@@ -36,9 +42,11 @@ public class GMCipher implements CipherConstants
 	}
 
 	/**
-	 * Decrypt Goldwasser-Micali encrypted bits
-	 * @param cipher - List of Goldwasser-Micali encrypted bits
-	 * @param private_key - Goldwasser-Micali Private Key to decrypt
+	 * Decrypts an array of Goldwasser-Micali encrypted bits.
+	 *
+	 * @param cipher      The array of encrypted bits to be decrypted.
+	 * @param private_key The private key used for decryption.
+	 * @return The decrypted plaintext as a BigInteger.
 	 */
 	public static BigInteger decrypt(BigInteger [] cipher, GMPrivateKey private_key) {
 		BigInteger e;
@@ -53,11 +61,13 @@ public class GMCipher implements CipherConstants
 	}
 
 	/**
-	 * XOR the encrypted bits of Goldwasser-Micali
-	 * @param cipher_1 - Goldwasser-Micali encrypted ciphertext
-	 * @param cipher_2 - Goldwasser-Micali encrypted ciphertext
-	 * @param public_key - Goldwasser-Micali public key used to encrypt the inputted ciphertexts
-	 * @return XORed encrypted ciphertexts
+	 * Performs a bitwise XOR operation on two arrays of Goldwasser-Micali encrypted bits.
+	 *
+	 * @param cipher_1   The first array of encrypted bits.
+	 * @param cipher_2   The second array of encrypted bits.
+	 * @param public_key The public key used for encryption.
+	 * @return An array of BigInteger representing the XORed encrypted bits.
+	 * @throws HomomorphicException If the lengths of the two ciphertext arrays are not equal.
 	 */
 	public static BigInteger[] xor(BigInteger [] cipher_1, BigInteger[] cipher_2, GMPublicKey public_key) 
 			throws HomomorphicException {
