@@ -15,8 +15,12 @@ jobs:
     steps:
       # Can be major, minor, or patch, Update environment variable INCREMENT_TYPE in GitHub Actions Settings
       - name: Set increment type from environment variable
-        run: echo "increment=${{ env.INCREMENT_TYPE || 'patch' }}" >> $GITHUB_ENV
-
+        run: |
+          if [ -z "${{ env.INCREMENT_TYPE }}" ]; then
+            echo "increment=patch" >> $GITHUB_ENV
+          else
+            echo "increment=${{ env.INCREMENT_TYPE }}" >> $GITHUB_ENV
+          fi
       - name: Get next version
         uses: reecetech/version-increment@2023.10.2
         id: version
@@ -38,7 +42,11 @@ jobs:
           distribution: 'oracle'
           java-version: '17'
           cache: 'gradle'
-      - run: VERSION=${{ needs.create_release.outputs.v-version }} ./gradlew jar
+      - run: |
+          VERSION=${{ needs.create_release.outputs.v-version }}
+          VERSION=${VERSION#v}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          ./gradlew jar
 
       - name: Release the JAR file
         uses: softprops/action-gh-release@v2
