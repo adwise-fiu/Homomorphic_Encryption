@@ -4,8 +4,9 @@ plugins {
     id 'application'
 }
 
+// name is set in settings.gradle
 group 'security'
-version '1.0-SNAPSHOT'
+version '2.0.0'
 
 repositories {
     mavenCentral()
@@ -69,14 +70,22 @@ application {
 
 // To create the JAR file with 'gradlew jar'
 tasks.named('jar') {
-    archiveFileName = "crypto.jar"
-
+    archiveFileName = "${project.name}-${System.getenv('VERSION') ?: project.version}.jar"
     manifest {
         attributes(
                 'Implementation-Title': project.name,
-                'Implementation-Version': project.version
+                'Implementation-Version': System.getenv('VERSION') ?: project.version
         )
     }
+}
+
+tasks.register('generateJavadoc', Javadoc) {
+    source = sourceSets.main.allJava
+    classpath = sourceSets.main.compileClasspath
+    options.encoding = 'UTF-8'
+    options.memberLevel = JavadocMemberLevel.PUBLIC
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.docTitle = 'Homomorphic Encryption API'
 }
 
 // Define a task to run your Java application with the agent

@@ -1,0 +1,27 @@
+name: Build Gradle project
+
+on:
+  # Runs every 60 days at midnight, just to make sure the checkmark is always there
+  schedule:
+    - cron: "0 0 */60 * *"
+  pull_request:
+
+jobs:
+  test-gradle-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project sources
+        uses: actions/checkout@v4
+
+      - name: Setup Gradle
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: '17'
+          cache: 'gradle'
+      - run: sh gradlew test --continue
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

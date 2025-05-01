@@ -1,10 +1,13 @@
 # logs
 logs/
 
-# Keys
-dgk
+# avoid tracking output
+output/
+
+# Avoid saving keys from UtilTest
+dgk.priv
+paillier.priv
 dgk.pub
-paillier
 paillier.pub
 
 codecov
