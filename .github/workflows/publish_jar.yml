@@ -16,10 +16,10 @@ jobs:
       # Can be major, minor, or patch, Update environment variable INCREMENT_TYPE in GitHub Actions Settings
       - name: Set increment type from environment variable
         run: |
-          if [ -z "${{ env.INCREMENT_TYPE }}" ]; then
+          if [ -z "${{ secrets.INCREMENT_TYPE }}" ]; then
             echo "increment=patch" >> $GITHUB_ENV
           else
-            echo "increment=${{ env.INCREMENT_TYPE }}" >> $GITHUB_ENV
+            echo "increment=${{ secrets.INCREMENT_TYPE }}" >> $GITHUB_ENV
           fi
       - name: Get next version
         uses: reecetech/version-increment@2023.10.2
