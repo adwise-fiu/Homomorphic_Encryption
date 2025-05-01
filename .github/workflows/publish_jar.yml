@@ -42,10 +42,12 @@ jobs:
           distribution: 'oracle'
           java-version: '17'
           cache: 'gradle'
+      # Remove the leading v from the version string, and set it as an environment variable
       - run: |
           VERSION=${{ needs.create_release.outputs.v-version }}
           VERSION=${VERSION#v}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          export VERSION=$VERSION
           ./gradlew jar
 
       - name: Release the JAR file
