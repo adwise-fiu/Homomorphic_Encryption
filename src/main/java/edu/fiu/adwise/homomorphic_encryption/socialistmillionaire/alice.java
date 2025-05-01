@@ -168,7 +168,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 			// Sum XOR part and multiply by 2
 			C_b[i] = DGKOperations.multiply(DGKOperations.sum(xor, dgk_public, i), 2, dgk_public);
 			// subtract 1
-			C_b[i] = DGKOperations.subtract(C_b[i], dgk_public.ONE, dgk_public);
+			C_b[i] = DGKOperations.subtract(C_b[i], dgk_public.ONE(), dgk_public);
 			// Add XOR bit value at i
 			C_b[i] = DGKOperations.add(C_b[i], xor[i], dgk_public);
 		}
@@ -757,7 +757,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 			}
 
 			if (x_bit == 1) {
-				xor_bits[i] = DGKOperations.subtract(dgk_public.ONE, y_bit, dgk_public);
+				xor_bits[i] = DGKOperations.subtract(dgk_public.ONE(), y_bit, dgk_public);
 			}
 			else {
 				xor_bits[i] = y_bit;
@@ -823,7 +823,7 @@ public class alice extends socialist_millionaires implements alice_interface {
 				delta = (BigInteger) o;
 			}
 			else {
-				delta = DGKOperations.subtract(dgk_public.ONE, (BigInteger) o, dgk_public);
+				delta = DGKOperations.subtract(dgk_public.ONE(), (BigInteger) o, dgk_public);
 			}
 		}
 		else {

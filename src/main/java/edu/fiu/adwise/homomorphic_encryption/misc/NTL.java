@@ -13,8 +13,8 @@ import java.math.BigInteger;
  * <p>
  * This is the Java implementation of the C++ NTL Library
  * Please refer to this site for NTL documentation:
- * <a href="http://www.shoup.net/ntl/doc/tour.html">...</a>
- * <a href="http://www.shoup.net/ntl/doc/ZZ.txt">...</a>
+ * <a href="http://www.shoup.net/ntl/doc/tour.html">Tour of C++ NTL</a>
+ * <a href="http://www.shoup.net/ntl/doc/ZZ.txt">NTL C++ BigIntegers</a>
  * <p>
  * Credit to Samet Tonyali for helping on revising the code/debugging it.
  */
@@ -68,7 +68,7 @@ public final class NTL implements CipherConstants
 
 	/**
      * Computes the Jacobi symbol (a/n).
-     * <a href="https://medium.com/coinmonks/probabilistic-encryption-using-the-goldwasser-micali-gm-method-7f9893a93ac9">...</a>
+     * <a href="https://medium.com/coinmonks/probabilistic-encryption-using-the-goldwasser-micali-gm-method-7f9893a93ac9">Medium article on Goldwasser Micali</a>
      *
      * @param a The numerator as a {@link BigInteger}.
      * @param n The denominator as a {@link BigInteger}.

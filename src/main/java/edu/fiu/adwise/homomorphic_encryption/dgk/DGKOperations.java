@@ -262,7 +262,7 @@ public final class DGKOperations implements CipherConstants
 	 */
 	public static BigInteger sum (BigInteger [] parts, DGKPublicKey public_key) 
 			throws HomomorphicException {
-		BigInteger sum = public_key.ZERO;
+		BigInteger sum = public_key.ZERO();
 		for (BigInteger part : parts) {
 			sum = add(sum, part, public_key);
 		}

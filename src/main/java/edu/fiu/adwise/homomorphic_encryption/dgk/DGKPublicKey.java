@@ -52,10 +52,10 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 	final int k;
 
 	/** The encrypted representation of the value 1. */
-	public BigInteger ONE = null;
+	private BigInteger ONE = null;
 
 	/** The encrypted representation of the value 0. */
-	public BigInteger ZERO = null;
+	private BigInteger ZERO = null;
 
 	/**
 	 * Constructs a DGKPublicKey with all required parameters.
@@ -123,6 +123,17 @@ public final class DGKPublicKey implements Serializable, DGK_Key, PublicKey, Run
 			ZERO = DGKOperations.encrypt(0, this);
 		}
 		return ZERO;
+	}
+
+	/**
+	 * @return The encrypted representation of 1.
+	 * @throws HomomorphicException - If an invalid input was found, this should be impossible in this case
+	 */
+	public BigInteger ONE() throws HomomorphicException {
+		if (ONE == null) {
+			ONE = DGKOperations.encrypt(1, this);
+		}
+		return ONE;
 	}
 
 	/**

@@ -240,7 +240,7 @@ public class alice_veugen extends alice {
             }
 
             if(deltaA != alpha_bit && deltaA != NTL.bit(alpha_hat, i)) {
-                C[i] = dgk_public.ONE;
+                C[i] = dgk_public.ONE();
             }
             else {
                 exponent = alpha_hat_bit - alpha_bit;

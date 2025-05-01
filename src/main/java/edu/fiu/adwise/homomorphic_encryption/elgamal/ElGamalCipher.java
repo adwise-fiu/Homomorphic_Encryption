@@ -16,7 +16,7 @@ import edu.fiu.adwise.homomorphic_encryption.misc.NTL;
  * using the ElGamal cryptosystem. It supports both additive and multiplicative modes.
  * <p>
  * Reference:
- * <a href="https://github.com/dlitz/pycrypto/blob/master/lib/Crypto/PublicKey/ElGamal.py">...</a>
+ * <a href="https://github.com/dlitz/pycrypto/blob/master/lib/Crypto/PublicKey/ElGamal.py">Based on this ElGamal implementation in Python</a>
  */
 public class ElGamalCipher {
 	/**

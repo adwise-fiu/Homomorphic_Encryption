@@ -1,6 +1,7 @@
 name: Publish JAR file to release
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -12,13 +13,17 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
       v-version: ${{ steps.version.outputs.v-version }}
     steps:
+      # Can be major, minor, or patch, Update environment variable INCREMENT_TYPE in GitHub Actions Settings
+      - name: Set increment type from environment variable
+        run: echo "increment=${{ env.INCREMENT_TYPE || 'patch' }}" >> $GITHUB_ENV
+
       - name: Get next version
         uses: reecetech/version-increment@2023.10.2
         id: version
         with:
           release_branch: main
           use_api: true
-          increment: patch
+          increment: ${{ env.increment }}
 
   upload_release:
     needs: [ create_release ]
@@ -33,11 +38,11 @@ jobs:
           distribution: 'oracle'
           java-version: '17'
           cache: 'gradle'
-      - run: sh gradlew jar
+      - run: VERSION=${{ needs.create_release.outputs.v-version }} ./gradlew jar
 
       - name: Release the JAR file
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create_release.outputs.v-version }}
-          files: build/libs/crypto.jar
+          files: build/libs/*.jar
           token: ${{ secrets.GITHUB_TOKEN }}

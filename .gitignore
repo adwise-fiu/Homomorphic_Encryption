@@ -1,6 +1,9 @@
 # logs
 logs/
 
+# avoid tracking output
+output/
+
 # Avoid saving keys from UtilTest
 dgk.priv
 paillier.priv

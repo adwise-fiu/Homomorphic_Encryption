@@ -188,6 +188,7 @@ public class bob extends socialist_millionaires implements bob_interface
 	 *
 	 * @param y the plaintext value to encrypt.
 	 * @return an array of encrypted bits.
+	 * @throws HomomorphicException if an error occurs during homomorphic operations.
 	 */
 	public BigInteger [] encrypt_bits(BigInteger y) throws HomomorphicException {
 		BigInteger [] Encrypted_Y = new BigInteger[y.bitLength()];
