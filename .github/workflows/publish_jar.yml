@@ -10,7 +10,6 @@ jobs:
   create_release:
     runs-on: ubuntu-latest
     outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
       v-version: ${{ steps.version.outputs.v-version }}
     steps:
       # Can be major, minor, or patch, Update environment variable INCREMENT_TYPE in GitHub Actions Settings
@@ -42,13 +41,19 @@ jobs:
           distribution: 'oracle'
           java-version: '17'
           cache: 'gradle'
-      # Remove the leading v from the version string, and set it as an environment variable
+      # Remove the leading v from the version string and set it as an environment variable
       - run: |
           VERSION=${{ needs.create_release.outputs.v-version }}
           VERSION=${VERSION#v}
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          export VERSION=$VERSION
-          ./gradlew jar
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Publish to Maven Central
+        run: ./gradlew publish
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          VERSION: ${{ env.RELEASE_VERSION }}
 
       - name: Release the JAR file
         uses: softprops/action-gh-release@v2

@@ -1,10 +1,15 @@
 name: Build Gradle project
 
 on:
-  # Runs every 60 days at midnight, just to make sure the checkmark is always there
+  # Runs every 30 days at midnight, just to make sure the checkmark is always there
   schedule:
-    - cron: "0 0 */60 * *"
+    - cron: "0 0 30 * *"
   pull_request:
+
+# Automatically cancel any previous workflow on a new push.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
 
 jobs:
   test-gradle-project:

@@ -11,9 +11,13 @@ Papers:
   - 'papers/**'
 
 Gradle:
-    - 'build.gradle'
-    - '**/build.gradle'
-    - '**/gradle.properties'
-    - '**/settings.gradle'
-    - '**/gradlew'
-    - '**/gradlew.bat'
+  - 'build.gradle'
+  - '**/build.gradle'
+  - '**/gradle.properties'
+  - '**/settings.gradle'
+  - '**/gradlew'
+  - '**/gradlew.bat'
+
+Core:
+  - 'src/main/java/**'
+  - 'src/main/resources/**'
