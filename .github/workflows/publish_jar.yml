@@ -47,17 +47,31 @@ jobs:
           VERSION=${VERSION#v}
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Publish to Maven Central
-        run: ./gradlew publish
+      # https://central.sonatype.org/publish/publish-portal-api/
+      # https://central.sonatype.com/api-doc
+      - name: Create Bundle.zip file and use Publisher API
+        run: |
+          ./gradlew publishToMavenLocal
+          bash create_bundle.sh $VERSION
+          curl --request POST \
+            --verbose \
+            --header "Authorization: Bearer ${{ secrets.BEARER_TOKEN }}" \
+            --form bundle=@bundle.zip \
+            --form publishingType=AUTOMATIC \
+            https://central.sonatype.com/api/v1/publisher/upload \
+            --fail --write-out "%{http_code}" --output /dev/null
+          if [ $? -ne 0 ]; then
+            echo "Error: curl did not return 201. Failing the step."
+            exit 1
+          fi
         env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           VERSION: ${{ env.RELEASE_VERSION }}
 
+      # You want to use the 'ciphercraft-<version>.jar' for your uses
       - name: Release the JAR file
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create_release.outputs.v-version }}
-          files: build/libs/*.jar
+          files: build/libs/ciphercraft*.jar
           token: ${{ secrets.GITHUB_TOKEN }}

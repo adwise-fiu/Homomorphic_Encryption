@@ -33,12 +33,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 
-println "OSSRH_USERNAME: ${System.getenv('OSSRH_USERNAME')}"
-println "OSSRH_PASSWORD: ${System.getenv('OSSRH_PASSWORD')}"
-println "SIGNING_KEY: ${System.getenv('SIGNING_KEY')}"
-println "SIGNING_PASSWORD: ${System.getenv('SIGNING_PASSWORD')}"
-println "SIGNING_KEY_FILE: ${System.getenv('SIGNING_KEY_FILE')}"
-
 // Commenting because it doesn't work well on TravisCI
 test {
     testLogging {
@@ -117,7 +111,7 @@ publishing {
             from components.java
 
             pom {
-                name.set('CipherCraft')
+                name.set('ciphercraft')
                 description.set('This is a library that implements partially homomorphic encryption algorithms: ' +
                         'Paillier, ElGamal, and DGK. This also implements various two-party protocols for secure ' +
                         'computation such as multiplication, division and comparison')
