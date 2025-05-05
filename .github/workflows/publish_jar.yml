@@ -55,7 +55,7 @@ jobs:
           bash create_bundle.sh $VERSION
           curl --request POST \
             --verbose \
-            --header "Authorization: Bearer ${{ secrets.BEARER_TOKEN }}" \
+            --header "Authorization: Bearer ${BEARER_TOKEN}" \
             --form bundle=@bundle.zip \
             --form publishingType=AUTOMATIC \
             https://central.sonatype.com/api/v1/publisher/upload \
@@ -65,6 +65,7 @@ jobs:
             exit 1
           fi
         env:
+          BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           VERSION: ${{ env.RELEASE_VERSION }}
 
