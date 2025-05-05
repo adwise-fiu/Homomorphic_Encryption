@@ -1,7 +1,7 @@
 # Homomorphic Encryption
-[![Build Gradle project](https://github.com/adwise-fiu/Homomorphic_Encryption/actions/workflows/build-gradle-project.yml/badge.svg)](https://github.com/AndrewQuijano/Homomorphic_Encryption/actions/workflows/build-gradle-project.yml)
+[![Build Gradle project](https://github.com/adwise-fiu/Homomorphic_Encryption/actions/workflows/test_library.yml/badge.svg)](https://github.com/adwise-fiu/Homomorphic_Encryption/actions/workflows/test_library.yml)
 
-[![codecov](https://codecov.io/gh/adwise-fiu/Homomorphic_Encryption/branch/main/graph/badge.svg?token=OIFWDVX2SA)](https://codecov.io/gh/AndrewQuijano/Homomorphic_Encryption)
+[![codecov](https://codecov.io/gh/adwise-fiu/Homomorphic_Encryption/branch/main/graph/badge.svg?token=OIFWDVX2SA)](https://codecov.io/gh/adwise-fiu/Homomorphic_Encryption)
 
 Homomorphic Encryption is a Java library that implements the following partially homomorphic encryption systems:
 * Paillier  
@@ -18,7 +18,8 @@ other protocols have been appended to extend its functionality, in particular:
 Thjis Veugen implemented various of [these protocols in Python](https://github.com/TNO-PET/).
 
 ## Installation
-Please retrieve the JAR file from [here](https://github.com/AndrewQuijano/Homomorphic_Encryption/releases)
+Please retrieve the JAR file from [here](https://github.com/adwise-fiu/Homomorphic_Encryption/releases). 
+Instead, you can also now import the file via [Maven Central](https://central.sonatype.com/artifact/io.github.andrewquijano/ciphercraft/overview).
 
 Alternatively, you can download the repository and create the JAR file to import into another project
 by running the following command, you will find a `ciphercraft-{version}.jar` file in the `build/libs/` directory.
@@ -121,7 +122,7 @@ Code author: Andrew Quijano
 |------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|-------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [Server-Side Fingerprint-Based Indoor Localization Using Encrypted Sorting](https://arxiv.org/abs/2008.11612)                                        | Andrew Quijano and Kemal Akkaya                     | IEEE MASS 2019                                                                      | This paper is implemented the library in this repository                                                                                                                             |
 | [Efficient and Secure Comparison for On-Line Auctions](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.215.5941&rep=rep1&type=pdf)         | Ivan Damgaard, Martin Geisler, and Mikkel Kroigaard | Australasian conference on information security and privacy.                        | This paper is the first introduction to DGK. There is a correction to this paper listed [here](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.215.5941&rep=rep1&type=pdf) |
-| [Improving the DGK comparison protocol](citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.456.5314&rep=rep1&type=pdf)                                | Thijis Veugen                                       | 2012 IEEE International Workshop on Information Forensics and Security (WIFS)       | This paper describes improvements to the DGK comparison protocol. Protocol 4 had a correction shown [here](https://eprint.iacr.org/2018/1100.pdf)                                    |
+| [Improving the DGK comparison protocol](https://publications.tno.nl/publication/100415/HOfBCj/veugen-2012-improving.pdf)                                | Thijis Veugen                                       | 2012 IEEE International Workshop on Information Forensics and Security (WIFS)       | This paper describes improvements to the DGK comparison protocol. Protocol 4 had a correction shown [here](https://eprint.iacr.org/2018/1100.pdf)                                    |
 | [Encrypted Integer Division](https://www.academia.edu/download/51716137/Encrypted_integer_division20170209-12588-kq9aar.pdf)                         | Thijis Veugen                                       | 2010 IEEE International Workshop on Information Forensics and Security              | This repository implements Protocol 2 for Encrypted Division                                                                                                                         |
 | [Correction of a Secure Comparison Protocol for Encrypted Integers in IEEE WIFS 2012](https://link.springer.com/chapter/10.1007/978-3-319-64200-0_11) | Baptiste Vinh Mau & Koji Nuida                      | 2012 IEEE International Workshop on Information Forensics and Security (WIFS)       | This paper describes a secure multiplication protocol used in this repository                                                                                                        |
 | [A Secure and Optimally Efficient Multi-Authority Election Scheme](https://link.springer.com/content/pdf/10.1007/3-540-69053-0_9)        | Ronald Cramer, Rosario Gennaro, Berry Schoenmakers  |                                                                                     | This paper describes how El-Gamal was implemented in this repo                                                                                                                       |

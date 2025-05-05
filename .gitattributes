@@ -2,6 +2,8 @@
 *.sh            text eol=lf
 *.txt           text eol=lf
 gradlew         text eol=lf
+# You want this so labeler doesn't break if you are in Windows
+*.yml           text eol=lf
 
 # Always checkout with CRLF
 *.bat           text eol=crlf

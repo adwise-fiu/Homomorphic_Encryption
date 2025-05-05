@@ -2,11 +2,12 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'application'
+    id 'maven-publish'
+    id 'signing'
 }
-
 // name is set in settings.gradle
-group 'security'
-version '2.0.0'
+group 'io.github.andrewquijano'
+version = System.getenv("VERSION") ?: "2.0.0"
 
 repositories {
     mavenCentral()
@@ -14,6 +15,8 @@ repositories {
 
 // https://www.baeldung.com/gradle-sourcecompatiblity-vs-targetcompatibility
 java {
+    withJavadocJar()
+    withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 }
@@ -70,7 +73,7 @@ application {
 
 // To create the JAR file with 'gradlew jar'
 tasks.named('jar') {
-    archiveFileName = "${project.name}-${System.getenv('VERSION') ?: project.version}.jar"
+    archiveFileName = "${project.name}-${project.version}.jar"
     manifest {
         attributes(
                 'Implementation-Title': project.name,
@@ -100,3 +103,88 @@ tasks.register('runWithAgent', JavaExec) {
 
 // Configure the 'run' task to depend on 'runWithAgent'
 tasks.run.dependsOn('runWithAgent')
+
+// This is for publishing the library to Maven Central
+publishing {
+    publications {
+        register("mavenJava", MavenPublication) {
+            from components.java
+
+            pom {
+                name.set('ciphercraft')
+                description.set('This is a library that implements partially homomorphic encryption algorithms: ' +
+                        'Paillier, ElGamal, and DGK. This also implements various two-party protocols for secure ' +
+                        'computation such as multiplication, division and comparison')
+                url.set('https://github.com/adwise-fiu/Homomorphic_Encryption')
+
+                licenses {
+                    license {
+                        name.set('MIT License')
+                        url.set('https://opensource.org/licenses/MIT')
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set('AndrewQuijano')
+                        name.set('Andrew Quijano')
+                        email.set('andrew.quijano@nyu.edu')
+                    }
+                }
+
+                scm {
+                    connection.set('scm:git:git://github.com/adwise-fiu/Homomorphic_Encryption.git')
+                    developerConnection.set('scm:git:ssh://github.com:adwise-fiu/Homomorphic_Encryption.git')
+                    url.set('https://github.com/adwise-fiu/Homomorphic_Encryption')
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "Sonatype"
+            url = version.endsWith("SNAPSHOT") ?
+                    uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") :
+                    uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+
+            credentials {
+                username = findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+                password = findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
+// Update this file, ~/.gnupg/dirmngr.conf
+// and add this line 'keyserver hkps://keyserver.ubuntu.com' to the file
+// then run 'gpg --send-keys YOUR_KEY_ID'
+signing {
+    // Point to the key file on your machine, used for local testing
+    def signingKeyFile = findProperty("signingKeyFile") ?: System.getenv("SIGNING_KEY_FILE")
+    // gpg --armor --export-secret-keys YOUR_KEY_ID, export the key into a secret
+    def signingKey = findProperty("signingKey") ?: System.getenv("SIGNING_KEY")
+    // If no property or environment variable is found, it will be empty password
+    def signingPassword = findProperty("signingPassword") ?: System.getenv("SIGNING_PASSWORD") ?: ""
+
+    if (signingKeyFile) {
+        println("Reading signing key from file: $signingKeyFile")
+        def signingKey_content = new File(signingKeyFile.toString()).text
+        useInMemoryPgpKeys(signingKey_content.toString(), signingPassword.toString())
+        publishing.publications.named("mavenJava").configure { publication ->
+            signing.sign(publication)
+        }
+    }
+    else {
+        println("No signing key file found, will attempt to use in-memory key")
+        if (signingKey) {
+            useInMemoryPgpKeys(signingKey.toString(), signingPassword?.toString())
+            publishing.publications.named("mavenJava").configure { publication ->
+                signing.sign(publication)
+            }
+        }
+        else {
+            println("No signing key found. Skipping signing.")
+        }
+    }
+}

@@ -240,7 +240,6 @@ public class bob extends socialist_millionaires implements bob_interface
 
 		// Step 1: Bob sends encrypted bits to Alice
         logger.debug("[private_integer_comparison] Bob is sending {}", y);
-        logger.info("[private_integer_comparison] I am comparing sending y, which is {} bits long", y.bitLength());
 		writeObject(encrypt_bits(y));
 
 		// Step 2: Alice...

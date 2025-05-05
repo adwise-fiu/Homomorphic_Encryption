@@ -1,3 +1,10 @@
+# Avoid bringing in the bundle
+*.zip
+io/
+
+# Avoid environment variables
+.env
+
 # logs
 logs/
 
