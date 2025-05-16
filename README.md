@@ -106,7 +106,7 @@ The documentation for this repository is maintained via Javadoc. You can create 
 ```
 
 Alternatively,
-you can find the documentation from my website [here](https://andrewquijano.github.io/homomorphic_encryption/). 
+you can find the documentation from my website [here](https://andrewquijano.github.io/files/homomorphic_encryption/). 
 Please check under `src/test/java/edu/fiu/adwise/encryption_test` for the test cases,
 which also has detailed examples on how to use the API for your secure computations.
 
