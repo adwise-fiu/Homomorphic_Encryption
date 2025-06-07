@@ -132,18 +132,9 @@ public final class NTL implements CipherConstants
 	 */
 	public static int bit(BigInteger a, long k) {
 		//If the value k (location of bit is bigger than a
-		if (k >= a.bitLength()) {
+		if (k < 0 || k >= a.bitLength()) {
 			return 0;
 		}
-		if (k < 0) {
-			return 0;
-		}
-		String bit = a.toString(2); // get it in Binary
-		if (bit.charAt((int) k)== '0') {
-			return 0;
-		}
-		else {
-			return 1;
-		}
+		return a.testBit((int) k) ? 1 : 0;
 	}
 }
