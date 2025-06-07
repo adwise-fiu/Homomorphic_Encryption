@@ -22,14 +22,13 @@ java {
 }
 
 dependencies {
-    implementation 'junit:junit:4.13.2'
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0-M1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.16.1'
-    // or the latest version available
-    implementation 'org.apache.logging.log4j:log4j-core:3.0.0-beta1'
-
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
+    implementation 'org.apache.logging.log4j:log4j-api:2.24.3'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 
