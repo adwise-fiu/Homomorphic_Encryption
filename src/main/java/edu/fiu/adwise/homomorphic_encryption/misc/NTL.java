@@ -131,19 +131,11 @@ public final class NTL implements CipherConstants
 	 * @return The bit value (0 or 1) at position {@code k}, or 0 if {@code k} is out of range.
 	 */
 	public static int bit(BigInteger a, long k) {
-		//If the value k (location of bit is bigger than a
-		if (k >= a.bitLength()) {
+		int len = a.bitLength();
+		if (k < 0 || k >= len) {
 			return 0;
 		}
-		if (k < 0) {
-			return 0;
-		}
-		String bit = a.toString(2); // get it in Binary
-		if (bit.charAt((int) k)== '0') {
-			return 0;
-		}
-		else {
-			return 1;
-		}
+		int bitIndex = len - 1 - (int) k;
+		return a.abs().testBit(bitIndex) ? 1 : 0;
 	}
 }
