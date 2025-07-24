@@ -4,7 +4,14 @@ plugins {
     id 'application'
     id 'maven-publish'
     id 'signing'
+    id 'checkstyle'
 }
+
+checkstyle {
+    toolVersion = '10.12.2'
+    configFile = rootProject.file('google_checks.xml')
+}
+
 // name is set in settings.gradle
 group 'io.github.andrewquijano'
 version = System.getenv("VERSION") ?: "2.0.0"

@@ -18,6 +18,12 @@ jobs:
       - name: Checkout project sources
         uses: actions/checkout@v4
 
+      - uses: dbelyaev/action-checkstyle@master
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          checkstyle_config: google_checks.xml
+
       - name: Setup Gradle
         uses: actions/setup-java@v4
         with:
